@@ -1,0 +1,94 @@
+:root {
+  font-family:
+    "Inter Variable",
+    Inter,
+    "Segoe UI",
+    sans-serif;
+
+  color: #17272d;
+  background: #f3f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --color-primary: #194d59;
+  --color-primary-strong: #123b45;
+  --color-primary-soft: #e7f0f1;
+
+  --color-accent: #69a99b;
+  --color-accent-strong: #4d8f80;
+  --color-accent-light: #c8ebe3;
+
+  --color-bg: #f3f6f6;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8fafa;
+
+  --color-text: #17272d;
+  --color-text-secondary: #65777e;
+  --color-text-muted: #8b9a9f;
+
+  --color-border: #dce5e7;
+  --color-border-strong: #cbd7da;
+
+  --color-success: #4e927c;
+  --color-success-soft: #e7f3ef;
+
+  --color-danger: #b95e5e;
+  --color-danger-soft: #fbefef;
+
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 18px;
+
+  --shadow-soft:
+    0 1px 2px rgba(17, 44, 52, 0.03),
+    0 12px 32px rgba(17, 44, 52, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--color-bg);
+}
+
+body,
+#root {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+body {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  color: inherit;
+}
+
+::selection {
+  background: var(--color-accent-light);
+  color: var(--color-primary-strong);
+}
