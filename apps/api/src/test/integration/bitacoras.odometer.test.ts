@@ -105,7 +105,7 @@ test("impide finalizar con kilometraje menor al actual", async () => {
 
       payload: {
         username: "chofer07",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -125,7 +125,7 @@ test("impide finalizar con kilometraje menor al actual", async () => {
 
       payload: {
         vehicleId: vehicle.id,
-        serviceAddress:
+        costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress:
           "Prueba kilometraje 100, Talca",
         actionPerformed:
           "Servicio de prueba",
@@ -173,7 +173,7 @@ test("impide finalizar con kilometraje menor al actual", async () => {
 
     assert.equal(
       storedEntry.status,
-      "OPEN",
+      "IN_PROGRESS",
     );
 
     assert.equal(

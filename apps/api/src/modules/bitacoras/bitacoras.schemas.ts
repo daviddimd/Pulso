@@ -3,6 +3,7 @@ import { z } from "zod";
 export const startBitacoraSchema = z
   .object({
     vehicleId: z.string().uuid(),
+    costCenterId: z.string().uuid(),
 
     serviceAddress: z
       .string()

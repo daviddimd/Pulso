@@ -10,7 +10,7 @@ import {
 test("acepta una bitácora válida", () => {
   const result = startBitacoraSchema.safeParse({
     vehicleId: "46a679b0-740d-4e23-9ae0-69f2a0733ac9",
-    serviceAddress: "3 Norte 1200, Talca",
+    costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress: "3 Norte 1200, Talca",
     actionPerformed: "Traslado de paciente",
   });
 
@@ -20,7 +20,7 @@ test("acepta una bitácora válida", () => {
 test("rechaza una dirección vacía", () => {
   const result = startBitacoraSchema.safeParse({
     vehicleId: "46a679b0-740d-4e23-9ae0-69f2a0733ac9",
-    serviceAddress: "   ",
+    costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress: "   ",
     actionPerformed: "Traslado de paciente",
   });
 
@@ -30,7 +30,7 @@ test("rechaza una dirección vacía", () => {
 test("rechaza campos inesperados", () => {
   const result = startBitacoraSchema.safeParse({
     vehicleId: "46a679b0-740d-4e23-9ae0-69f2a0733ac9",
-    serviceAddress: "3 Norte 1200, Talca",
+    costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress: "3 Norte 1200, Talca",
     actionPerformed: "Traslado de paciente",
     campoInventado: true,
   });

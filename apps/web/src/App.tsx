@@ -7,6 +7,7 @@ import {
 import "./App.css";
 
 import { PulsoMark } from "./components/PulsoMark";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { DriverDashboard } from "./components/DriverDashboard";
 import { AdminDashboard } from "./components/AdminDashboard";
 
@@ -217,13 +218,14 @@ function App() {
   return (
     <main className="login-page">
       <section className="login-panel">
+        <div className="login-theme"><ThemeToggle /></div>
         <div className="login-main">
           <div className="brand">
-            <PulsoMark size="large" />
+            <PulsoMark size="large" /> 
 
             <div>
               <h1>Pulso</h1>
-              <p>Bitácora vehicular</p>
+              <p>Oficina de Movilización del Hospital de Talca</p>
             </div>
           </div>
 
@@ -314,7 +316,7 @@ function App() {
           </span>
 
           <span>
-            Personal autorizado
+            Solo Personal autorizado
           </span>
         </div>
       </section>

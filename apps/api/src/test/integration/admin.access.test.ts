@@ -61,7 +61,7 @@ test("DRIVER no puede acceder a rutas administrativas y ADMIN sí", async () => 
       url: "/api/auth/login",
       payload: {
         username: "chofer04",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -96,7 +96,7 @@ test("DRIVER no puede acceder a rutas administrativas y ADMIN sí", async () => 
       url: "/api/auth/login",
       payload: {
         username: "admin",
-        password: "PulsoAdminDemo#2026",
+        password: "admin",
       },
     });
 

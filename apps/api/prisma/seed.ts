@@ -1,5 +1,7 @@
 import "dotenv/config";
 import argon2 from "argon2";
+import { importInstitutionalVehicles } from "./vehicle-catalog";
+import { importCostCenters, importDrivers } from "./import-institutional";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
   PrismaClient,
@@ -14,17 +16,23 @@ if (!connectionString) {
 
 const adapter = new PrismaPg({
   connectionString,
-});
+}, { schema: process.env.PULSO_TEST_SCHEMA ?? "public" });
+
+if (process.env.NODE_ENV === "production" || !["/pulso_dev", "/pulso_test"].includes(new URL(connectionString).pathname)) {
+  throw new Error("La semilla de demostración solo se permite en pulso_dev o pulso_test.");
+}
 
 const prisma = new PrismaClient({
   adapter,
 });
 
 async function main() {
+  const testFixtures = process.env.NODE_ENV === "test" && !!process.env.PULSO_TEST_SCHEMA && process.env.PULSO_PROTOTYPE !== "1";
+  await importCostCenters(prisma);
   console.log("Iniciando seed de Pulso...");
 
   const adminPassword = await argon2.hash(
-    "PulsoAdminDemo#2026",
+    "admin",
     {
       type: argon2.argon2id,
     },
@@ -34,12 +42,7 @@ async function main() {
     where: {
       username: "admin",
     },
-    update: {
-      fullName: "Marcela Sepúlveda",
-      passwordHash: adminPassword,
-      role: UserRole.ADMIN,
-      active: true,
-    },
+    update: {},
     create: {
       username: "admin",
       fullName: "Marcela Sepúlveda",
@@ -49,7 +52,7 @@ async function main() {
   });
 
   const driverPassword = await argon2.hash(
-    "PulsoChoferDemo#2026",
+    "chofer",
     {
       type: argon2.argon2id,
     },
@@ -98,17 +101,12 @@ async function main() {
     },
   ];
 
-  for (const driver of drivers) {
+  for (const driver of testFixtures ? drivers : []) {
     await prisma.user.upsert({
       where: {
         username: driver.username,
       },
-      update: {
-        fullName: driver.fullName,
-        passwordHash: driverPassword,
-        role: UserRole.DRIVER,
-        active: true,
-      },
+      update: {},
       create: {
         username: driver.username,
         fullName: driver.fullName,
@@ -161,24 +159,22 @@ async function main() {
     },
   ];
 
-  for (const vehicle of vehicles) {
+  if (!testFixtures) console.log(await importDrivers(prisma));
+  for (const vehicle of testFixtures ? vehicles : []) {
     await prisma.vehicle.upsert({
       where: {
         roleCode: vehicle.roleCode,
       },
-      update: {
-        licensePlate: vehicle.licensePlate,
-        currentOdometerKm: vehicle.currentOdometerKm,
-        active: true,
-      },
+      update: {},
       create: vehicle,
     });
   }
 
+  if (!testFixtures) console.log(await importInstitutionalVehicles(prisma));
   console.log("Seed completado.");
   console.log("1 administrador");
-  console.log("10 choferes");
-  console.log("8 ambulancias ficticias");
+  console.log(testFixtures ? "10 choferes de prueba" : "9 choferes de la nómina institucional");
+  console.log(testFixtures ? "8 vehículos ficticios para pruebas automatizadas" : "8 vehículos del catálogo proporcionado; registrar kilometraje inicial desde administración");
 }
 
 main()

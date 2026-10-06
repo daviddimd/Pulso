@@ -36,3 +36,7 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
+
+if (env.NODE_ENV === "test" && !/^pulso_test_[a-z0-9_]+$/.test(process.env.PULSO_TEST_SCHEMA ?? "")) {
+  throw new Error("Los tests de integración deben ejecutarse con npm run test:integration en un esquema aislado.");
+}

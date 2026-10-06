@@ -72,7 +72,7 @@ test("bloquea temporalmente una cuenta tras 5 intentos fallidos", async () => {
       url: "/api/auth/login",
       payload: {
         username: "chofer08",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 

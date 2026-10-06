@@ -51,7 +51,7 @@ test("ADMIN puede consultar overview y exportar Excel diario", async () => {
 
       payload: {
         username: "admin",
-        password: "PulsoAdminDemo#2026",
+        password: "admin",
       },
     });
 

@@ -42,7 +42,7 @@ test("POST /api/auth/login rechaza un payload inválido", async () => {
       url: "/api/auth/login",
       payload: {
         username: "chofer01",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
         admin: true,
       },
     });

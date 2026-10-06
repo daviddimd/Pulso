@@ -32,7 +32,7 @@ test("login correcto crea sesión y permite consultar /me", async () => {
       url: "/api/auth/login",
       payload: {
         username: "chofer01",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 

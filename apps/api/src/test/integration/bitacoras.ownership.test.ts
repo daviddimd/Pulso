@@ -118,7 +118,7 @@ test("un chofer no puede finalizar la bitácora de otro chofer", async () => {
 
       payload: {
         username: "chofer05",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -128,7 +128,7 @@ test("un chofer no puede finalizar la bitácora de otro chofer", async () => {
 
       payload: {
         username: "chofer06",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -153,7 +153,7 @@ test("un chofer no puede finalizar la bitácora de otro chofer", async () => {
 
       payload: {
         vehicleId: vehicle.id,
-        serviceAddress:
+        costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress:
           "Prueba propiedad 100, Talca",
         actionPerformed:
           "Servicio de prueba",
@@ -199,7 +199,7 @@ test("un chofer no puede finalizar la bitácora de otro chofer", async () => {
 
     assert.equal(
       storedEntry.status,
-      "OPEN",
+      "IN_PROGRESS",
     );
 
     assert.equal(

@@ -4,6 +4,10 @@ import "@fontsource-variable/inter";
 
 import "./index.css";
 import App from "./App.tsx";
+import { initializeTheme } from "./theme";
+import "./theme.css";
+
+initializeTheme();
 
 createRoot(
   document.getElementById("root")!,

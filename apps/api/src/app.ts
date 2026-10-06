@@ -11,6 +11,8 @@ import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import { env } from "./config/env";
 import rateLimit from "@fastify/rate-limit";
+import { serviceRoutes } from "./modules/services/services.routes";
+import { costCenterRoutes } from "./modules/cost-centers/cost-centers.routes";
 
 export function buildApp() {
   const app = Fastify({
@@ -51,6 +53,8 @@ export function buildApp() {
   app.register(authRoutes, {
     prefix: "/api/auth",
   });
+  app.register(serviceRoutes, { prefix: "/api/services" });
+  app.register(costCenterRoutes, { prefix: "/api/cost-centers" });
 
   app.register(adminRoutes, {
     prefix: "/api/admin",

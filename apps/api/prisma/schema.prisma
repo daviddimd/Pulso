@@ -16,11 +16,16 @@ enum BitacoraStatus {
   OPEN
   COMPLETED
   VOIDED
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  CANCELLED
 }
 
 model User {
   id           String   @id @default(uuid()) @db.Uuid
   username     String   @unique @db.VarChar(50)
+  rosterCode   String?  @unique @map("roster_code") @db.VarChar(30)
   fullName     String   @map("full_name") @db.VarChar(120)
   passwordHash String   @map("password_hash") @db.VarChar(255)
 
@@ -36,6 +41,9 @@ model User {
   sessions  Session[]
   bitacoras BitacoraEntry[] @relation("DriverBitacoras")
   auditLogs AuditLog[]      @relation("AuditActor")
+  serviceLegs ServiceLeg[]
+  addressRevisions ServiceAddressRevision[]
+  createdServices BitacoraEntry[] @relation("ServiceCreator")
 
   @@map("users")
 }
@@ -47,6 +55,9 @@ model Vehicle {
   licensePlate String @unique @map("license_plate") @db.VarChar(20)
 
   currentOdometerKm Int? @map("current_odometer_km")
+  vehicleType String? @map("vehicle_type") @db.VarChar(60)
+  year Int?
+  model String? @db.VarChar(120)
 
   active Boolean @default(true)
 
@@ -54,19 +65,28 @@ model Vehicle {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   bitacoras BitacoraEntry[]
+  serviceLegs ServiceLeg[]
 
   @@map("vehicles")
 }
 
 model BitacoraEntry {
   id String @id @default(uuid()) @db.Uuid
+  costCenterId String? @map("cost_center_id") @db.Uuid
+  costCenter CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
 
-  driverId  String @map("driver_id") @db.Uuid
-  vehicleId String @map("vehicle_id") @db.Uuid
+  driverId  String? @map("driver_id") @db.Uuid
+  vehicleId String? @map("vehicle_id") @db.Uuid
+  createdByUserId String? @map("created_by_user_id") @db.Uuid
+  origin String @default("LEGACY") @db.VarChar(20)
+  version Int @default(0)
+  cancelledAt DateTime? @map("cancelled_at") @db.Timestamptz(3)
+  closurePending Boolean @default(false) @map("closure_pending")
+  returnOfId String? @unique @map("return_of_id") @db.Uuid
 
-  status BitacoraStatus @default(OPEN)
+  status BitacoraStatus @default(PENDING)
 
-  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  startedAt DateTime? @map("started_at") @db.Timestamptz(3)
   endedAt   DateTime? @map("ended_at") @db.Timestamptz(3)
 
   serviceAddress  String @map("service_address") @db.VarChar(350)
@@ -79,15 +99,61 @@ model BitacoraEntry {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  driver User @relation("DriverBitacoras", fields: [driverId], references: [id], onDelete: Restrict)
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driver User? @relation("DriverBitacoras", fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  creator User? @relation("ServiceCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  returnOf BitacoraEntry? @relation("ServiceReturn", fields: [returnOfId], references: [id], onDelete: Restrict)
+  returnService BitacoraEntry? @relation("ServiceReturn")
+  legs ServiceLeg[]
+  addressRevisions ServiceAddressRevision[]
 
     @@index([driverId, startedAt])
+    @@index([costCenterId, status, endedAt])
     @@index([vehicleId, startedAt])
     @@index([status, startedAt])
+    @@index([status, endedAt])
 
     @@map("bitacora_entries")
   }
+
+model CostCenter {
+  id String @id @default(uuid()) @db.Uuid
+  code String @unique @db.VarChar(30)
+  name String @db.VarChar(200)
+  active Boolean @default(true)
+  services BitacoraEntry[]
+  @@map("cost_centers")
+}
+
+model ServiceLeg {
+  id String @id @default(uuid()) @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+  driverId String @map("driver_id") @db.Uuid
+  vehicleId String @map("vehicle_id") @db.Uuid
+  startedAt DateTime @map("started_at") @db.Timestamptz(3)
+  endedAt DateTime? @map("ended_at") @db.Timestamptz(3)
+  departureOdometerKm Int? @map("departure_odometer_km")
+  arrivalOdometerKm Int? @map("arrival_odometer_km")
+  service BitacoraEntry @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  driver User @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  @@index([serviceId, startedAt])
+  @@map("service_legs")
+}
+
+model ServiceAddressRevision {
+  id String @id @default(uuid()) @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+  revision Int
+  address String @db.VarChar(350)
+  actorUserId String? @map("actor_user_id") @db.Uuid
+  source String @default("USER") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  service BitacoraEntry @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  @@unique([serviceId, revision])
+  @@map("service_address_revisions")
+}
 
 model Session {
   id String @id @default(uuid()) @db.Uuid

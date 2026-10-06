@@ -42,6 +42,7 @@ export async function adminRoutes(app: FastifyInstance) {
         id: true,
         username: true,
         fullName: true,
+        serviceLegs: { where: { endedAt: null }, select: { serviceId: true } },
       },
     });
 
@@ -209,14 +210,15 @@ export async function adminRoutes(app: FastifyInstance) {
 
         bitacoras: {
           where: {
-            startedAt: {
-              gte: startOfDay.toUTC().toJSDate(),
-              lt: endOfDay.toUTC().toJSDate(),
-            },
+            OR: [
+              { startedAt: { gte: startOfDay.toUTC().toJSDate(), lt: endOfDay.toUTC().toJSDate() } },
+              { status: "IN_PROGRESS" },
+              { closurePending: true },
+            ],
           },
 
           orderBy: {
-            startedAt: "asc",
+            startedAt: "desc",
           },
 
           include: {

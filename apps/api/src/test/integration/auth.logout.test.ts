@@ -31,7 +31,7 @@ test("logout revoca la sesión y /me deja de autorizar", async () => {
       url: "/api/auth/login",
       payload: {
         username: "chofer02",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 

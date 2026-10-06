@@ -104,7 +104,7 @@ test("impide dos servicios abiertos para el mismo chofer o vehículo", async () 
       url: "/api/auth/login",
       payload: {
         username: "chofer05",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -113,7 +113,7 @@ test("impide dos servicios abiertos para el mismo chofer o vehículo", async () 
       url: "/api/auth/login",
       payload: {
         username: "chofer06",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -137,7 +137,7 @@ test("impide dos servicios abiertos para el mismo chofer o vehículo", async () 
       },
       payload: {
         vehicleId: vehicle.id,
-        serviceAddress:
+        costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress:
           "Prueba restricciones 100, Talca",
         actionPerformed:
           "Servicio de prueba",
@@ -155,7 +155,7 @@ test("impide dos servicios abiertos para el mismo chofer o vehículo", async () 
       },
       payload: {
         vehicleId: vehicle.id,
-        serviceAddress:
+        costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress:
           "Prueba restricciones 200, Talca",
         actionPerformed:
           "Segundo servicio",
@@ -184,7 +184,7 @@ test("impide dos servicios abiertos para el mismo chofer o vehículo", async () 
       },
       payload: {
         vehicleId: vehicle.id,
-        serviceAddress:
+        costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress:
           "Prueba restricciones 300, Talca",
         actionPerformed:
           "Servicio de otro chofer",
@@ -208,7 +208,7 @@ test("impide dos servicios abiertos para el mismo chofer o vehículo", async () 
       await prisma.bitacoraEntry.count({
         where: {
           vehicleId: vehicle.id,
-          status: "OPEN",
+          status: "IN_PROGRESS",
         },
       });
 

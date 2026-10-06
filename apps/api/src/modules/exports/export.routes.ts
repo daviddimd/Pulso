@@ -25,7 +25,7 @@ export async function exportRoutes(app: FastifyInstance) {
       );
 
     if (!parsedQuery.success) {
-      if (!("date" in rawQuery)) {
+      if (!("date" in rawQuery) && !("from" in rawQuery)) {
         return reply.code(400).send({
           error: "DATE_REQUIRED",
         });
@@ -37,11 +37,13 @@ export async function exportRoutes(app: FastifyInstance) {
     }
 
     const query = parsedQuery.data;
+    const from = "date" in query ? query.date : query.from;
+    const to = "date" in query ? query.date : query.to;
 
     try {
       const workbook =
         await buildDailyBitacoraWorkbook(
-          query.date,
+          from, to,
         );
 
       const buffer =
@@ -54,7 +56,7 @@ export async function exportRoutes(app: FastifyInstance) {
 
       reply.header(
         "Content-Disposition",
-        `attachment; filename="pulso-bitacora-${query.date}.xlsx"`,
+        `attachment; filename="pulso-bitacora-${from}${from === to ? "" : "_" + to}.xlsx"`,
       );
 
       return reply.send(

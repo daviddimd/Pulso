@@ -51,7 +51,7 @@ test("una sesión expirada deja de autorizar al usuario", async () => {
 
       payload: {
         username: "chofer09",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 

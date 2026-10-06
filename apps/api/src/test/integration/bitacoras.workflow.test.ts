@@ -92,7 +92,7 @@ test("chofer puede iniciar y finalizar una bitácora completa", async () => {
 
       payload: {
         username: "chofer03",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
@@ -125,7 +125,7 @@ test("chofer puede iniciar y finalizar una bitácora completa", async () => {
 
       payload: {
         vehicleId: vehicle.id,
-        serviceAddress:
+        costCenterId: "c0000000-0000-4000-8000-000000000101", serviceAddress:
           "Prueba integración 100, Talca",
         actionPerformed:
           "Traslado de prueba",
@@ -208,13 +208,13 @@ test("chofer puede iniciar y finalizar una bitácora completa", async () => {
         },
       });
 
-    assert.equal(auditLogs.length, 2);
+    assert.equal(auditLogs.length, 3);
     assert.equal(
       auditLogs[0]?.action,
       "CREATE",
     );
     assert.equal(
-      auditLogs[1]?.action,
+      auditLogs[2]?.action,
       "FINALIZE",
     );
   } finally {

@@ -62,7 +62,7 @@ test("desactivar un usuario invalida inmediatamente su sesión", async () => {
 
       payload: {
         username: "chofer10",
-        password: "PulsoChoferDemo#2026",
+        password: "chofer",
       },
     });
 
