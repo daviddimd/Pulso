@@ -1,5 +1,8 @@
-:root { color-scheme: light; }
-:root[data-theme="dark"] {
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
   color-scheme: dark;
   --color-bg: #101c21;
   --color-surface: #192b31;
@@ -7,103 +10,45 @@
   --color-text: #e5efed;
   --color-text-secondary: #b4c7c9;
   --color-text-muted: #a4babc;
-  --color-border: #3a535b;
-  --color-border-strong: #54717a;
-  --color-primary: #256170;
+  --color-primary: #98d8c8;
   --color-primary-strong: #b1e6dc;
   --color-primary-soft: #203d43;
+  --color-accent: #69a99b;
   --color-accent-strong: #98d8c8;
-  --color-success: #a2e6ba;
-  --color-success-soft: #183d30;
-  --color-danger: #ffc1c1;
-  --color-danger-soft: #49292f;
-  --shadow-soft: none;
-  color: var(--color-text);
-  background: var(--color-bg);
-}
-.theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 8px; border: 0; border-radius: 12px; color: var(--color-text); background: transparent; cursor: pointer; }
-.theme-toggle-icon { font-size: 24px; line-height: 1; }
-.theme-toggle-track { position: relative; display: block; width: 52px; height: 30px; border: 1px solid #65777e; border-radius: 999px; background: #65777e; transition: background 180ms ease; }
-.theme-toggle-thumb { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px #0004; transition: transform 180ms ease; }
-.theme-toggle[aria-checked="true"] .theme-toggle-track { background: #327f82; border-color: #8ccdc2; }
-.theme-toggle[aria-checked="true"] .theme-toggle-thumb { transform: translateX(22px); }
-.theme-toggle:hover .theme-toggle-track { outline: 2px solid var(--color-accent-strong); outline-offset: 2px; }
-@media(prefers-reduced-motion: reduce) { .theme-toggle-track, .theme-toggle-thumb { transition: none; } }
-.theme-toggle:focus-visible { outline: 3px solid var(--color-accent-strong); outline-offset: 3px; }
-.login-theme { display: flex; justify-content: flex-end; margin-bottom: 24px; }
-[data-theme="dark"] .ops-dashboard { background: var(--color-bg); }
-[data-theme="dark"] .driver-header { background: #15262c; }
-[data-theme="dark"] .ops-dashboard .ops-title { background: transparent; }
-[data-theme="dark"] .ops-dashboard .ops-card { background: var(--color-surface); border-color: var(--color-border); box-shadow: none; }
-[data-theme="dark"] .ops-dashboard .ops-edit { background: var(--color-surface-soft); }
-[data-theme="dark"] .ops-content button,
-[data-theme="dark"] .ops-link,
-[data-theme="dark"] .ops-content .ops-start-card button[value="save"] { background: #253e47; color: #d9eeeb; border-color: #54717a; }
-[data-theme="dark"] .ops-content button:hover,
-[data-theme="dark"] .ops-link:hover { background: #34545f; }
-[data-theme="dark"] .ops-content .ops-main-nav button { background: transparent; color: var(--color-text-secondary); border-color: transparent; }
-[data-theme="dark"] .ops-content .ops-main-nav button[aria-pressed="true"] { color: var(--color-primary-strong); border-bottom-color: currentColor; }
-[data-theme="dark"] .ops-content .ops-primary-action,
-[data-theme="dark"] .ops-content .ops-start-button,
-[data-theme="dark"] .ops-export > button { background: #256170; color: #fff; border-color: #6aa8ad; }
-[data-theme="dark"] .ops-content input,
-[data-theme="dark"] .ops-content select,
-[data-theme="dark"] .ops-content textarea { background: #13252c; color: #e5efed; border-color: #54717a; }
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder { color: #a4babc; }
-[data-theme="dark"] .ops-sync,
-[data-theme="dark"] .ops-hint,
-[data-theme="dark"] .ops-export p,
-[data-theme="dark"] .ops-facts dt,
-[data-theme="dark"] .ops-service-summary dt,
-[data-theme="dark"] .ops-service-date,
-[data-theme="dark"] .ops-service-destination > span,
-[data-theme="dark"] .ops-service-activity,
-[data-theme="dark"] .ops-empty,
-[data-theme="dark"] .login-form label { color: #b4c7c9; }
-[data-theme="dark"] .ops-history,
-[data-theme="dark"] .ops-leg { border-color: #3a535b; }
-[data-theme="dark"] .ops-service-card .ops-history summary { color: #b1e6dc; }
-[data-theme="dark"] .ops-content .ops-entity-link { background: transparent; color: #b1e6dc; }
-[data-theme="dark"] .ops-content .ops-entity-link:hover { background: #34545f; }
-[data-theme="dark"] .ops-change { background: #443818; color: #f8df99; }
-[data-theme="dark"] .driver-error,
-[data-theme="dark"] .login-error { border-color: #955e65; }
-[data-theme="dark"] .ops-badge { background: #30444c; color: #d9e5e7; }
-[data-theme="dark"] .ops-badge.active { background: #183d30; color: #a2e6ba; }
-[data-theme="dark"] .ops-content [data-state="IN_PROGRESS"] { --state-ink: #a8dfff; --state-bg: #1b3c55; }
-[data-theme="dark"] .ops-content [data-state="COMPLETED"] { --state-ink: #a2e6ba; --state-bg: #183d30; }
-[data-theme="dark"] .ops-content [data-state="ASSIGNED"] { --state-ink: #e0c5ff; --state-bg: #3b2d50; }
-[data-theme="dark"] .ops-content [data-state="PENDING"] { --state-ink: #f8df99; --state-bg: #443818; }
-[data-theme="dark"] .ops-content [data-state="CANCELLED"] { --state-ink: #ffc1c1; --state-bg: #49292f; }
-[data-theme="dark"] .ops-badge[data-state],
-[data-theme="dark"] .ops-content .ops-status-filter { --filter-ink: #bdcdcf; color: var(--filter-ink); background: transparent; border-color: transparent; }
-[data-theme="dark"] .ops-content .ops-status-filter[data-state="IN_PROGRESS"] { --filter-ink: #a7c3d3; }
-[data-theme="dark"] .ops-content .ops-status-filter[data-state="COMPLETED"] { --filter-ink: #abcab6; }
-[data-theme="dark"] .ops-content .ops-status-filter[data-state="ASSIGNED"] { --filter-ink: #c5b7d3; }
-[data-theme="dark"] .ops-content .ops-status-filter[data-state="PENDING"] { --filter-ink: #d2c39f; }
-[data-theme="dark"] .ops-content .ops-status-filter[data-state="CANCELLED"] { --filter-ink: #d4b1b6; }
-[data-theme="dark"] .ops-content .ops-status-filter[aria-pressed="true"] {
-  background: var(--filter-ink);
-  border-color: var(--filter-ink);
-  color: #13252c;
-  box-shadow: 0 3px 12px #0003;
-}
-[data-theme="dark"] .ops-content .ops-status-filter:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--filter-ink) 11%, var(--color-surface)); }
-[data-theme="dark"] .login-form button:hover { background: #327687; color: white; }
-@media(max-width: 680px) {
-  .ops-dashboard .driver-header-inner { flex-wrap: wrap; padding-block: 12px; }
-  .ops-dashboard .driver-user { flex-wrap: wrap; gap: 10px; }
-  .login-theme { justify-content: flex-start; }
+  --color-accent-light: #34594f;
+  --color-border: #3a535b;
+  --color-border-strong: #54717a;
+  --color-success: #9ed3ad;
+  --color-success-soft: #253e2e;
+  --color-danger: #f0aaa4;
+  --color-danger-soft: #442d2a;
+  --color-sidebar: #15262c;
+  --color-input: #13252c;
+  --shadow-soft: 0 2px 3px #00000005, 0 8px 28px #0000000a;
+  --shadow-popover: 0 0 0 1px #91b9ba12, 0 12px 36px #0005;
 }
 
-[data-theme="dark"] .ops-dashboard .ops-start-card,
-[data-theme="dark"] .ops-dashboard .ops-export,
-[data-theme="dark"] .ops-dashboard .ops-service-summary { background: transparent; }
-[data-theme="dark"] .ops-content .ops-title > button,
-[data-theme="dark"] .ops-content .ops-pagination > button,
-[data-theme="dark"] .ops-content .ops-service-card .ops-actions > button:not(.ops-primary-action),
-[data-theme="dark"] .ops-content .ops-history > button,
-[data-theme="dark"] .ops-content .ops-start-card button[value="save"] { background: transparent; border-color: transparent; color: var(--color-primary-strong); }
-[data-theme="dark"] .ops-dashboard .ops-service-card .ops-badge,
-[data-theme="dark"] .ops-dashboard .ops-team .ops-badge { background: transparent; color: var(--state-ink, var(--color-text-secondary)); }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 11px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.theme-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover {
+    background: var(--color-surface-soft);
+    color: var(--color-primary-strong);
+  }
+}

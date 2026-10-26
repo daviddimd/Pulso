@@ -1,0 +1,113 @@
+import { spawn, spawnSync } from 'node:child_process';
+import { strict as assert } from 'node:assert';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { php, apiDir } from './runtime.mjs';
+import { ensureLocalDatabase } from './local-db.mjs';
+await ensureLocalDatabase();
+const env = {...process.env, CI_ENVIRONMENT:'development', PULSO_INTEGRATION:'1', 'database.default.database':'pulso_test', 'app.baseURL':'http://localhost:8081/', CORS_ORIGIN:'http://localhost:5177',
+  CLAVE_UNICA_CLIENT_ID:'test-client', CLAVE_UNICA_CLIENT_SECRET:'test-secret', CLAVE_UNICA_REDIRECT_URI:'https://pulso.example/api/auth/clave-unica/callback'};
+for (const args of [['migrate'],['pulso:test-fixtures'],['pulso:test-auth']]) {
+  const p=spawnSync(php,['spark',...args],{cwd:apiDir,env,encoding:'utf8'});
+  if(p.status || /Exception|Error\]/.test(p.stdout+p.stderr)) throw Error(p.stdout+p.stderr);
+  if(args[0]==='pulso:test-auth') process.stdout.write(p.stdout);
+}
+const servers=[8081,8082].map(port=>spawn(php,['-S',`localhost:${port}`,'-t','public','public/router.php'],{cwd:apiDir,env,stdio:['ignore','ignore','pipe']}));
+let stderr=''; servers.forEach(p=>p.stderr.on('data',d=>stderr+=d));
+const base='http://localhost:8081';
+let checks=0;
+function check(value,message){assert.ok(value,message);checks++;}
+async function request(path,{cookie='',body,method,port=8081,origin}={}) {
+  const response=await fetch(`http://localhost:${port}`+path,{method:method||(body===undefined?'GET':'POST'),headers:{...(cookie?{cookie}:{}),...(body===undefined?{}:{'Content-Type':'application/json'}),...(origin?{Origin:origin}:{})},body:body===undefined?undefined:JSON.stringify(body)});
+  const raw=await response.text(); let data; try {data=JSON.parse(raw);} catch {data=raw;}
+  return {status:response.status,data,cookies:response.headers.getSetCookie(),headers:response.headers};
+}
+async function login(name){const r=await request('/api/auth/login',{body:{username:name,password:'test-password'}});assert.equal(r.status,200,JSON.stringify(r.data));return r.cookies.map(c=>c.split(';')[0]).join('; ');}
+async function cmd(id,command,version,body,cookie,port=8081){return request(`/api/services/${id}/${command}`,{body:{version,...body},cookie,port});}
+try {
+  for(let n=0;n<60;n++){try {if((await fetch(base+'/api/health')).ok) break;}catch{} await sleep(150);}
+  check((await request('/api/services')).status===401,'Sin sesión: 401');
+  const options=await request('/api/auth/options');
+  check(options.data.claveUnicaEnabled===true && Object.keys(options.data).length===1,'Opciones públicas sin credenciales');
+  const oauth=await request('/api/auth/clave-unica');
+  check(oauth.status===200,'Inicio de ClaveÚnica disponible');
+  const authorization=new URL(oauth.data.url);
+  check(authorization.origin==='https://accounts.claveunica.gob.cl' && authorization.searchParams.get('scope')==='openid run name','Proveedor y permisos oficiales');
+  const oauthCookie=oauth.cookies.map(c=>c.split(';')[0]).join('; ');
+  check((await request('/api/auth/clave-unica/callback?code=test-code&state=invalid',{cookie:oauthCookie})).status===400,'Estado OAuth incorrecto rechazado');
+  check((await request('/api/auth/clave-unica/callback?code=test-code&state='+encodeURIComponent(authorization.searchParams.get('state')),{cookie:oauthCookie})).status===400,'Estado OAuth consumido no reutilizable');
+  const admin=await login('a-admin'), driver=await login('a-driver1'), driver2=await login('a-driver2'), other=await login('b-admin');
+  check((await request('/api/auth/me',{cookie:admin})).data.user.role==='ADMIN','Contrato usuario');
+  check((await request('/api/auth/me',{cookie:other})).data.user.establishmentTimezone==='Pacific/Easter','Zona horaria de cada institución');
+  check((await request('/api/admin/drivers',{cookie:driver})).status===403,'Chofer no consulta administración');
+  check((await request('/api/exports/daily?from=2026-01-01&to=2026-12-31',{cookie:driver})).status===403,'Chofer no exporta');
+  check((await request('/api/vehicles',{cookie:admin})).data.vehicles.length===2,'Catálogo aislado');
+  check((await request('/api/admin/drivers',{cookie:admin})).data.drivers.length===3,'Choferes y disponibilidad');
+  check((await request('/api/cost-centers',{cookie:admin})).data.costCenters.length===1,'Centros aislados');
+  const input={serviceAddress:'2 Norte 1757, Talca',actionPerformed:'Traslado de personal',vehicleId:'a-vehicle1',costCenterId:'a-center',startNow:true};
+  let r=await request('/api/services',{cookie:driver,body:input});
+  assert.equal(r.status,201,JSON.stringify(r.data)); let trip=r.data.entry; const id=trip.id;
+  check(trip.status==='IN_PROGRESS'&&trip.legs[0].departureOdometerKm===1000,'Inicio automático');
+  const bad=await request('/api/services',{cookie:driver2,body:input}); check(bad.status===409,'Vehículo no simultáneo');
+  check((await request('/api/services/mine',{cookie:driver2})).data.total===0,'Inicio fallido revierte creación');
+  check((await cmd(id,'cancel',trip.version,{reason:'No corresponde'},admin)).status===400,'No cancelar iniciado');
+  check((await cmd(id,'complete',trip.version,{odometerKm:999},driver)).data.error==='ODOMETER_BELOW_CURRENT','Km no retroceden');
+  check((await cmd(id,'complete',trip.version,{odometerKm:1001.5},driver)).status===400,'Km enteros');
+  check((await cmd(id,'address',trip.version,{serviceAddress:'Otra calle'},other)).status===404,'No editar otro establecimiento');
+  check((await request(`/api/services/${id}`,{cookie:other})).status===404,'No leer otro establecimiento');
+  check((await request(`/api/services/${id}/audit`,{cookie:other})).status===404,'No leer auditoría ajena');
+  check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,driverId:'b-driver1'}})).status===400,'No asignar chofer ajeno');
+  check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,costCenterId:'b-center'}})).status===400,'No asignar centro ajeno');
+  r=await cmd(id,'assignment',trip.version,{driverId:'a-driver2',vehicleId:'a-vehicle2',odometerKm:1012},admin); assert.equal(r.status,200,JSON.stringify(r.data)); trip=r.data.entry;
+  check(trip.legs[1].departureOdometerKm===50000,'Reasignación usa odómetro del nuevo vehículo');
+  check((await cmd(id,'complete',trip.version,{odometerKm:50008},driver)).status===403,'Antiguo chofer no finaliza');
+  check((await request('/api/services?vehicleId=a-vehicle1',{cookie:admin})).data.total===1,'Historial incluye vehículo previo');
+  r=await cmd(id,'address',trip.version,{serviceAddress:'1 Sur 1010, Talca'},admin); trip=r.data.entry;
+  check(trip.addressRevisions[0].address==='1 Sur 1010, Talca'&&trip.addressRevisions[0].actor.fullName==='a admin','Alerta dirección más reciente');
+  check((await cmd(id,'address',0,{serviceAddress:'Vieja versión'},admin)).status===409,'Rechazo de versión antigua');
+  const outcomes=await Promise.all([cmd(id,'complete',trip.version,{odometerKm:50008},driver2,8081),cmd(id,'complete',trip.version,{odometerKm:50009},driver2,8082)]);
+  check(outcomes.filter(x=>x.status===200).length===1&&outcomes.filter(x=>x.status===409).length===1,'Finalización simultánea: un solo ganador');
+  trip=outcomes.find(x=>x.status===200).data.entry;
+  check([20,21].includes(trip.distanceKm),'Distancia suma tramos de vehículos distintos');
+  const day=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const period=`from=${day}&to=${day}`;
+  r=await request('/api/cost-centers/summary?'+period,{cookie:admin}); assert.equal(r.status,200,JSON.stringify(r.data));
+  check(r.data.rows[0].completedKm===trip.distanceKm,'Resumen suma distancia, no odómetros');
+  r=await request('/api/exports/daily?'+period,{cookie:admin}); check(r.data.services.length===1&&r.data.legs.length===2&&r.data.services[0].distanceKm===trip.distanceKm,'Contrato Excel completo');
+  check(r.data.timezone==='America/Santiago','Excel recibe la zona horaria del establecimiento');
+  const foreignReport=await request('/api/exports/daily?'+period,{cookie:other});
+  check(foreignReport.data.services.length===0 && foreignReport.data.timezone==='Pacific/Easter','Reporte aislado y zona horaria propia');
+  r=await request('/api/exports/daily-pdf?'+period,{cookie:admin}); check(r.status===200&&r.data.startsWith('%PDF-'),'PDF real con FPDF');
+  r=await request('/api/cost-centers/export-pdf?'+period,{cookie:admin}); check(r.status===200&&r.data.startsWith('%PDF-'),'PDF centros');
+  check((await request('/api/cost-centers/summary?from=2026-02-30&to=2026-03-10',{cookie:admin})).status===400,'Fechas inválidas');
+  r=await request('/api/services',{cookie:driver,body:{...input,startNow:false,costCenterId:null}}); let pending=r.data.entry;
+  check(pending.status==='ASSIGNED'&&pending.costCenter===null,'Guardar con centro indefinido');
+  check((await request('/api/services/mine?status=COMPLETED',{cookie:driver})).data.upcoming.length===1,'Pendientes independientes del filtro');
+  r=await cmd(pending.id,'cancel',pending.version,{reason:'No se requiere traslado'},admin);check(r.data.entry.status==='CANCELLED','Cancelar antes de salir');
+  check((await request('/api/exports/daily?'+period,{cookie:admin})).data.services.length===1,'Excel excluye cancelados');
+  check((await request('/api/services/mine',{cookie:driver})).data.active.length===0,'Viaje finalizado libera al chofer');
+  r=await request('/api/vehicles',{cookie:admin}); const v=r.data.vehicles.find(v=>v.id==='a-vehicle1');
+  check((await request('/api/vehicles/'+v.id,{cookie:other,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,roleCode:'XXX'}})).status===404,'Vehículo ajeno no editable');
+  check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,licensePlate:'CHANGED'}})).status===400,'Patente inmutable');
+  r=await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,currentOdometerKm:1015,reason:'Corrección contrastada'}}); check(r.status===200&&r.data.vehicle.currentOdometerKm===1015,'Ajuste administrativo');
+  check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,roleCode:'OLD'}})).status===409,'Versión vehículo protegida');
+  check((await request('/api/services',{cookie:admin,origin:'https://untrusted.example'})).status===403,'Origen externo rechazado');
+  check((await request('/api/services',{cookie:admin,body:{...input,vehicleId:['invalid']}})).status===400,'Identificadores malformados rechazados');
+  check((await request(`/api/services/${id}/address`,{cookie:admin,body:{serviceAddress:'Dirección sin versión'}})).status===400,'Versión obligatoria');
+  check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,serviceAddress:'x'.repeat(351)}})).status===400,'Longitud máxima validada');
+  check((await request('/api/cost-centers/summary?from=2020-01-01&to=2026-12-31',{cookie:admin})).status===400,'Máximo 366 días');
+  check((await request('/api/vehicles',{cookie:driver,body:{roleCode:'7-99',licensePlate:'TEST'}})).status===403,'Alta de vehículo solo administrativa');
+  r=await request('/api/vehicles',{cookie:admin,body:{roleCode:'7-99',licensePlate:'A-NEW99',model:'Nuevo móvil',year:2025,currentOdometerKm:0}});
+  check(r.status===201&&r.data.vehicle.model==='Nuevo móvil','Alta de vehículo funcional');
+  const race=await Promise.all([request('/api/services',{cookie:driver,body:{...input,vehicleId:r.data.vehicle.id},port:8081}),request('/api/services',{cookie:driver2,body:{...input,vehicleId:r.data.vehicle.id},port:8082})]);
+  check(race.filter(x=>x.status===201).length===1&&race.filter(x=>x.status===409).length===1,'Inicio simultáneo sobre un vehículo: un solo ganador');
+  for(let n=0;n<31;n++) { const p=await request('/api/services',{cookie:other,body:{serviceAddress:'1 Norte 1990, Talca',actionPerformed:'Servicio pendiente '+n,costCenterId:null}});assert.equal(p.status,201); }
+  const first=await request('/api/services?page=1',{cookie:other}), second=await request('/api/services?page=2',{cookie:other});
+  check(first.data.entries.length===30&&second.data.entries.length===1&&first.data.total===31,'Paginación compatible con el panel');
+  check(!first.data.entries.some(x=>second.data.entries.some(y=>x.id===y.id)),'Páginas sin registros repetidos');
+  await request('/api/auth/logout',{cookie:driver,body:{}});
+  check((await request('/api/auth/me',{cookie:driver})).status===401,'Logout invalida sesión');
+  for(let n=0;n<5;n++) check((await request('/api/auth/login',{body:{username:'a-driver3',password:'wrong-password'}})).status===401,'Intento fallido registrado');
+  check((await request('/api/auth/login',{body:{username:'a-driver3',password:'test-password'}})).status===423,'Bloqueo de intentos persiste tras respuesta de error');
+  console.log(`PHP/MySQL: ${checks} verificaciones de integración correctas.`);
+} catch(e) { console.error(e); console.error(stderr.slice(-1800)); process.exitCode=1; }
+finally {servers.forEach(s=>s.kill());}

@@ -1,0 +1,12 @@
+.runtime/
+.env
+.env.*
+!.env.example
+node_modules/
+vendor/
+dist/
+apps/api-php/writable/*
+!apps/api-php/writable/.gitkeep
+*.log
+apps/api-php/public/assets/
+apps/api-php/public/index.html

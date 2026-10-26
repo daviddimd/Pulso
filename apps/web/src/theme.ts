@@ -8,6 +8,7 @@ function readPreference(): Theme | null {
 let preference = readPreference();
 export function initializeTheme() {
   document.documentElement.dataset.theme = preference ?? (system.matches ? "dark" : "light");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', document.documentElement.dataset.theme === 'dark' ? '#192b31' : '#ffffff');
 }
 export const getTheme = (): Theme => document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 export function setTheme(theme: Theme) {

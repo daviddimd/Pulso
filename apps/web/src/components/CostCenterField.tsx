@@ -1,20 +1,22 @@
 import { useId, useState } from "react";
 import type { CostCenter } from "../operations";
 
-const label = (center: CostCenter) => `${center.code} · ${center.name}`;
+export const UNDEFINED_COST_CENTER = "undefined";
+const indefinite: CostCenter = { id: UNDEFINED_COST_CENTER, code: "", name: "Indefinido", active: true };
+const label = (center: CostCenter) => center.code ? `${center.code} · ${center.name}` : center.name;
 const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 export function CostCenterField({ centers, initial = "" }: { centers: CostCenter[]; initial?: string }) {
   const id = useId();
   const [selected, setSelected] = useState(initial);
   const [search, setSearch] = useState(() => {
-    const center = centers.find(c => c.id === initial);
+    const center = [indefinite, ...centers].find(c => c.id === initial);
     return center ? label(center) : "";
   });
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const filtered = centers.filter(c => normalize(label(c)).includes(normalize(selected ? "" : search)))
-    .sort((a, b) => a.code.localeCompare(b.code, "es", { numeric: true }));
+  const filtered = [indefinite, ...centers.filter(c => normalize(label(c)).includes(normalize(selected ? "" : search)))
+    .sort((a, b) => a.code.localeCompare(b.code, "es", { numeric: true }))];
 
   function choose(center: CostCenter) {
     setSelected(center.id);
