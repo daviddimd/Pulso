@@ -1,9 +1,11 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
+  type ReactNode,
 } from "react";
 import { Icon, type IconName } from "./Icon";
 import { ThemeToggle } from "./ThemeToggle";
@@ -12,8 +14,9 @@ import { CostCenterField, UNDEFINED_COST_CENTER } from "./CostCenterField";
 import { AddressField } from "./AddressField";
 import { AddressChangeAlerts } from "./AddressChangeAlerts";
 import { CostCenterReport } from "./CostCenterReport";
+import { VehicleOdometerHistory } from "./VehicleOdometerHistory";
 import { PulsoMark } from "./PulsoMark";
-import { API_URL, ApiError, api, labels, time, today, type CostCenter, type Driver, type Service, type Vehicle } from "../operations";
+import { API_URL, ApiError, api, labels, time, today, type CostCenter, type Driver, type DriverDetails, type Service, type Vehicle } from "../operations";
 import "./OperationsDashboard.css";
 
 
@@ -24,6 +27,14 @@ type OpenProfile = (profile: Profile) => void;
 const values = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); return new FormData(event.currentTarget); };
 const text = (f: FormData, key: string) => String(f.get(key) ?? "");
 const vehicleLabel = (v: { model: string | null; roleCode: string }) => `${v.model || "Modelo no registrado"} · Rol ${v.roleCode}`;
+const driverVehicleLabel = (entry: Service, driverId: string) => {
+  const driven = [...new Set(entry.legs.filter(leg => leg.driver.id === driverId).map(leg => vehicleLabel(leg.vehicle)))];
+  return driven.length ? driven.join(' / ') : entry.vehicle ? vehicleLabel(entry.vehicle) : 'Vehículo por asignar';
+};
+const vehicleDriverLabel = (entry: Service, vehicle: Vehicle | null | undefined) => {
+  const drivers = [...new Set(entry.legs.filter(leg => leg.vehicle.licensePlate === vehicle?.licensePlate).map(leg => leg.driver.fullName))];
+  return drivers.length ? drivers.join(' / ') : entry.driver?.fullName ?? 'Chofer por asignar';
+};
 const vehicleOptions = (vehicles: Vehicle[]) => vehicles.filter(v => v.active).map(v => <option key={v.id} value={v.id}>{vehicleLabel(v)}{v.inService ? " · En servicio" : ""}</option>);
 const driverOptions = (drivers: Driver[]) => drivers.map(d => <option key={d.id} value={d.id}>{d.fullName}{d.serviceLegs.length ? " · En servicio" : ""}</option>);
 const statusFilters = [
@@ -32,13 +43,39 @@ const statusFilters = [
 ] as const;
 type StatusFilterBarProps = {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, animate: boolean) => void;
   label: string;
 };
 
 function StatusFilterBar({ value, onChange, label }: StatusFilterBarProps) {
-  return <div className="ops-status-filters" role="group" aria-label={label}>
-    {statusFilters.map(([filterValue, filterLabel]) => <button key={filterValue} type="button" className="ops-status-filter" data-state={filterValue} aria-pressed={value === filterValue} onClick={() => onChange(filterValue)}><span className="ops-state-dot" />{filterLabel}</button>)}
+  const [instant, setInstant] = useState(false);
+  const bar = useRef<HTMLDivElement>(null);
+  const indicator = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const container = bar.current;
+    const line = indicator.current;
+    if (!container || !line) return;
+    const position = () => {
+      const button = container.querySelector<HTMLButtonElement>('[aria-pressed="true"]');
+      const text = button?.querySelector<HTMLSpanElement>('.ops-status-label');
+      if (!button || !text) return;
+      const origin = container.getBoundingClientRect();
+      const bounds = text.getBoundingClientRect();
+      const bottom = button.getBoundingClientRect().bottom;
+      const x = bounds.left - origin.left + container.scrollLeft;
+      const y = bottom - origin.top + container.scrollTop - 3;
+      line.style.transform = `translate3d(${x}px, ${y}px, 0) scaleX(${bounds.width / 100})`;
+      line.dataset.ready = 'true';
+    };
+    position();
+    const observer = new ResizeObserver(position);
+    observer.observe(container);
+    container.querySelectorAll('button').forEach(button => observer.observe(button));
+    return () => observer.disconnect();
+  }, [value]);
+  return <div ref={bar} className="ops-status-filters" role="group" aria-label={label} data-instant={instant}>
+    {statusFilters.map(([filterValue, filterLabel]) => <button key={filterValue} type="button" className="ops-status-filter" data-state={filterValue} aria-pressed={value === filterValue} onClick={event => { const animate = event.detail !== 0; setInstant(!animate); onChange(filterValue, animate); }}><span className="ops-status-label">{filterLabel}</span></button>)}
+    <span ref={indicator} className="ops-status-indicator" data-state={value} aria-hidden="true" />
   </div>;
 }
 
@@ -64,41 +101,56 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
   const [createError, setCreateError] = useState("");
   const [createRevision, setCreateRevision] = useState(0);
   const sequence = useRef(0);
+  const catalogLoaded = useRef(false);
+  const queryKey = `${status}:${page}`;
+  const [settledQuery, setSettledQuery] = useState<string | null>(null);
+  const [displayedQuery, setDisplayedQuery] = useState<string | null>(null);
+  const [filterMotion, setFilterMotion] = useState(true);
+  const filtering = settledQuery !== queryKey;
+  const currentResults = displayedQuery === queryKey;
 
-  const reload = useCallback(async (signal?: AbortSignal) => {
+  const reload = useCallback(async (signal?: AbortSignal, includeCatalog = true) => {
     const request = ++sequence.current;
     try {
-      const [services, catalog, centers, team] = await Promise.all([
-        api<List>(`/api/services${admin ? "" : "/mine"}?page=${page}${status ? "&status=" + status : ""}`, undefined, "GET", signal),
-        api<{ vehicles: Vehicle[] }>("/api/vehicles", undefined, "GET", signal),
-        api<{ costCenters: CostCenter[] }>("/api/cost-centers", undefined, "GET", signal),
-        admin ? api<{ drivers: Driver[] }>("/api/admin/drivers", undefined, "GET", signal) : Promise.resolve({ drivers: [] }),
+      const servicesRequest = api<List>(`/api/services${admin ? "" : "/mine"}?page=${page}${status ? "&status=" + status : ""}`, undefined, "GET", signal)
+        .then(services => {
+          if (signal?.aborted || request !== sequence.current) return;
+          setEntries(admin ? services.entries : [...new Map([...services.active, ...services.entries].map(e => [e.id, e])).values()]);
+          setActiveServices(services.active); setUpcomingServices(services.upcoming); setTotal(services.total);
+          setDisplayedQuery(queryKey); setSettledQuery(queryKey);
+        });
+      const [, catalog, centers, team] = await Promise.all([
+        servicesRequest,
+        includeCatalog ? api<{ vehicles: Vehicle[] }>("/api/vehicles", undefined, "GET", signal) : null,
+        includeCatalog ? api<{ costCenters: CostCenter[] }>("/api/cost-centers", undefined, "GET", signal) : null,
+        includeCatalog && admin ? api<{ drivers: Driver[] }>("/api/admin/drivers", undefined, "GET", signal) : null,
       ]);
       if (signal?.aborted || request !== sequence.current) return;
-      setEntries([...new Map([...services.active, ...services.entries].map(e => [e.id, e])).values()]);
-      setActiveServices(services.active); setCostCenters(centers.costCenters);
-      setUpcomingServices(services.upcoming);
-      setTotal(services.total); setVehicles(catalog.vehicles); setDrivers(team.drivers);
+      if (catalog && centers) { setVehicles(catalog.vehicles); setCostCenters(centers.costCenters); catalogLoaded.current = true; }
+      if (team) setDrivers(team.drivers);
       setUpdated(new Date().toISOString()); setPollError("");
     } catch (e) {
       if (signal?.aborted || request !== sequence.current) return;
       if (e instanceof ApiError && e.status === 401) setExpired(true);
       setPollError(e instanceof Error ? e.message : "Sin conexión.");
+    } finally {
+      if (!signal?.aborted && request === sequence.current) setSettledQuery(queryKey);
     }
-  }, [admin, page, status]);
+  }, [admin, page, status, queryKey]);
 
   useEffect(() => {
     const controller = new AbortController();
     let running = false;
-    const refresh = async () => {
+    const refresh = async (includeCatalog = true) => {
       if (running || controller.signal.aborted || document.hidden) return;
       running = true;
-      try { await reload(controller.signal); } finally { running = false; }
+      try { await reload(controller.signal, includeCatalog); } finally { running = false; }
     };
-    void refresh();
-    const timer = window.setInterval(() => void refresh(), 15000);
-    window.addEventListener("focus", refresh); window.addEventListener("online", refresh); document.addEventListener("visibilitychange", refresh);
-    return () => { controller.abort(); window.clearInterval(timer); window.removeEventListener("focus", refresh); window.removeEventListener("online", refresh); document.removeEventListener("visibilitychange", refresh); };
+    void refresh(!catalogLoaded.current);
+    const refreshAll = () => void refresh();
+    const timer = window.setInterval(refreshAll, 15000);
+    window.addEventListener("focus", refreshAll); window.addEventListener("online", refreshAll); document.addEventListener("visibilitychange", refreshAll);
+    return () => { controller.abort(); window.clearInterval(timer); window.removeEventListener("focus", refreshAll); window.removeEventListener("online", refreshAll); document.removeEventListener("visibilitychange", refreshAll); };
   }, [reload]);
 
   async function mutate(path: string, body: unknown, method = "POST", onError: (message: string) => void = setError) {
@@ -127,7 +179,7 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
   const navigation: { key: typeof tab; label: string; short: string; icon: IconName }[] = admin
     ? [{key:'services', label:'Servicios',short:'Servicios',icon:'route'}, {key:'start',label:'Nuevo servicio',short:'Nuevo',icon:'plus'}, {key:'vehicles',label:'Vehículos',short:'Flota',icon:'car'}, {key:'costs',label:'Centros de costos',short:'Costos',icon:'chart'}]
     : [{key:'start',label:'Iniciar servicio',short:'Iniciar servicio',icon:'plus'},{key:'services',label:'Mis servicios',short:'Mis servicios',icon:'route'}];
-  const pageTitle = tab==='history' ? 'Historial de servicios' : tab==='start' ? (!admin && activeServices.length ? 'Tu viaje en curso' : 'Nuevo servicio') : tab==='services' ? (admin ? 'Servicios' : 'Mis servicios') : tab==='vehicles' ? 'Vehículos' : 'Centros de costos';
+  const pageTitle = tab==='history' ? (profile?.kind === 'vehicle' ? 'Ficha del vehículo' : 'Ficha del chofer') : tab==='start' ? (!admin && activeServices.length ? 'Tu viaje en curso' : 'Nuevo servicio') : tab==='services' ? (admin ? 'Servicios' : 'Mis servicios') : tab==='vehicles' ? 'Vehículos' : 'Centros de costos';
   const availableVehicles = vehicles.filter(v=>v.active && !v.inService).length;
   const availableDrivers = drivers.filter(d=>!d.serviceLegs.length).length;
   return <main className={'driver-page ops-dashboard '+(admin ? 'ops-admin' : 'ops-driver')}>
@@ -140,7 +192,7 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
     </div></header>
     <aside className="ops-navigation-row" aria-label={admin ? 'Navegación administrativa' : 'Navegación del chofer'}>
       {admin && <p className="ops-nav-eyebrow">ESPACIO DE TRABAJO</p>}
-      <fieldset className="ops-workspace ops-navigation-sections" disabled={busy || expired || !updated}><nav className="ops-tabs ops-main-nav" aria-label="Secciones del panel">{navigation.map(item=><button key={item.key} aria-pressed={tab===item.key || item.key==='services' && tab==='history'} onClick={()=>{setTab(item.key);window.scrollTo({top:0});}}><Icon name={item.icon} /><span className="ops-nav-label">{item.label}</span><span className="ops-nav-short">{item.short}</span>{item.key==='services' && activeServices.length>0 && <span className="ops-nav-count" aria-label={activeServices.length+' en curso'}>{activeServices.length}</span>}</button>)}</nav></fieldset>
+      <fieldset className="ops-workspace ops-navigation-sections" disabled={busy || expired || !updated}><nav className="ops-tabs ops-main-nav" aria-label="Secciones del panel">{navigation.map(item=><button key={item.key} aria-pressed={tab===item.key || tab==='history' && item.key===(profile?.kind === 'vehicle' ? 'vehicles' : 'services')} onClick={()=>{setTab(item.key);window.scrollTo({top:0});}}><Icon name={item.icon} /><span className="ops-nav-label">{item.label}</span><span className="ops-nav-short">{item.short}</span>{item.key==='services' && activeServices.length>0 && <span className="ops-nav-count" aria-label={activeServices.length+' en curso'}>{activeServices.length}</span>}</button>)}</nav></fieldset>
       {admin && <div className="ops-sidebar-footer"><span className="ops-sidebar-symbol"><Icon name="activity" /></span><p>Al servicio de<br /><strong>cada recorrido.</strong></p></div>}
     </aside>
     <section className="ops-content" id="workspace-content" tabIndex={-1}>
@@ -150,13 +202,13 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
       {expired && <div className="driver-error" role="alert">Tu sesión terminó. <button onClick={() => void onLogout()}>Volver al acceso</button></div>}
       {admin && updated && (tab==='services' || tab==='start') && <div className="ops-overview" aria-label="Disponibilidad actual"><div><span><Icon name="activity" />En curso</span><strong>{activeServices.length}<small>servicios</small></strong></div><div><span><Icon name="car" />Vehículos disponibles</span><strong>{availableVehicles}<small>de {vehicles.filter(v=>v.active).length}</small></strong></div><div><span><Icon name="people" />Choferes disponibles</span><strong>{availableDrivers}<small>de {drivers.length}</small></strong></div></div>}
       <fieldset className="ops-workspace" disabled={busy || expired || !updated}>
-      {admin && profile && <nav className="ops-tabs" aria-label="Historial seleccionado"><button aria-pressed={tab === "history"} onClick={() => setTab("history")}>{profile.name}</button><button onClick={() => { setProfile(null); if (tab === "history") setTab("services"); }} aria-label="Cerrar pestaña de historial">Cerrar historial</button></nav>}
+      {admin && profile && tab === 'history' && <button className="ops-profile-back" onClick={() => { setProfile(null); setTab(profile.kind === 'vehicle' ? 'vehicles' : 'services'); }}>← Volver a {profile.kind === 'vehicle' ? 'vehículos' : 'servicios'}</button>}
       {tab === "costs" && admin ? <CostCenterReport /> : tab === "history" && admin && profile ? <ProfileHistory costCenters={costCenters} key={profile.kind + profile.id} profile={profile} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} /> : tab === "vehicles" && admin ? <VehiclePanel vehicles={vehicles} mutate={mutate} onProfile={openProfile} /> : <>
         <section hidden={tab !== "start"} className="ops-start-workspace">
         {!admin && activeServices.length > 0 && <><p className="ops-section-note">Registra los kilómetros al llegar.</p>{activeServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</>}
         {!admin && upcomingServices.length > 0 && <section aria-label="Viajes pendientes"><h2 className="ops-section-heading"><Icon name="clock" />Por iniciar<span>{upcomingServices.length}</span></h2><div className="ops-services">{upcomingServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</div></section>}
         {(admin || activeServices.length === 0) && <section className="ops-card ops-start-card">
-          <div className="ops-form-heading"><span className="ops-form-symbol"><Icon name="route" /></span><div><h2>Datos del traslado</h2><p>{admin ? "Asigna los recursos para coordinar el servicio." : "Tu próximo recorrido empieza aquí."}</p></div></div>
+          <div className="ops-form-heading"><span className="ops-form-symbol"><Icon name="route" /></span><div><h2>Datos del traslado</h2><p>{admin ? "Asigna los recursos para coordinar el servicio." : "Ingresa los datos del nuevo servicio."}</p></div></div>
           <form onSubmit={e => void create(e)} onChange={() => setCreateError("")} className="ops-form">
             <AddressField key={`address-${createRevision}`} wide />
             {admin && <label>Chofer<select name="driver"><option value="">Sin asignar</option>{driverOptions(drivers)}</select></label>}
@@ -175,16 +227,21 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
           <StatusFilterBar
             value={status}
             label="Filtrar servicios por estado"
-            onChange={(value) => {
+            onChange={(value, animate) => {
+              setFilterMotion(animate);
               setStatus(value);
               setPage(1);
             }}
           />
-          <span>{total} {total === 1 ? "servicio" : "servicios"}{!admin && activeServices.length > 0 && " · Incluye tu viaje activo"}</span>
+          <span role="status" aria-live="polite">{filtering ? "Actualizando servicios…" : currentResults ? <>{total} {total === 1 ? "servicio" : "servicios"}{!admin && activeServices.length > 0 && " · Incluye tu viaje activo"}</> : "No se pudo actualizar"}</span>
         </div>
-        <div className="ops-services">{entries.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={admin} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} />)}</div>
-        {updated && !entries.length && <div className="ops-empty"><span className="ops-empty-symbol"><Icon name="route" /></span><h2>Todo despejado por aquí</h2><p>No hay servicios con este estado.</p></div>}
+        <div className="ops-filter-results" aria-busy={filtering} data-loading={filtering} data-instant={!filterMotion} inert={filtering || !currentResults}>
+        <div className={admin ? 'ops-services ops-services-compact' : 'ops-services'}>{entries.map(entry => admin ? <ServiceDisclosure key={entry.id} entry={entry} subtitle={`${entry.driver?.fullName ?? 'Chofer por asignar'} · ${entry.vehicle ? vehicleLabel(entry.vehicle) : 'Vehículo por asignar'}`}>
+          <ServiceCard costCenters={costCenters} entry={entry} admin vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} />
+        </ServiceDisclosure> : <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} />)}</div>
+        {updated && currentResults && !entries.length && <div className="ops-empty"><span className="ops-empty-symbol"><Icon name="route" /></span><h2>Todo despejado por aquí</h2><p>No hay servicios con este estado.</p></div>}
         {(total > 30 || page > 1) && <div className="ops-pagination"><button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Anterior</button><span>Página {page}</span><button disabled={page * 30 >= total} onClick={() => setPage(p => p + 1)}>Siguiente</button></div>}
+        </div>
         </section>
       </>}
       </fieldset>
@@ -193,15 +250,35 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
 }
 
 type Mutation = (path: string, body: unknown, method?: string, onError?: (message: string) => void) => Promise<boolean>;
+function ServiceDisclosure({ entry, subtitle, children }: { entry: Service; subtitle: string; children: ReactNode }) {
+  const date = entry.endedAt ?? entry.startedAt;
+  return <details className="ops-profile-trip">
+    <summary><span className="ops-badge" data-state={entry.status}>{labels[entry.status]}</span><span className="ops-profile-trip-title"><strong>{entry.actionPerformed}</strong><span>{subtitle}</span></span><span className="ops-profile-trip-date">{date ? <time dateTime={date}>{time(date)}</time> : 'Sin iniciar'}</span><Icon name="chevron" /></summary>
+    <div className="ops-profile-trip-body">{children}</div>
+  </details>;
+}
 function ProfileHistory({ profile, costCenters, vehicles, drivers, mutate, onProfile }: { profile: Profile; costCenters: CostCenter[]; vehicles: Vehicle[]; drivers: Driver[]; mutate: Mutation; onProfile: OpenProfile }) {
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState("COMPLETED");
+  const [status, setStatus] = useState('');
+  const [section, setSection] = useState<'trips' | 'corrections'>('trips');
+  const vehicle = profile.kind === 'vehicle' ? vehicles.find(vehicle => vehicle.id === profile.id) : null;
   const [result, setResult] = useState<List | null>(null);
   const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
+  const [driverDetails, setDriverDetails] = useState<DriverDetails | null>(null);
+  const [driverError, setDriverError] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, []);
   useEffect(() => {
+    if (profile.kind !== 'driver') return;
+    const controller = new AbortController();
+    api<{ driver: DriverDetails }>(`/api/admin/drivers/${profile.id}`, undefined, 'GET', controller.signal)
+      .then(data => { if (!controller.signal.aborted) { setDriverDetails(data.driver); setDriverError(''); } })
+      .catch(e => { if (!controller.signal.aborted) setDriverError(e instanceof Error ? e.message : 'No se pudieron cargar los datos del chofer.'); });
+    return () => controller.abort();
+  }, [profile.id, profile.kind, revision]);
+  useEffect(() => {
+    if (section !== 'trips') return;
     const controller = new AbortController();
     let running = false;
     const refresh = async () => {
@@ -216,11 +293,25 @@ function ProfileHistory({ profile, costCenters, vehicles, drivers, mutate, onPro
     void refresh();
     const timer = window.setInterval(() => void refresh(), 15000);
     return () => { controller.abort(); window.clearInterval(timer); };
-  }, [profile.id, profile.kind, page, status, revision]);
+  }, [profile.id, profile.kind, page, status, revision, section]);
   const historyMutate: Mutation = async (...args) => { const ok = await mutate(...args); setRevision(r => r + 1); return ok; };
   return <section className="ops-profile">
-    <h2 ref={heading} tabIndex={-1}>{profile.name}</h2>
-    <p>Servicios por {profile.kind === "driver" ? "chofer" : "vehículo"} · Incluye participación en tramos anteriores.</p>
+    <h2 ref={heading} tabIndex={-1}>{driverDetails?.fullName ?? profile.name}</h2>
+    {profile.kind === 'vehicle' ? <>
+      {vehicle && <dl className="ops-vehicle-facts">
+        <div><dt>Patente</dt><dd>{vehicle.licensePlate}</dd></div><div><dt>Tipo</dt><dd>{vehicle.vehicleType ?? 'Sin registro'}</dd></div><div><dt>Año</dt><dd>{vehicle.year ?? 'Sin registro'}</dd></div>
+        <div><dt>Kilometraje actual</dt><dd>{vehicle.currentOdometerKm === null ? 'Sin registro' : `${new Intl.NumberFormat('es-CL').format(vehicle.currentOdometerKm)} km`}</dd></div><div><dt>Estado</dt><dd>{!vehicle.active ? 'Inactivo' : vehicle.inService ? 'En servicio' : 'Disponible'}</dd></div>
+      </dl>}
+      <nav className="ops-vehicle-sections" aria-label="Información del vehículo"><button type="button" aria-pressed={section === 'trips'} onClick={() => setSection('trips')}>Viajes</button><button type="button" aria-pressed={section === 'corrections'} onClick={() => setSection('corrections')}>Correcciones de kilometraje</button></nav>
+    </> : <>
+      {driverError ? <p className="driver-error" role="alert">{driverError} <button onClick={() => setRevision(r => r + 1)}>Reintentar</button></p> : !driverDetails ? <p role="status">Cargando datos del chofer…</p> : <dl className="ops-vehicle-facts">
+        <div><dt>Usuario</dt><dd>{driverDetails.username}</dd></div><div><dt>Código de dotación</dt><dd>{driverDetails.rosterCode || 'Sin registro'}</dd></div><div><dt>Cargo</dt><dd>Chofer</dd></div>
+        <div><dt>Estado</dt><dd>{!driverDetails.active ? 'Inactivo' : (drivers.find(driver => driver.id === profile.id)?.serviceLegs.length ?? (driverDetails.inService ? 1 : 0)) > 0 ? 'En servicio' : 'Disponible'}</dd></div>
+        <div><dt>Establecimiento</dt><dd>{driverDetails.establishmentName}</dd></div>
+      </dl>}
+      <h3 className="ops-driver-history-title">Historial de viajes</h3>
+    </>}
+    {profile.kind === 'vehicle' && section === 'corrections' ? <VehicleOdometerHistory key={profile.id} vehicleId={profile.id} /> : <>
     <StatusFilterBar
       value={status}
       label="Filtrar historial por estado"
@@ -235,10 +326,13 @@ function ProfileHistory({ profile, costCenters, vehicles, drivers, mutate, onPro
       }}
     />
     {error ? <p className="driver-error" role="alert">{error}<button onClick={() => setRevision(r => r + 1)}>Reintentar</button></p> : !result ? <p role="status">Cargando historial…</p> : <>
-      <p>{result.total} servicios</p>
-      {result.entries.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin vehicles={vehicles} drivers={drivers} mutate={historyMutate} onProfile={onProfile} />)}
+      <p className="ops-history-count">{result.total} {result.total === 1 ? 'viaje' : 'viajes'}</p>
+      {result.entries.map(entry => <ServiceDisclosure key={entry.id} entry={entry} subtitle={profile.kind === 'driver' ? driverVehicleLabel(entry, profile.id) : vehicleDriverLabel(entry, vehicle)}>
+        <ServiceCard costCenters={costCenters} entry={entry} admin vehicles={vehicles} drivers={drivers} mutate={historyMutate} onProfile={onProfile} />
+      </ServiceDisclosure>)}
       {!result.entries.length && <p>No hay servicios para este estado.</p>}
       {(result.total > 30 || page > 1) && <div className="ops-pagination"><button disabled={page === 1} onClick={() => { setResult(null); setPage(p => p - 1); }}>Anterior</button><span>Página {page}</span><button disabled={page * 30 >= result.total} onClick={() => { setResult(null); setPage(p => p + 1); }}>Siguiente</button></div>}
+    </>}
     </>}
   </section>;
 }
@@ -316,7 +410,7 @@ function VehiclePanel({ vehicles, mutate, onProfile }: { vehicles: Vehicle[]; mu
     const form = event.currentTarget; const f = values(event);
     if (await mutate("/api/vehicles", { roleCode: text(f, "role"), licensePlate: text(f, "plate"), vehicleType: text(f, "type") || null, model: text(f, "model") || null, year: text(f, "year") ? Number(text(f, "year")) : null, currentOdometerKm: Number(text(f, "km")) })) form.reset();
   }
-  return <><details className="ops-card"><summary className="ops-disclosure-heading"><span><Icon name="plus" />Registrar nuevo vehículo</span><Icon name="chevron" /></summary><p>Revisa la patente, el tipo, el modelo y el año antes de registrar: esos datos quedarán fijos. El rol institucional se podrá cambiar.</p><form className="ops-form" onSubmit={e => void create(e)}>
+  return <><details className="ops-card"><summary className="ops-disclosure-heading"><span><Icon name="plus" />Registrar nuevo vehículo</span><Icon name="chevron" /></summary><p>Revisa los datos antes de registrar: después solo se podrá ajustar el kilometraje.</p><form className="ops-form" onSubmit={e => void create(e)}>
     <label>Rol institucional<input name="role" maxLength={30} required /></label><label>Patente<input name="plate" minLength={3} maxLength={20} required /></label>
     <label>Tipo<input name="type" minLength={2} maxLength={60} /></label><label>Modelo<input name="model" maxLength={120} /></label><label>Año<input name="year" type="number" min="1900" max="2100" /></label>
     <label>Kilometraje inicial<input name="km" type="number" min="0" max="5000000" required /></label><button>Registrar</button>
@@ -326,19 +420,16 @@ function VehicleCard({ vehicle: v, mutate, onProfile }: { vehicle: Vehicle; muta
   const [snapshot, setSnapshot] = useState<Vehicle | null>(null);
   async function save(event: FormEvent<HTMLFormElement>) {
     const f = values(event); if (!snapshot) return;
-    const body: Record<string, unknown> = { expectedUpdatedAt: snapshot.updatedAt, roleCode: text(f, "role") };
-    if (text(f, "km")) { body.currentOdometerKm = Number(text(f, "km")); body.reason = text(f, "reason"); }
+    const body = { expectedUpdatedAt: snapshot.updatedAt, currentOdometerKm: Number(text(f, "km")), reason: text(f, "reason") };
     if (await mutate("/api/vehicles/" + v.id, body, "PATCH")) setSnapshot(null);
   }
   return <article className="ops-card ops-vehicle-card"><div className="ops-vehicle-top"><span className="ops-vehicle-symbol"><Icon name="car" /></span><span className="ops-badge" data-state={!v.active ? "CANCELLED" : v.inService ? "IN_PROGRESS" : "COMPLETED"}><span className="ops-state-dot" />{!v.active ? "Inactivo" : v.inService ? "En servicio" : "Disponible"}</span></div><h2><button className="ops-entity-link" onClick={() => onProfile({ kind: "vehicle", id: v.id, name: vehicleLabel(v) })}>{vehicleLabel(v)}</button></h2><p>{[v.vehicleType, v.year, "Patente " + v.licensePlate].filter(Boolean).join(" · ")}</p><div className="ops-vehicle-odometer"><span>Odómetro</span><strong>{v.currentOdometerKm === null ? "Sin registro" : new Intl.NumberFormat("es-CL").format(v.currentOdometerKm)}<small> km</small></strong></div>
-    <div className="ops-actions"><button onClick={() => setSnapshot(v)}>Cambiar rol / ajustar kilometraje</button><button disabled={v.inService} onClick={() => void mutate("/api/vehicles/" + v.id, { active: !v.active, expectedUpdatedAt: v.updatedAt }, "PATCH")}>{v.active ? "Desactivar" : "Activar"}</button></div>
+    <div className="ops-actions"><button disabled={v.inService} onClick={() => setSnapshot(v)}>Ajustar kilometraje</button></div>
     {snapshot && <form className="ops-form ops-edit" onSubmit={e => void save(e)}>
       {snapshot.updatedAt !== v.updatedAt && <p role="alert">El vehículo cambió. Cierra y vuelve a abrir el formulario.</p>}
-      <p>La patente, el tipo, el modelo y el año son datos fijos del vehículo.</p>
-      <label>Rol institucional<input name="role" defaultValue={snapshot.roleCode} maxLength={30} required /></label>
-      <label>Nueva lectura de kilometraje (opcional)<input name="km" type="number" min="0" max="5000000" disabled={v.inService} /></label><label>Motivo del ajuste de kilometraje<input name="reason" minLength={3} maxLength={500} disabled={v.inService} /></label>
+      <label>Nueva lectura de kilometraje<input name="km" type="number" min="0" max="5000000" required disabled={v.inService} /></label><label>Motivo del ajuste<input name="reason" minLength={3} maxLength={500} required disabled={v.inService} /></label>
       {v.inService && <p>El ajuste de odómetro estará disponible al cerrar el tramo activo.</p>}
-      <div className="ops-actions"><button disabled={snapshot.updatedAt !== v.updatedAt}>Guardar</button><button type="button" onClick={() => setSnapshot(null)}>Cerrar formulario</button></div>
+      <div className="ops-actions"><button disabled={v.inService || snapshot.updatedAt !== v.updatedAt}>Guardar kilometraje</button><button type="button" onClick={() => setSnapshot(null)}>Cerrar formulario</button></div>
     </form>}
   </article>;
 }

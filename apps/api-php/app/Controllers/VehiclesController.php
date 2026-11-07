@@ -3,6 +3,10 @@ namespace App\Controllers;
 use App\Models\VehicleRepository;
 class VehiclesController extends BaseApiController {
     public function index() { return $this->jsonResponse(['vehicles'=>(new VehicleRepository())->listing($this->getAuthUser())]); }
+    public function odometerHistory(string $id) {
+        if ($this->getAuthUser()['role']!=='ADMIN') return $this->errorResponse('FORBIDDEN',403);
+        return $this->attempt(fn()=> $this->jsonResponse((new VehicleRepository())->odometerHistory($id,$this->getAuthUser(),max(1,(int)$this->request->getGet('page')))));
+    }
     public function create() {
         if ($this->getAuthUser()['role']!=='ADMIN') return $this->errorResponse('FORBIDDEN',403);
         return $this->attempt(fn()=> $this->jsonResponse(['vehicle'=>(new VehicleRepository())->create($this->getRequestBody(),$this->getAuthUser())],201));

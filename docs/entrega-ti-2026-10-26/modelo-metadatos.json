@@ -1,0 +1,886 @@
+{
+  "databaseVersion": "8.4.11",
+  "tables": {
+    "audit_logs": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "auto_increment",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "actor_user_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "entity_type",
+          "COLUMN_TYPE": "varchar(60)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "entity_id",
+          "COLUMN_TYPE": "varchar(80)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "action",
+          "COLUMN_TYPE": "varchar(80)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "before_data",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "after_data",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "ip_address",
+          "COLUMN_TYPE": "varchar(64)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "actor_user_id",
+          "REFERENCED_TABLE_NAME": "users",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `audit_logs` (\n  `id` bigint unsigned NOT NULL AUTO_INCREMENT,\n  `actor_user_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `entity_type` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `entity_id` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `action` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `before_data` json DEFAULT NULL,\n  `after_data` json DEFAULT NULL,\n  `ip_address` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `entity_type_entity_id_created_at` (`entity_type`,`entity_id`,`created_at`),\n  KEY `actor_user_id_created_at` (`actor_user_id`,`created_at`),\n  CONSTRAINT `audit_logs_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE SET NULL\n) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "bitacora_entries": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "establishment_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "cost_center_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "driver_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "vehicle_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_by_user_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "origin",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "version",
+          "COLUMN_TYPE": "int unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "cancelled_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "enum('PENDING','ASSIGNED','IN_PROGRESS','COMPLETED','CANCELLED')",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "started_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "ended_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "service_address",
+          "COLUMN_TYPE": "varchar(350)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "action_performed",
+          "COLUMN_TYPE": "varchar(250)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "odometer_km",
+          "COLUMN_TYPE": "int unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "void_reason",
+          "COLUMN_TYPE": "varchar(500)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "cost_center_id",
+          "REFERENCED_TABLE_NAME": "cost_centers",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "created_by_user_id",
+          "REFERENCED_TABLE_NAME": "users",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "driver_id",
+          "REFERENCED_TABLE_NAME": "users",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "establishment_id",
+          "REFERENCED_TABLE_NAME": "establishments",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "vehicle_id",
+          "REFERENCED_TABLE_NAME": "vehicles",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `bitacora_entries` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `cost_center_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `driver_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `vehicle_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `created_by_user_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `origin` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',\n  `version` int unsigned NOT NULL DEFAULT '0',\n  `cancelled_at` datetime(3) DEFAULT NULL,\n  `status` enum('PENDING','ASSIGNED','IN_PROGRESS','COMPLETED','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',\n  `started_at` datetime(3) DEFAULT NULL,\n  `ended_at` datetime(3) DEFAULT NULL,\n  `service_address` varchar(350) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `action_performed` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `odometer_km` int unsigned DEFAULT NULL,\n  `void_reason` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `establishment_id` (`establishment_id`),\n  KEY `cost_center_id` (`cost_center_id`),\n  KEY `driver_id` (`driver_id`),\n  KEY `vehicle_id` (`vehicle_id`),\n  KEY `created_by_user_id` (`created_by_user_id`),\n  KEY `driver_id_started_at` (`driver_id`,`started_at`),\n  KEY `cost_center_id_status_ended_at` (`cost_center_id`,`status`,`ended_at`),\n  KEY `vehicle_id_started_at` (`vehicle_id`,`started_at`),\n  KEY `status_started_at` (`status`,`started_at`),\n  KEY `status_ended_at` (`status`,`ended_at`),\n  KEY `establishment_id_status` (`establishment_id`,`status`),\n  CONSTRAINT `bitacora_entries_cost_center_id_foreign` FOREIGN KEY (`cost_center_id`) REFERENCES `cost_centers` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `bitacora_entries_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `bitacora_entries_driver_id_foreign` FOREIGN KEY (`driver_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `bitacora_entries_establishment_id_foreign` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `bitacora_entries_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `bitacora_odometer_nonnegative` CHECK (((`odometer_km` >= 0) or (`odometer_km` is null))),\n  CONSTRAINT `service_operational_state` CHECK (((`origin` = _utf8mb4'LEGACY') or ((`status` = _utf8mb4'PENDING') and (`driver_id` is null) and (`started_at` is null)) or ((`status` = _utf8mb4'ASSIGNED') and (`driver_id` is not null) and (`started_at` is null)) or ((`status` = _utf8mb4'IN_PROGRESS') and (`driver_id` is not null) and (`vehicle_id` is not null) and (`started_at` is not null) and (`ended_at` is null)) or ((`status` = _utf8mb4'COMPLETED') and (`driver_id` is not null) and (`vehicle_id` is not null) and (`started_at` is not null) and (`ended_at` is not null)) or ((`status` = _utf8mb4'CANCELLED') and (`cancelled_at` is not null) and (`started_at` is null) and (`odometer_km` is null))))\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "cost_centers": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "establishment_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "code",
+          "COLUMN_TYPE": "varchar(30)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "name",
+          "COLUMN_TYPE": "varchar(200)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "active",
+          "COLUMN_TYPE": "tinyint(1)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "establishment_id",
+          "REFERENCED_TABLE_NAME": "establishments",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `cost_centers` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `establishment_id_code` (`establishment_id`,`code`),\n  KEY `establishment_id` (`establishment_id`),\n  CONSTRAINT `cost_centers_establishment_id_foreign` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "establishments": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "code",
+          "COLUMN_TYPE": "varchar(30)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "name",
+          "COLUMN_TYPE": "varchar(200)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "timezone",
+          "COLUMN_TYPE": "varchar(60)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "active",
+          "COLUMN_TYPE": "tinyint(1)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [],
+      "ddl": "CREATE TABLE `establishments` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `timezone` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'America/Santiago',\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `code` (`code`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "service_address_revisions": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "service_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "revision",
+          "COLUMN_TYPE": "int",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "address",
+          "COLUMN_TYPE": "varchar(350)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "actor_user_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "source",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "actor_user_id",
+          "REFERENCED_TABLE_NAME": "users",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "service_id",
+          "REFERENCED_TABLE_NAME": "bitacora_entries",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `service_address_revisions` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `service_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `revision` int NOT NULL,\n  `address` varchar(350) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `actor_user_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `source` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',\n  `created_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `service_id_revision` (`service_id`,`revision`),\n  KEY `service_id` (`service_id`),\n  KEY `actor_user_id` (`actor_user_id`),\n  CONSTRAINT `service_address_revisions_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `service_address_revisions_service_id_foreign` FOREIGN KEY (`service_id`) REFERENCES `bitacora_entries` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "service_legs": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "service_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "driver_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "vehicle_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "started_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "ended_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "departure_odometer_km",
+          "COLUMN_TYPE": "int unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "arrival_odometer_km",
+          "COLUMN_TYPE": "int unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "active_driver_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "STORED GENERATED",
+          "GENERATION_EXPRESSION": "if((`ended_at` is null),`driver_id`,NULL)"
+        },
+        {
+          "COLUMN_NAME": "active_vehicle_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "STORED GENERATED",
+          "GENERATION_EXPRESSION": "if((`ended_at` is null),`vehicle_id`,NULL)"
+        },
+        {
+          "COLUMN_NAME": "active_service_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "STORED GENERATED",
+          "GENERATION_EXPRESSION": "if((`ended_at` is null),`service_id`,NULL)"
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "driver_id",
+          "REFERENCED_TABLE_NAME": "users",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "service_id",
+          "REFERENCED_TABLE_NAME": "bitacora_entries",
+          "REFERENCED_COLUMN_NAME": "id"
+        },
+        {
+          "COLUMN_NAME": "vehicle_id",
+          "REFERENCED_TABLE_NAME": "vehicles",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `service_legs` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `service_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `driver_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `vehicle_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `started_at` datetime(3) NOT NULL,\n  `ended_at` datetime(3) DEFAULT NULL,\n  `departure_odometer_km` int unsigned DEFAULT NULL,\n  `arrival_odometer_km` int unsigned DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  `active_driver_id` char(36) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS (if((`ended_at` is null),`driver_id`,NULL)) STORED,\n  `active_vehicle_id` char(36) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS (if((`ended_at` is null),`vehicle_id`,NULL)) STORED,\n  `active_service_id` char(36) COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS (if((`ended_at` is null),`service_id`,NULL)) STORED,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `idx_active_driver` (`active_driver_id`),\n  UNIQUE KEY `idx_active_vehicle` (`active_vehicle_id`),\n  UNIQUE KEY `idx_active_service` (`active_service_id`),\n  KEY `service_id` (`service_id`),\n  KEY `driver_id` (`driver_id`),\n  KEY `vehicle_id` (`vehicle_id`),\n  KEY `service_id_started_at` (`service_id`,`started_at`),\n  CONSTRAINT `service_legs_driver_id_foreign` FOREIGN KEY (`driver_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `service_legs_service_id_foreign` FOREIGN KEY (`service_id`) REFERENCES `bitacora_entries` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `service_legs_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `service_leg_dates` CHECK (((`ended_at` is null) or (`ended_at` >= `started_at`))),\n  CONSTRAINT `service_leg_km` CHECK (((`departure_odometer_km` is null) or (`arrival_odometer_km` is null) or ((`departure_odometer_km` >= 0) and (`arrival_odometer_km` >= 0) and (`arrival_odometer_km` >= `departure_odometer_km`))))\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "sessions": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "user_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "token_hash",
+          "COLUMN_TYPE": "char(64)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "expires_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "revoked_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "last_seen_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "user_id",
+          "REFERENCED_TABLE_NAME": "users",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `sessions` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `user_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `token_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `expires_at` datetime(3) NOT NULL,\n  `revoked_at` datetime(3) DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  `last_seen_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `token_hash` (`token_hash`),\n  KEY `user_id_expires_at` (`user_id`,`expires_at`),\n  CONSTRAINT `sessions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "users": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "establishment_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "username",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "roster_code",
+          "COLUMN_TYPE": "varchar(30)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "full_name",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "password_hash",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "role",
+          "COLUMN_TYPE": "enum('DRIVER','ADMIN')",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "active",
+          "COLUMN_TYPE": "tinyint(1)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "failed_login_attempts",
+          "COLUMN_TYPE": "int",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "locked_until",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "rut",
+          "COLUMN_TYPE": "varchar(12)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "clave_unica_sub",
+          "COLUMN_TYPE": "varchar(100)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "auth_provider",
+          "COLUMN_TYPE": "enum('local','clave_unica')",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "establishment_id",
+          "REFERENCED_TABLE_NAME": "establishments",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `users` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `roster_code` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `full_name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `role` enum('DRIVER','ADMIN') COLLATE utf8mb4_unicode_ci NOT NULL,\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `failed_login_attempts` int NOT NULL DEFAULT '0',\n  `locked_until` datetime(3) DEFAULT NULL,\n  `rut` varchar(12) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `clave_unica_sub` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `auth_provider` enum('local','clave_unica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `username` (`username`),\n  UNIQUE KEY `rut` (`rut`),\n  UNIQUE KEY `clave_unica_sub` (`clave_unica_sub`),\n  UNIQUE KEY `establishment_id_roster_code` (`establishment_id`,`roster_code`),\n  KEY `establishment_id` (`establishment_id`),\n  CONSTRAINT `users_establishment_id_foreign` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "vehicles": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "PRI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "establishment_id",
+          "COLUMN_TYPE": "char(36)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "role_code",
+          "COLUMN_TYPE": "varchar(30)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "license_plate",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "UNI",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "current_odometer_km",
+          "COLUMN_TYPE": "int unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "vehicle_type",
+          "COLUMN_TYPE": "varchar(60)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "year",
+          "COLUMN_TYPE": "smallint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "model",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "active",
+          "COLUMN_TYPE": "tinyint(1)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        }
+      ],
+      "foreignKeys": [
+        {
+          "COLUMN_NAME": "establishment_id",
+          "REFERENCED_TABLE_NAME": "establishments",
+          "REFERENCED_COLUMN_NAME": "id"
+        }
+      ],
+      "ddl": "CREATE TABLE `vehicles` (\n  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `role_code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `license_plate` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `current_odometer_km` int unsigned DEFAULT NULL,\n  `vehicle_type` varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `year` smallint unsigned DEFAULT NULL,\n  `model` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `license_plate` (`license_plate`),\n  UNIQUE KEY `vehicle_tenant_role` (`establishment_id`,`role_code`),\n  KEY `establishment_id` (`establishment_id`),\n  CONSTRAINT `vehicles_establishment_id_foreign` FOREIGN KEY (`establishment_id`) REFERENCES `establishments` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `vehicle_odometer_nonnegative` CHECK (((`current_odometer_km` >= 0) or (`current_odometer_km` is null)))\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    }
+  }
+}

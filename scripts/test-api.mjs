@@ -26,6 +26,12 @@ async function cmd(id,command,version,body,cookie,port=8081){return request(`/ap
 try {
   for(let n=0;n<60;n++){try {if((await fetch(base+'/api/health')).ok) break;}catch{} await sleep(150);}
   check((await request('/api/services')).status===401,'Sin sesión: 401');
+  check((await request('/api/auth/me')).status===401,'Identidad protegida exige sesión');
+  const anonymous=await request('/api/auth/session');
+  check(anonymous.status===200&&anonymous.data.user===null&&Object.keys(anonymous.data).length===1,'Consulta inicial sin sesión no produce 401 ni expone datos');
+  check(anonymous.headers.get('cache-control')?.split(',').some(value=>value.trim()==='no-store'),'Identidad de sesión no almacenable en caché');
+  const invalidSession=await request('/api/auth/session',{cookie:'pulso_session=invalid'});
+  check(invalidSession.status===200&&invalidSession.data.user===null,'Cookie inválida no restaura identidad');
   const options=await request('/api/auth/options');
   check(options.data.claveUnicaEnabled===true && Object.keys(options.data).length===1,'Opciones públicas sin credenciales');
   const oauth=await request('/api/auth/clave-unica');
@@ -37,8 +43,22 @@ try {
   check((await request('/api/auth/clave-unica/callback?code=test-code&state='+encodeURIComponent(authorization.searchParams.get('state')),{cookie:oauthCookie})).status===400,'Estado OAuth consumido no reutilizable');
   const admin=await login('a-admin'), driver=await login('a-driver1'), driver2=await login('a-driver2'), other=await login('b-admin');
   check((await request('/api/auth/me',{cookie:admin})).data.user.role==='ADMIN','Contrato usuario');
+  const restored=await request('/api/auth/session',{cookie:admin});
+  check(restored.status===200&&restored.data.user.id==='a-admin'&&restored.data.user.establishmentId==='a','Consulta inicial restaura solo una sesión válida');
+  check(!('password_hash' in restored.data.user)&&!('token_hash' in restored.data.user),'Restauración sin hashes ni credenciales');
   check((await request('/api/auth/me',{cookie:other})).data.user.establishmentTimezone==='Pacific/Easter','Zona horaria de cada institución');
   check((await request('/api/admin/drivers',{cookie:driver})).status===403,'Chofer no consulta administración');
+  const driverProfilePath='/api/admin/drivers/a-driver1';
+  check((await request(driverProfilePath)).status===401,'Ficha del chofer exige sesión');
+  check((await request(driverProfilePath,{cookie:driver})).status===403,'Ficha administrativa solo para administración');
+  check((await request(driverProfilePath,{cookie:other})).status===404,'Ficha del chofer aislada por institución');
+  check((await request('/api/admin/drivers/a-admin',{cookie:admin})).status===404,'No confundir administrador con chofer');
+  check((await request('/api/admin/drivers/missing',{cookie:admin})).status===404,'Ficha inexistente responde sin datos');
+  const driverProfile=await request(driverProfilePath,{cookie:admin});
+  check(driverProfile.status===200&&driverProfile.data.driver.fullName==='a driver1'&&driverProfile.data.driver.username==='a-driver1'&&driverProfile.data.driver.establishmentName==='Establecimiento a'&&driverProfile.data.driver.active===true,'Datos de identificación del chofer');
+  check(!JSON.stringify(driverProfile.data).includes('password')&&!JSON.stringify(driverProfile.data).includes('rut')&&!JSON.stringify(driverProfile.data).includes('clave_unica'),'Ficha sin credenciales ni identificadores de autenticación');
+  const retiredProfile=await request('/api/admin/drivers/a-retired',{cookie:admin});
+  check(retiredProfile.status===200&&retiredProfile.data.driver.active===false,'Ficha histórica de chofer inactivo consultable por administración');
   check((await request('/api/exports/daily?from=2026-01-01&to=2026-12-31',{cookie:driver})).status===403,'Chofer no exporta');
   check((await request('/api/vehicles',{cookie:admin})).data.vehicles.length===2,'Catálogo aislado');
   check((await request('/api/admin/drivers',{cookie:admin})).data.drivers.length===3,'Choferes y disponibilidad');
@@ -47,9 +67,15 @@ try {
   let r=await request('/api/services',{cookie:driver,body:input});
   assert.equal(r.status,201,JSON.stringify(r.data)); let trip=r.data.entry; const id=trip.id;
   check(trip.status==='IN_PROGRESS'&&trip.legs[0].departureOdometerKm===1000,'Inicio automático');
+  check((await request(driverProfilePath,{cookie:admin})).data.driver.inService===true,'Ficha refleja chofer en servicio');
   const bad=await request('/api/services',{cookie:driver2,body:input}); check(bad.status===409,'Vehículo no simultáneo');
   check((await request('/api/services/mine',{cookie:driver2})).data.total===0,'Inicio fallido revierte creación');
-  check((await cmd(id,'cancel',trip.version,{reason:'No corresponde'},admin)).status===400,'No cancelar iniciado');
+  r=await cmd(id,'cancel',trip.version,{reason:'No corresponde'},admin);
+  check(r.status===400&&r.data.error==='CANCEL_ONLY_BEFORE_START','No cancelar iniciado');
+  const stillRunning=(await request('/api/services/'+id,{cookie:admin})).data.entry;
+  check(stillRunning.status==='IN_PROGRESS'&&stillRunning.version===trip.version&&stillRunning.legs[0].endedAt===null,'Cancelación rechazada conserva el viaje en curso');
+  const busyVehicle=(await request('/api/vehicles',{cookie:admin})).data.vehicles.find(v=>v.id==='a-vehicle1');
+  check((await request('/api/vehicles/'+busyVehicle.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:busyVehicle.updatedAt,currentOdometerKm:1005,reason:'Lectura contrastada'}})).status===409,'No ajustar odómetro durante un viaje');
   check((await cmd(id,'complete',trip.version,{odometerKm:999},driver)).data.error==='ODOMETER_BELOW_CURRENT','Km no retroceden');
   check((await cmd(id,'complete',trip.version,{odometerKm:1001.5},driver)).status===400,'Km enteros');
   check((await cmd(id,'address',trip.version,{serviceAddress:'Otra calle'},other)).status===404,'No editar otro establecimiento');
@@ -61,6 +87,8 @@ try {
   check(trip.legs[1].departureOdometerKm===50000,'Reasignación usa odómetro del nuevo vehículo');
   check((await cmd(id,'complete',trip.version,{odometerKm:50008},driver)).status===403,'Antiguo chofer no finaliza');
   check((await request('/api/services?vehicleId=a-vehicle1',{cookie:admin})).data.total===1,'Historial incluye vehículo previo');
+  const formerDriverTrips=await request('/api/services?driverId=a-driver1',{cookie:admin});
+  check(formerDriverTrips.data.total===1&&formerDriverTrips.data.entries[0].legs.some(leg=>leg.driver.id==='a-driver1'&&leg.vehicle.id==='a-vehicle1'),'Historial del chofer incluye su participación anterior y vehículo real');
   r=await cmd(id,'address',trip.version,{serviceAddress:'1 Sur 1010, Talca'},admin); trip=r.data.entry;
   check(trip.addressRevisions[0].address==='1 Sur 1010, Talca'&&trip.addressRevisions[0].actor.fullName==='a admin','Alerta dirección más reciente');
   check((await cmd(id,'address',0,{serviceAddress:'Vieja versión'},admin)).status===409,'Rechazo de versión antigua');
@@ -86,9 +114,30 @@ try {
   check((await request('/api/exports/daily?'+period,{cookie:admin})).data.services.length===1,'Excel excluye cancelados');
   check((await request('/api/services/mine',{cookie:driver})).data.active.length===0,'Viaje finalizado libera al chofer');
   r=await request('/api/vehicles',{cookie:admin}); const v=r.data.vehicles.find(v=>v.id==='a-vehicle1');
+  const historyPath='/api/vehicles/'+v.id+'/odometer-history';
+  check((await request(historyPath)).status===401,'Historial de kilometraje exige sesión');
+  check((await request(historyPath,{cookie:driver})).status===403,'Chofer no consulta correcciones administrativas');
+  check((await request(historyPath,{cookie:other})).status===404,'Correcciones de otro establecimiento inaccesibles');
+  check((await request('/api/vehicles/missing/odometer-history',{cookie:admin})).status===404,'Vehículo inexistente no expone auditoría');
+  const initialHistory=await request(historyPath,{cookie:admin});
+  check(initialHistory.status===200&&initialHistory.data.total===0&&initialHistory.data.corrections.length===0,'Viajes no aparecen como correcciones administrativas');
+  const oldHistory=await request('/api/vehicles/a-vehicle2/odometer-history',{cookie:admin});
+  check(oldHistory.status===200&&oldHistory.data.total===1&&oldHistory.data.corrections[0].reason==='Lectura histórica contrastada','Recupera correcciones anteriores y excluye cambios de rol');
   check((await request('/api/vehicles/'+v.id,{cookie:other,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,roleCode:'XXX'}})).status===404,'Vehículo ajeno no editable');
   check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,licensePlate:'CHANGED'}})).status===400,'Patente inmutable');
+  for (const [field,value] of Object.entries({roleCode:'OTRO',model:'Otro modelo',year:2025,vehicleType:'Otro tipo',active:false})) {
+    const rejected=await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,currentOdometerKm:1015,reason:'Intento de cambio', [field]:value}});
+    check(rejected.status===400&&rejected.data.error==='IMMUTABLE_VEHICLE_DATA','Solo kilometraje editable: '+field);
+  }
+  check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt}})).status===400,'No aceptar edición sin kilometraje');
   r=await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,currentOdometerKm:1015,reason:'Corrección contrastada'}}); check(r.status===200&&r.data.vehicle.currentOdometerKm===1015,'Ajuste administrativo');
+  const history=await request(historyPath,{cookie:admin});
+  check(history.status===200&&history.data.total===1&&history.data.corrections[0].previousOdometerKm===v.currentOdometerKm&&history.data.corrections[0].newOdometerKm===1015,'Corrección conserva lectura anterior y nueva');
+  check(history.data.corrections[0].reason==='Corrección contrastada'&&history.data.corrections[0].actor.fullName==='a admin'&&Number.isFinite(Date.parse(history.data.corrections[0].createdAt)),'Corrección consultable con motivo, autor y fecha UTC');
+  check(!JSON.stringify(history.data).includes('password_hash')&&!JSON.stringify(history.data).includes('before_data'),'Historial devuelve solo datos de la corrección');
+  const emptyPage=await request(historyPath+'?page=2',{cookie:admin});
+  check(emptyPage.data.page===2&&emptyPage.data.total===1&&emptyPage.data.corrections.length===0,'Paginación estable de correcciones');
+  check(r.data.vehicle.roleCode===v.roleCode&&r.data.vehicle.licensePlate===v.licensePlate&&r.data.vehicle.model===v.model&&r.data.vehicle.year===v.year&&r.data.vehicle.vehicleType===v.vehicleType&&r.data.vehicle.active===v.active,'Ajuste de kilometraje conserva datos del vehículo');
   check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,roleCode:'OLD'}})).status===409,'Versión vehículo protegida');
   check((await request('/api/services',{cookie:admin,origin:'https://untrusted.example'})).status===403,'Origen externo rechazado');
   check((await request('/api/services',{cookie:admin,body:{...input,vehicleId:['invalid']}})).status===400,'Identificadores malformados rechazados');
@@ -106,6 +155,8 @@ try {
   check(!first.data.entries.some(x=>second.data.entries.some(y=>x.id===y.id)),'Páginas sin registros repetidos');
   await request('/api/auth/logout',{cookie:driver,body:{}});
   check((await request('/api/auth/me',{cookie:driver})).status===401,'Logout invalida sesión');
+  const revoked=await request('/api/auth/session',{cookie:driver});
+  check(revoked.status===200&&revoked.data.user===null,'Sesión revocada no se restaura');
   for(let n=0;n<5;n++) check((await request('/api/auth/login',{body:{username:'a-driver3',password:'wrong-password'}})).status===401,'Intento fallido registrado');
   check((await request('/api/auth/login',{body:{username:'a-driver3',password:'test-password'}})).status===423,'Bloqueo de intentos persiste tras respuesta de error');
   console.log(`PHP/MySQL: ${checks} verificaciones de integración correctas.`);

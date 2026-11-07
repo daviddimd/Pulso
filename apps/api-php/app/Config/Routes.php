@@ -16,6 +16,7 @@ $routes->group('api', ['namespace' => 'App\Controllers'], static function ($rout
     // Auth routes
     $routes->group('auth', static function ($routes) {
         $routes->get('options', 'AuthController::options');
+        $routes->get('session', 'AuthController::session');
         $routes->post('login', 'AuthController::login');
         $routes->get('me', 'AuthController::me');
         $routes->post('logout', 'AuthController::logout');
@@ -39,6 +40,7 @@ $routes->group('api', ['namespace' => 'App\Controllers'], static function ($rout
     // Vehicles routes
     $routes->group('vehicles', static function ($routes) {
         $routes->get('/', 'VehiclesController::index');
+        $routes->get('(:segment)/odometer-history', 'VehiclesController::odometerHistory/$1');
         $routes->post('/', 'VehiclesController::create');
         $routes->patch('(:segment)', 'VehiclesController::update/$1');
     });
@@ -46,6 +48,7 @@ $routes->group('api', ['namespace' => 'App\Controllers'], static function ($rout
     // Admin routes
     $routes->group('admin', static function ($routes) {
         $routes->get('drivers', 'AdminController::drivers');
+        $routes->get('drivers/(:segment)', 'AdminController::driver/$1');
     });
 
     // Cost Centers routes

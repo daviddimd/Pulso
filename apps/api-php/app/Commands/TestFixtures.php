@@ -15,9 +15,14 @@ final class TestFixtures extends BaseCommand {
         if (!SecurityLib::verifyPassword('test-password', $hash) || SecurityLib::verifyPassword('wrong-password', $hash)) throw new \RuntimeException('Falló la compatibilidad Argon2 con Node');
         foreach(['a','b'] as $tenant) {
             $db->table('establishments')->insert(['id'=>$tenant,'code'=>$tenant,'name'=>'Establecimiento '.$tenant,'timezone'=>$tenant==='a'?'America/Santiago':'Pacific/Easter','active'=>1,'created_at'=>$now,'updated_at'=>$now]);
-            foreach(['admin','driver1','driver2','driver3'] as $role) $db->table('users')->insert(['id'=>$tenant.'-'.$role,'establishment_id'=>$tenant,'username'=>$tenant.'-'.$role,'full_name'=>$tenant.' '.$role,'role'=>$role==='admin'?'ADMIN':'DRIVER','active'=>1,'password_hash'=>$hash,'created_at'=>$now,'updated_at'=>$now]);
+            foreach(['admin','driver1','driver2','driver3','retired'] as $role) $db->table('users')->insert(['id'=>$tenant.'-'.$role,'establishment_id'=>$tenant,'username'=>$tenant.'-'.$role,'full_name'=>$tenant.' '.$role,'role'=>$role==='admin'?'ADMIN':'DRIVER','active'=>$role==='retired'?0:1,'password_hash'=>$hash,'created_at'=>$now,'updated_at'=>$now]);
             foreach([1=>1000,2=>50000] as $i=>$km) $db->table('vehicles')->insert(['id'=>$tenant.'-vehicle'.$i,'establishment_id'=>$tenant,'role_code'=>'7-'.$i,'license_plate'=>$tenant.'-PLATE'.$i,'model'=>'Modelo '.$i,'year'=>2020,'current_odometer_km'=>$km,'active'=>1,'created_at'=>$now,'updated_at'=>$now]);
             $db->table('cost_centers')->insert(['id'=>$tenant.'-center','establishment_id'=>$tenant,'code'=>'101','name'=>'Centro '.$tenant,'active'=>1]);
+            // Historical format: one odometer correction and one unrelated identity edit.
+            $before=['current_odometer_km'=>49900,'role_code'=>'7-2'];
+            $after=['current_odometer_km'=>50000,'role_code'=>'7-2','reason'=>'Lectura histórica contrastada'];
+            $db->table('audit_logs')->insert(['actor_user_id'=>$tenant.'-admin','entity_type'=>'VEHICLE','entity_id'=>$tenant.'-vehicle2','action'=>'UPDATE','before_data'=>json_encode($before),'after_data'=>json_encode($after),'created_at'=>$now]);
+            $db->table('audit_logs')->insert(['actor_user_id'=>$tenant.'-admin','entity_type'=>'VEHICLE','entity_id'=>$tenant.'-vehicle2','action'=>'UPDATE','before_data'=>json_encode($after),'after_data'=>json_encode(['current_odometer_km'=>50000,'role_code'=>'7-OLD','reason'=>null]),'created_at'=>$now]);
         }
         echo "Fixtures de dos establecimientos listas.\n";
     }

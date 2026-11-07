@@ -7,7 +7,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "php": "node scripts/php.mjs",
-    "test": "node scripts/test-api.mjs",
+    "test": "node --test scripts/test-session.mjs && node scripts/test-api.mjs",
     "lint": "npm --prefix apps/web run lint"
   },
   "keywords": [],

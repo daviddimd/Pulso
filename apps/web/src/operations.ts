@@ -20,7 +20,8 @@ const messages: Record<string, string> = {
   ADMIN_REASSIGNMENT_REQUIRED: "Solo administración puede cambiar un vehículo ya asignado.",
   DRIVER_UNAVAILABLE: "El chofer seleccionado no está activo.",
   VEHICULO_NO_DISPONIBLE: "El vehículo seleccionado no está activo.",
-  VEHICLE_IN_SERVICE: "Cierra el tramo activo antes de ajustar kilometraje o desactivar el vehículo.",
+  VEHICLE_IN_SERVICE: "Finaliza el viaje antes de ajustar el kilometraje del vehículo.",
+  IMMUTABLE_VEHICLE_DATA: "Los datos del vehículo son fijos. Solo puedes ajustar su kilometraje.",
   ASSIGNMENT_UNCHANGED: "Selecciona un chofer o vehículo diferente.",
   HANDOVER_ODOMETER_REQUIRED: "Registra el kilometraje del vehículo que termina el tramo.",
   INVALID_TRANSITION: "Esta operación ya no corresponde al estado del servicio.",
@@ -35,12 +36,13 @@ export async function api<T>(path: string, body?: unknown, method = "POST", sign
 }
 export type Vehicle = { id: string; roleCode: string; licensePlate: string; currentOdometerKm: number | null; vehicleType: string | null; model: string | null; year: number | null; active: boolean; inService: boolean; updatedAt: string };
 export type Driver = { id: string; fullName: string; serviceLegs: { serviceId: string }[] };
+export type DriverDetails = { id: string; fullName: string; username: string; rosterCode: string | null; active: boolean; establishmentName: string; inService: boolean };
 export type Service = {
   costCenterId: string | null; costCenter: CostCenter | null;
   id: string; version: number; status: string; serviceAddress: string; originalAddress: string; actionPerformed: string;
   driverId: string | null; vehicleId: string | null; driver: { fullName: string } | null; vehicle: { roleCode: string; licensePlate: string; model: string | null } | null;
   startedAt: string | null; endedAt: string | null; voidReason: string | null; distanceKm: number | null;
-  legs: { id: string; startedAt: string; endedAt: string | null; departureOdometerKm: number | null; arrivalOdometerKm: number | null; driver: { fullName: string }; vehicle: { roleCode: string; licensePlate: string; model: string | null } }[];
+  legs: { id: string; startedAt: string; endedAt: string | null; departureOdometerKm: number | null; arrivalOdometerKm: number | null; driver: { id: string; fullName: string }; vehicle: { roleCode: string; licensePlate: string; model: string | null } }[];
   addressRevisions: { id: string; revision: number; address: string; createdAt: string; source: string; actor: { fullName: string } | null }[];
 };
 export type CostCenter = { id: string; code: string; name: string; active: boolean };

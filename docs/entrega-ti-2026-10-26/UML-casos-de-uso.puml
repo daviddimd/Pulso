@@ -1,0 +1,39 @@
+@startuml
+left to right direction
+actor Chofer
+actor "Administración" as Admin
+actor "Operador TI" as TI
+actor "Clave Única" as CU
+rectangle Pulso {
+  usecase "CU-01\nIniciar y cerrar sesión" as CU01
+  usecase "CU-02\nRegistrar servicio" as CU02
+  usecase "CU-03\nConsultar servicios e historial" as CU03
+  usecase "CU-04\nIniciar viaje" as CU04
+  usecase "CU-05\nFinalizar viaje" as CU05
+  usecase "CU-06\nAsignar o reasignar recursos" as CU06
+  usecase "CU-07\nCorregir dirección" as CU07
+  usecase "CU-08\nAsignar centro de costos" as CU08
+  usecase "CU-09\nCancelar antes del inicio" as CU09
+  usecase "CU-10\nRegistrar vehículo" as CU10
+  usecase "CU-11\nAjustar kilometraje" as CU11
+  usecase "CU-12\nConsultar centros y exportar" as CU12
+  usecase "CU-13\nProvisionar establecimiento" as CU13
+}
+Chofer -- CU01
+Admin -- CU01
+Chofer -- CU02
+Admin -- CU02
+Chofer -- CU03
+Admin -- CU03
+Chofer -- CU04
+Chofer -- CU05
+Admin -- CU06
+Admin -- CU07
+Admin -- CU08
+Admin -- CU09
+Admin -- CU10
+Admin -- CU11
+Admin -- CU12
+TI -- CU13
+CU -- CU01
+@enduml

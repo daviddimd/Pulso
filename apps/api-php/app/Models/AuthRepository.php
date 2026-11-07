@@ -6,6 +6,14 @@ use DomainException;
 
 final class AuthRepository
 {
+    public function sessionUser(mixed $token): ?array {
+        if (!is_string($token) || $token==='') return null;
+        $row=Database::connect()->table('sessions s')->select('u.*, e.name as establishment_name, e.timezone as establishment_timezone')
+            ->join('users u','u.id=s.user_id')->join('establishments e','e.id=u.establishment_id')
+            ->where('s.token_hash',SecurityLib::hashToken($token))->where('s.expires_at >',gmdate('Y-m-d H:i:s'))
+            ->where('s.revoked_at',null)->where('u.active',1)->where('e.active',1)->get()->getRowArray();
+        return $row ? $this->payload($row,['id'=>$row['establishment_id'],'name'=>$row['establishment_name'],'timezone'=>$row['establishment_timezone']]) : null;
+    }
     private function transaction(callable $work): mixed {
         $db=Database::connect(); $db->transException(true)->transBegin();
         try {

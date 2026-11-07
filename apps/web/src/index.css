@@ -30,6 +30,7 @@
   --shadow-soft: 0 2px 3px #112c3404, 0 8px 28px #112c3406;
   --shadow-popover: 0 0 0 1px #112c340a, 0 8px 32px #112c341c;
   --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
   color: var(--color-text);
   background: var(--color-bg);
 }

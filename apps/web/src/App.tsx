@@ -7,6 +7,7 @@ import {
 import "./App.css";
 import { Icon } from "./components/Icon";
 import { setInstitutionTimezone } from "./institution";
+import { createSessionLoader } from "./session";
 
 import { PulsoMark } from "./components/PulsoMark";
 import { ThemeToggle } from "./components/ThemeToggle";
@@ -32,6 +33,8 @@ type AuthenticatedUser =
 const API_URL =
   import.meta.env.VITE_API_URL ??
   "";
+
+const loadSession = createSessionLoader<{ user: AuthenticatedUser | null }>(`${API_URL}/api/auth/session`);
 
 function App() {
   const [claveUnicaEnabled, setClaveUnicaEnabled] = useState(false);
@@ -82,36 +85,24 @@ function App() {
   ] = useState(true);
 
   useEffect(() => {
+    let active = true;
     async function restoreSession() {
       try {
-        const response = await fetch(
-          `${API_URL}/api/auth/me`,
-          {
-            method: "GET",
-            credentials: "include",
-          },
-        );
-
-        if (!response.ok) {
-          return;
+        const data = await loadSession();
+        if (active && data.user) {
+          setInstitutionTimezone(data.user.establishmentTimezone);
+          setUser(data.user);
         }
-
-        const data =
-          (await response.json()) as {
-            user: AuthenticatedUser;
-          };
-
-        setInstitutionTimezone(data.user.establishmentTimezone);
-        setUser(data.user);
       } catch {
         // Si el backend no está disponible,
         // se muestra el login.
       } finally {
-        setCheckingSession(false);
+        if (active) setCheckingSession(false);
       }
     }
 
     void restoreSession();
+    return () => { active = false; };
   }, []);
 
   async function handleSubmit(
@@ -249,31 +240,22 @@ function App() {
   return (
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
-        <header className="login-header"><div className="brand"><PulsoMark size="small" /><strong>Pulso<span>Movilización institucional</span></strong></div><ThemeToggle /></header>
+        <header className="login-header"><div className="brand"><PulsoMark size="small" /><strong>Pulso<span>Oficina de Movilización</span></strong></div><ThemeToggle /></header>
         <div className="login-content">
-          <div className="login-heading"><span className="login-eyebrow"><span />TU ESPACIO DE TRABAJO</span><h1 id="login-title">Bienvenido a Pulso.</h1><p>Ingresa para continuar con tu jornada.</p></div>
+          <div className="login-heading"><h1 id="login-title">Acceso al sistema</h1><p>Ingresa con las credenciales asignadas por administración.</p></div>
           <form className="login-form" onSubmit={handleSubmit}>
             <label>Usuario<input type="text" name="username" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Tu nombre de usuario" value={username} onChange={event=>setUsername(event.target.value)} disabled={loading} required /></label>
             <label>Contraseña<input type="password" name="password" autoComplete="current-password" placeholder="Tu contraseña" value={password} onChange={event=>setPassword(event.target.value)} disabled={loading} required /></label>
             {error && <div className="login-error" role="alert">{error}</div>}
-            <button type="submit" disabled={loading}>{loading ? "Ingresando…" : "Ingresar"}<Icon name="arrow" /></button>
+            <button type="submit" disabled={loading}>{loading ? "Ingresando…" : "Ingresar"}</button>
             {claveUnicaEnabled && <button className="login-clave" type="button" onClick={()=>void loginClaveUnica()} disabled={loading}>Iniciar sesión con ClaveÚnica<Icon name="shield" /></button>}
           </form>
-          <p className="login-access-note"><Icon name="shield" />Acceso para personal autorizado</p>
         </div>
-        <footer className="login-footer d-flex align-items-center justify-content-between gap-2"><span>Pulso · Gestión de movilización</span><span>Una jornada más simple.</span></footer>
+        <footer className="login-footer d-flex align-items-center justify-content-center gap-2"><span>Acceso restringido</span><span aria-hidden="true">·</span><span>Personal autorizado</span></footer>
       </section>
-      <section className="login-visual" aria-label="Gestión de movilización">
-        <span className="login-visual-label">CADA TRAYECTO CUENTA</span>
-        <h2>Movilización,<br />bien coordinada.</h2>
-        <p>Personas, vehículos y recorridos.<br />En un solo lugar.</p>
-        <div className="login-route-art" aria-hidden="true">
-          <svg className="login-route-line" viewBox="0 0 640 400" fill="none"><path d="M60 310h170c95 0 20-220 145-220h190" stroke="currentColor" strokeWidth="2" strokeDasharray="5 7"/><circle cx="60" cy="310" r="9" fill="currentColor"/><circle cx="565" cy="90" r="9" fill="currentColor"/><circle cx="565" cy="90" r="23" stroke="currentColor" opacity=".3"/></svg>
-          <div className="login-art-stop login-art-start"><span className="login-art-icon"><Icon name="car" /></span><div><small>EL INICIO</small><strong>Todo listo para salir.</strong><span>Un vehículo. Un propósito.</span></div></div>
-          <div className="login-art-stop login-art-end"><span className="login-art-icon"><Icon name="check" /></span><div><small>EL RECORRIDO</small><strong>Cada kilómetro, registrado.</strong><span>Información clara y ordenada.</span></div></div>
-          <span className="login-art-coordinates">ORGANIZAR · ACOMPAÑAR · REGISTRAR</span>
-        </div>
-        <div className="login-visual-footer"><span className="login-visual-mark"><Icon name="activity" /></span><span>Una herramienta al servicio<br />de quienes están en movimiento.</span></div>
+      <section className="login-visual" aria-label="Oficina de Movilización">
+        <svg className="login-pulse" viewBox="0 0 900 240" aria-hidden="true"><path d="M0 125H190C210 125 218 101 232 101C246 101 254 125 272 125H310L334 158L369 48L402 145L424 125H470C490 125 499 94 518 94C537 94 545 125 568 125H900" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <div className="login-institution"><PulsoMark size="small" /><div><strong>Oficina de Movilización</strong><span>Sistema de gestión de vehículos de apoyo</span></div></div>
       </section>
     </main>
   );

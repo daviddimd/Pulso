@@ -10,6 +10,10 @@ class AuthController extends BaseApiController
         $this->response->setCookie('pulso_session',$session['token'],$session['ttl'],'','/','',ENVIRONMENT==='production',true,'Strict');
     }
     public function options() { return $this->jsonResponse(['claveUnicaEnabled'=>ClaveUnicaClient::configured()]); }
+    public function session() {
+        $this->response->setHeader('Cache-Control','no-store');
+        return $this->attempt(fn()=> $this->jsonResponse(['user'=>(new AuthRepository())->sessionUser($this->request->getCookie('pulso_session'))]));
+    }
     public function login() {
         return $this->attempt(function () {
             $b=$this->getRequestBody();
