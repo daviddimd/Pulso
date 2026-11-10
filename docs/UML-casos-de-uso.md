@@ -1,6 +1,6 @@
 # Casos de uso UML
 
-Fecha: 2026-10-26. Versión 1.0.
+Fecha: 2026-11-10. Versión 2.0.
 
 ## CU-01 Iniciar y cerrar sesión
 
@@ -28,7 +28,7 @@ Actores: Chofer, Administración
 
 Precondición: Sesión válida.
 
-Flujo: Filtrar por estado; consultar datos y tramos. Administración consulta también por chofer o vehículo.
+Flujo: Filtrar por estado; consultar datos y lecturas del viaje. Administración consulta también por chofer o vehículo.
 
 Excepciones: Chofer solo ve sus servicios actuales/asignados. Administración solo consulta su institución.
 
@@ -38,7 +38,7 @@ Actores: Chofer
 
 Precondición: ASSIGNED y chofer actual; vehículo activo y odómetro conocido.
 
-Flujo: Tomar automáticamente odómetro actual, abrir tramo y pasar a IN_PROGRESS.
+Flujo: Tomar automáticamente odómetro actual, registrar salida y pasar a IN_PROGRESS.
 
 Excepciones: Recurso ocupado: rechazo. El administrador no puede iniciar en nombre del chofer. Un cambio de vehículo ya asignado requiere administración.
 
@@ -48,7 +48,7 @@ Actores: Chofer
 
 Precondición: IN_PROGRESS; chofer actualmente asignado.
 
-Flujo: Ingresar odómetro de llegada; validar; cerrar tramo, actualizar vehículo y marcar COMPLETED.
+Flujo: Ingresar odómetro de llegada; validar; registrar llegada, actualizar vehículo y marcar COMPLETED.
 
 Excepciones: Lectura inferior o versión antigua: rechazo sin cierre. Administración no ejecuta complete por el chofer.
 
@@ -58,7 +58,7 @@ Actores: Administración
 
 Precondición: PENDING, ASSIGNED o IN_PROGRESS.
 
-Flujo: Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar tramo y abrir otro.
+Flujo: Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el viaje actual e iniciar otro enlazado en la misma transacción.
 
 Excepciones: Sin cambios: rechazo. Recurso ocupado o lectura inválida: rollback. No modifica la identidad del vehículo.
 
@@ -86,7 +86,7 @@ Excepciones: No se aceptan centros ajenos ni inactivos. El centro puede asignars
 
 Actores: Administración
 
-Precondición: PENDING o ASSIGNED, started_at nulo y ningún tramo.
+Precondición: PENDING o ASSIGNED, started_at nulo.
 
 Flujo: Registrar motivo y pasar a CANCELLED con fecha.
 
@@ -106,7 +106,7 @@ Excepciones: Identificadores duplicados o valores inválidos: rechazo. Tras crea
 
 Actores: Administración
 
-Precondición: Vehículo de su institución sin tramo activo y updatedAt vigente.
+Precondición: Vehículo de su institución sin viaje activo y updatedAt vigente.
 
 Flujo: Ingresar nueva lectura entera y motivo; guardar con auditoría.
 

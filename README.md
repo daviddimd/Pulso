@@ -29,4 +29,12 @@ Configurar el directorio público del sitio en `apps/api-php/public`, PHP 8.4.27
 
 La semilla `PulsoSeeder` es exclusiva para prototipo y no se ejecuta en producción. ClaveÚnica requiere credenciales institucionales; el acceso local mantiene los usuarios existentes. Los respaldos locales de la migración están excluidos de Git.
 
+## Actualización del modelo de viajes
+
+Para actualizar una instalación existente, detén la aplicación, verifica un respaldo restaurable de MySQL y ejecuta `php spark migrate` desde `apps/api-php`. La migración del 10 de noviembre convierte las claves operativas a folios numéricos y separa los tramos históricos en viajes enlazados. Los folios cambian. Para volver al esquema anterior, restaura el respaldo en una base separada.
+
+En operación, registrar un relevo cierra el viaje activo con la lectura del móvil saliente e inicia otro en la misma transacción. El catálogo de roles se consulta con `php spark pulso:roles` y se mantiene pasando `codigo nombre descripcion`. Los permisos de esta versión corresponden a los perfiles Administración y Chofer.
+
+Consulta los [documentos de la revisión MER](docs/entrega-ti-2026-11-10/LEEME.md) o descarga el [paquete completo](output/Pulso-Entregables-TI-2026-11-10.zip).
+
 Actualización de seguridad del 21 de octubre de 2026: instalar PHP 8.4.27+ y Node.js 24.22.1+. Configurar `session.upload_progress.enabled=0` en el PHP del servidor según el aviso adicional del 23 de octubre; `public/.user.ini` incluye ese ajuste para los SAPIs que lo admiten. En Apache con mod_php debe aplicarlo TI en su configuración PHP. Reiniciar los procesos que usaban versiones anteriores.

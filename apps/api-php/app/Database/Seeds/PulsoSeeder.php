@@ -2,7 +2,7 @@
 
 namespace App\Database\Seeds;
 
-use App\Libraries\SecurityLib;
+use App\Libraries\{SecurityLib, UserAccounts, VehicleCatalog};
 use CodeIgniter\Database\Seeder;
 
 class PulsoSeeder extends Seeder
@@ -14,11 +14,9 @@ class PulsoSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         // 1. Establishments: Hospital Regional de Talca
-        $estId = 'c0000000-0000-4000-8000-000000000001';
-        $estExists = $db->table('establishments')->where('id', $estId)->get()->getRow();
+        $estExists = $db->table('establecimientos')->where('code', 'HRT')->get()->getRow();
         if (!$estExists) {
-            $db->table('establishments')->insert([
-                'id'         => $estId,
+            $db->table('establecimientos')->insert([
                 'code'       => 'HRT',
                 'name'       => 'Hospital Regional de Talca',
                 'timezone'   => 'America/Santiago',
@@ -28,23 +26,22 @@ class PulsoSeeder extends Seeder
             ]);
         }
 
+        $estId = $estExists ? (string)$estExists->id_establecimiento : (string)$db->insertID();
+
         // 2. Administrator account (admin / admin)
-        $adminExists = $db->table('users')->where('username', 'admin')->get()->getRow();
+        $adminExists = $db->table('usuarios')->where('username', 'admin')->get()->getRow();
         if (!$adminExists) {
-            $adminId = 'a0000000-0000-4000-8000-000000000001';
-            $db->table('users')->insert([
-                'id'                    => $adminId,
+            UserAccounts::create($db, [
                 'establishment_id'      => $estId,
                 'username'              => 'admin',
                 'full_name'             => 'Administrador Movilización',
                 'password_hash'         => SecurityLib::hashPassword('admin'),
-                'role'                  => 'ADMIN',
                 'active'                => 1,
                 'failed_login_attempts' => 0,
                 'auth_provider'         => 'local',
                 'created_at'            => $now,
                 'updated_at'            => $now,
-            ]);
+            ], 'ADMIN');
         }
 
         // 3. Official Drivers (MOV2026-01 to MOV2026-09) with password 'chofer'
@@ -62,24 +59,21 @@ class PulsoSeeder extends Seeder
 
         $driverPasswordHash = SecurityLib::hashPassword('chofer');
 
-        foreach ($drivers as $i => $d) {
-            $exists = $db->table('users')->where('username', $d['username'])->get()->getRow();
+        foreach ($drivers as $d) {
+            $exists = $db->table('usuarios')->where('username', $d['username'])->get()->getRow();
             if (!$exists) {
-                $driverId = sprintf('a0000000-0000-4000-8000-0000000000%02d', $i + 2);
-                $db->table('users')->insert([
-                    'id'                    => $driverId,
+                UserAccounts::create($db, [
                     'establishment_id'      => $estId,
                     'username'              => $d['username'],
                     'roster_code'           => $d['rosterCode'],
                     'full_name'             => $d['fullName'],
                     'password_hash'         => $driverPasswordHash,
-                    'role'                  => 'DRIVER',
                     'active'                => 1,
                     'failed_login_attempts' => 0,
                     'auth_provider'         => 'local',
                     'created_at'            => $now,
                     'updated_at'            => $now,
-                ]);
+                ], 'DRIVER');
             }
         }
 
@@ -95,23 +89,19 @@ class PulsoSeeder extends Seeder
             ['roleCode' => '7-541', 'licensePlate' => 'GVXV-89-3', 'vehicleType' => 'CAMIONETA', 'year' => 2015, 'model' => 'D-MAX 2.5', 'currentOdometerKm' => 105600],
         ];
 
-        foreach ($vehicles as $i => $v) {
-            $exists = $db->table('vehicles')->where('role_code', $v['roleCode'])->get()->getRow();
+        foreach ($vehicles as $v) {
+            $exists = $db->table('vehiculos')->where('establishment_id', $estId)->where('codigo_movil', $v['roleCode'])->get()->getRow();
             if (!$exists) {
-                $vehId = sprintf('b0000000-0000-4000-8000-0000000000%02d', $i + 1);
-                $db->table('vehicles')->insert([
-                    'id'                  => $vehId,
+                $db->table('vehiculos')->insert([
                     'establishment_id'    => $estId,
-                    'role_code'           => $v['roleCode'],
+                    'codigo_movil'           => $v['roleCode'],
                     'license_plate'       => $v['licensePlate'],
-                    'vehicle_type'        => $v['vehicleType'],
                     'year'                => $v['year'],
-                    'model'               => $v['model'],
                     'current_odometer_km' => $v['currentOdometerKm'],
                     'active'              => 1,
                     'created_at'          => $now,
                     'updated_at'          => $now,
-                ]);
+                ] + VehicleCatalog::ids($db, $v['vehicleType'], $v['model']));
             }
         }
 
@@ -119,16 +109,14 @@ class PulsoSeeder extends Seeder
         $costCenters = json_decode(file_get_contents(__DIR__ . '/cost-centers.json'), true, 512, JSON_THROW_ON_ERROR);
 
         foreach ($costCenters as $cc) {
-            $exists = $db->table('cost_centers')
+            $exists = $db->table('centros_costos')
                 ->where('establishment_id', $estId)
                 ->where('code', $cc['code'])
                 ->get()
                 ->getRow();
 
             if (!$exists) {
-                $ccId = sprintf('c0000000-0000-4000-8000-%012s', str_pad($cc['code'], 12, '0', STR_PAD_LEFT));
-                $db->table('cost_centers')->insert([
-                    'id'               => $ccId,
+                $db->table('centros_costos')->insert([
                     'establishment_id' => $estId,
                     'code'             => $cc['code'],
                     'name'             => $cc['name'],

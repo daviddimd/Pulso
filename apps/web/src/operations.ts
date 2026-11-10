@@ -23,7 +23,7 @@ const messages: Record<string, string> = {
   VEHICLE_IN_SERVICE: "Finaliza el viaje antes de ajustar el kilometraje del vehículo.",
   IMMUTABLE_VEHICLE_DATA: "Los datos del vehículo son fijos. Solo puedes ajustar su kilometraje.",
   ASSIGNMENT_UNCHANGED: "Selecciona un chofer o vehículo diferente.",
-  HANDOVER_ODOMETER_REQUIRED: "Registra el kilometraje del vehículo que termina el tramo.",
+  HANDOVER_ODOMETER_REQUIRED: "Registra el kilometraje del vehículo que termina el viaje.",
   INVALID_TRANSITION: "Esta operación ya no corresponde al estado del servicio.",
   ENTRY_NOT_OPEN: "El servicio ya no está en curso.",
   INVALID_SERVICE_DATA: "Revisa los datos obligatorios y sus formatos.",
@@ -34,7 +34,7 @@ export async function api<T>(path: string, body?: unknown, method = "POST", sign
   if (!response.ok) throw new ApiError(response.status, messages[data.error] ?? "No fue posible completar la operación.");
   return data as T;
 }
-export type Vehicle = { id: string; roleCode: string; licensePlate: string; currentOdometerKm: number | null; vehicleType: string | null; model: string | null; year: number | null; active: boolean; inService: boolean; updatedAt: string };
+export type Vehicle = { id: string; roleCode: string; licensePlate: string; currentOdometerKm: number | null; vehicleType: string | null; make: string | null; model: string | null; year: number | null; active: boolean; inService: boolean; updatedAt: string };
 export type Driver = { id: string; fullName: string; serviceLegs: { serviceId: string }[] };
 export type DriverDetails = { id: string; fullName: string; username: string; rosterCode: string | null; active: boolean; establishmentName: string; inService: boolean };
 export type Service = {
@@ -42,6 +42,7 @@ export type Service = {
   id: string; version: number; status: string; serviceAddress: string; originalAddress: string; actionPerformed: string;
   driverId: string | null; vehicleId: string | null; driver: { fullName: string } | null; vehicle: { roleCode: string; licensePlate: string; model: string | null } | null;
   startedAt: string | null; endedAt: string | null; voidReason: string | null; distanceKm: number | null;
+  previousTripId: string | null;
   legs: { id: string; startedAt: string; endedAt: string | null; departureOdometerKm: number | null; arrivalOdometerKm: number | null; driver: { id: string; fullName: string }; vehicle: { roleCode: string; licensePlate: string; model: string | null } }[];
   addressRevisions: { id: string; revision: number; address: string; createdAt: string; source: string; actor: { fullName: string } | null }[];
 };

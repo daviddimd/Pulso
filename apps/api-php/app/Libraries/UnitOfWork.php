@@ -12,7 +12,7 @@ final class UnitOfWork
         $db = Database::connect();
         $db->transException(true)->transBegin();
         try {
-            $tenant = $db->query('SELECT id FROM establishments WHERE id = ? AND active = 1 FOR UPDATE', [$actor['establishmentId']])->getRowArray();
+            $tenant = $db->query('SELECT id_establecimiento FROM establecimientos WHERE id_establecimiento = ? AND active = 1 FOR UPDATE', [$actor['establishmentId']])->getRowArray();
             if (!$tenant) throw new DomainException('FORBIDDEN', 403);
             $result = $work($db);
             if (!$db->transStatus()) throw new \RuntimeException('Transaction failed');
@@ -35,9 +35,12 @@ final class UnitOfWork
         if (!is_int($value) || $value < 0 || $value > 10000000) throw new DomainException('INVALID_SERVICE_DATA', 400);
         return $value;
     }
+    public static function validId(string $value): bool {
+        return preg_match('/^[1-9][0-9]{0,9}$/D', $value) === 1 && (float)$value <= 4294967295;
+    }
     public static function id(mixed $value): ?string {
         if ($value === null) return null;
-        if (!is_string($value) || $value === '' || strlen($value) > 36) throw new DomainException('INVALID_SERVICE_DATA', 400);
+        if (!is_string($value) || !self::validId($value)) throw new DomainException('INVALID_SERVICE_DATA', 400);
         return $value;
     }
 }

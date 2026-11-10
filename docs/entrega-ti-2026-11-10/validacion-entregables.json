@@ -1,0 +1,54 @@
+{
+  "fecha": "2026-11-10",
+  "bpmnXsdOMG": "válido",
+  "idsUnicos": true,
+  "alcanzabilidadBpmn": "todos los nodos conectan inicio y fin",
+  "procesos": [
+    {
+      "proceso": "Preparar",
+      "nodos": 12,
+      "secuencias": 13
+    },
+    {
+      "proceso": "Ejecutar",
+      "nodos": 10,
+      "secuencias": 11
+    },
+    {
+      "proceso": "Reportar",
+      "nodos": 8,
+      "secuencias": 8
+    }
+  ],
+  "entidades": 13,
+  "pkNumericasAutoincrementales": true,
+  "casosUml": 13,
+  "pdfs": [
+    {
+      "archivo": "00-Pulso-Corroboracion-Tecnica.pdf",
+      "paginas": 3,
+      "sha256": "dfe49fc42da43302059f9ebec7269ec52ec8956e268e5cd661571e79aff8bfd3"
+    },
+    {
+      "archivo": "01-Pulso-Procesos-BPMN.pdf",
+      "paginas": 3,
+      "sha256": "ff76825359c26e91c411e3488af4993c8b27d2e90437e4930f67e923c1bfcd45"
+    },
+    {
+      "archivo": "02-Pulso-Modelo-Entidad-Relacion.pdf",
+      "paginas": 10,
+      "sha256": "6db0ae98f61f60f9221dc922b4db1cdfaadeb64e521c875e7311a52447ba3a1a"
+    },
+    {
+      "archivo": "03-Pulso-Casos-de-Uso-UML.pdf",
+      "paginas": 5,
+      "sha256": "4a133b4e514082e8a733e9ebfce65b545cd15647184fa6ffd542a47046b9c3e6"
+    },
+    {
+      "archivo": "04-Pulso-Requerimientos-MoSCoW.pdf",
+      "paginas": 7,
+      "sha256": "15bd86e3f85d07e08d1c037f73ab43f5b29ca3f41fc620298e4303516758e8a1"
+    }
+  ],
+  "limites": "Esta validación documental no acredita una instalación hospitalaria, carga regional ni autenticación real contra Clave Única."
+}

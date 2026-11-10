@@ -9,7 +9,7 @@ class ServicesController extends BaseApiController
         if ($this->getAuthUser()['role'] !== 'ADMIN') return $this->errorResponse('FORBIDDEN',403);
         return $this->mine();
     }
-    public function mine() { return $this->jsonResponse((new ServiceRepository($this->getAuthUser()))->listing($this->request->getGet())); }
+    public function mine() { return $this->attempt(fn()=> $this->jsonResponse((new ServiceRepository($this->getAuthUser()))->listing($this->request->getGet()))); }
     public function create() {
         return $this->attempt(function () {
             $user = $this->getAuthUser();
@@ -24,8 +24,11 @@ class ServicesController extends BaseApiController
     public function command(string $id,string $cmd) {
         return $this->attempt(function () use ($id,$cmd) {
             $user=$this->getAuthUser();
-            (new ServiceEngine())->executeCommand($cmd,$id,$this->getRequestBody(),$user);
-            return $this->jsonResponse(['entry'=>(new ServiceRepository($user))->find($id)]);
+            $nextId = (new ServiceEngine())->executeCommand($cmd,$id,$this->getRequestBody(),$user);
+            $repo = new ServiceRepository($user);
+            $result = ['entry'=>$repo->find($id)];
+            if ($nextId !== null) $result['nextEntry'] = $repo->find($nextId);
+            return $this->jsonResponse($result);
         });
     }
     public function audit(string $id) {

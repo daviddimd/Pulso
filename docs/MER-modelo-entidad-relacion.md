@@ -1,29 +1,33 @@
 # MER y diccionario
 
-Fecha: 2026-10-26. Versión 1.0.
+Fecha: 2026-11-10. Versión 2.0.
 
 ## Fuente
 
-Metadatos de las nueve entidades de la base local. Ver MER-Pulso.svg, modelo-metadatos.json y modelo-estructura.sql.
+Metadatos de 13 entidades de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.
 
 ## Integridad
 
-Cada usuario pertenece a un establecimiento. El acceso operacional deriva la institución de la sesión, nunca de un parámetro libre del navegador.
+Las 13 tablas operativas tienen una PK entera autoincrementable con nombre id_[entidad en singular]. El MER emplea los nombres del esquema físico. migrations es infraestructura de CodeIgniter.
 
-Usuarios, vehículos, centros y servicios tienen establishment_id. Tramos y revisiones se filtran a través del servicio; sesiones a través del usuario. Las FK físicas son por id; la coherencia entre instituciones se valida en los repositorios y ServiceEngine.
+Cada viaje tiene un único chofer y vehículo cuando se inicia. El destino se almacena como destino y la actividad como actividad. Antes de iniciar se puede cambiar la asignación sin crear otro viaje.
 
-Unicidad: users.username, users.rut, users.clave_unica_sub y vehicles.license_plate son globales; users(establishment_id, roster_code), vehicles(establishment_id, role_code), cost_centers(establishment_id, code) son por institución.
+En un relevo se registra la llegada del viaje saliente y se abre otro en la misma transacción. El nuevo viaje enlaza al anterior mediante id_viaje_anterior. La FK y su unicidad limitan la cadena a un sucesor por viaje.
 
-Columnas active_driver_id, active_vehicle_id y active_service_id son IF(ended_at IS NULL, id_recurso, NULL), STORED y UNIQUE: un tramo activo por recurso y servicio.
+Las columnas generadas active_driver_id y active_vehicle_id tienen índices únicos. Se activan con status IN_PROGRESS y previenen dos viajes simultáneos para el mismo recurso.
 
-ServiceEngine aplica transacción y bloqueo de fila del establecimiento. version protege servicios; expectedUpdatedAt protege ajustes de kilometraje.
+departure_odometer_km y arrival_odometer_km son las lecturas del viaje. Distancia = llegada menos salida cuando se conocen ambas. Al cerrar, la aplicación actualiza el odómetro del vehículo. Los ajustes administrativos requieren motivo y quedan auditados.
 
-Las lecturas deben ser enteras no negativas; llegada no inferior a salida ni al odómetro actual del vehículo. La suma de diferencias de los tramos determina el recorrido, incluso con cambio de móvil.
+Cada revisión de dirección tiene un viaje y puede referenciar un usuario autor. Se registra el destino al crear y después de cada corrección, con número de revisión y fecha. El autor puede faltar en el legado.
 
-CANCELLED exige no haber iniciado el servicio; no existen nuevos kilómetros de cancelación ni viajes de regreso asociados. La migración conserva una excepción origin=LEGACY para registros históricos: no habilita cancelaciones en ruta mediante la API.
+Los usuarios pertenecen a un establecimiento y a un funcionario de la misma institución. roles reemplaza al ENUM. Las definiciones se mantienen por consola con php spark pulso:roles. Los permisos operativos vigentes son Administración y Chofer.
 
-Rol, patente, tipo, modelo, año y activación del vehículo no son editables por PATCH. Solo kilometraje, con motivo y sin tramo abierto.
+Los perfiles Jefatura de Movilización, Despacho y Solicitante están en el catálogo. Sus permisos, aprobaciones y pantallas requieren definición funcional. Los funcionarios admiten unidad institucional.
 
-audit_logs.entity_id es una referencia lógica polimórfica, no FK. La auditoría es de aplicación, no un registro criptográficamente inmutable ni protección frente a administradores de la base.
+La identificación vehicular usa codigo_movil, patente y referencias a catálogos de tipos y modelos. Cada modelo tiene una marca. Si el dato histórico de marca falta, el catálogo la registra como desconocida.
 
-La tabla migrations del framework es infraestructura y queda fuera del MER funcional. El SQL adjunto es estructura de referencia; la instalación debe utilizar las migraciones CodeIgniter.
+El aislamiento operacional deriva de la sesión y se valida en los repositorios y en ServiceEngine. El acceso por establecimiento es una regla de aplicación además de las relaciones físicas de pertenencia.
+
+No se cancelan viajes iniciados. Las cancelaciones anteriores y los kilometrajes históricos desconocidos se conservan como LEGACY. Un viaje histórico con varios tramos se transforma en viajes enlazados, con sus lecturas y recursos originales.
+
+El SQL es una referencia del esquema verificado. Para actualizar una instalación existente use las migraciones CodeIgniter con la aplicación detenida y un respaldo previo verificado.

@@ -1,0 +1,483 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="PulsoDefinitions" targetNamespace="https://pulso.local/modelos" exporter="Pulso / entrega TI" exporterVersion="1.0">
+  <bpmn:process id="Preparar" name="Registro, asignación e inicio" isExecutable="false">
+    <bpmn:startEvent id="Preparar_s" name="Necesidad de traslado">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:outgoing>Preparar_f0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Preparar_crear" name="Usuario: registrar destino, actividad y CC">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f0</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Preparar_guardar" name="Sistema: guardar PENDING / ASSIGNED">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f1</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Preparar_cancelarQ" name="¿Cancelar antes de iniciar?">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f2</bpmn:incoming>
+      <bpmn:incoming>Preparar_f7</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f3</bpmn:outgoing>
+      <bpmn:outgoing>Preparar_f5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Preparar_cancelar" name="Admin: cancelar con motivo">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f3</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Preparar_cancelado" name="CANCELLED">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Preparar_asignadoQ" name="¿Chofer asignado?">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f5</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f6</bpmn:outgoing>
+      <bpmn:outgoing>Preparar_f8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Preparar_asignar" name="Admin: asignar chofer / vehículo">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f6</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Preparar_iniciar" name="Chofer: iniciar con vehículo">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f8</bpmn:incoming>
+      <bpmn:incoming>Preparar_f12</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Preparar_validar" name="Sistema: validar recursos y odómetro inicial">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f9</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Preparar_validoQ" name="¿Disponible y lectura conocida?">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f10</bpmn:incoming>
+      <bpmn:outgoing>Preparar_f11</bpmn:outgoing>
+      <bpmn:outgoing>Preparar_f12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Preparar_curso" name="IN_PROGRESS Viaje activo">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Preparar_f11</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Preparar_f0" sourceRef="Preparar_s" targetRef="Preparar_crear" name="" />
+    <bpmn:sequenceFlow id="Preparar_f1" sourceRef="Preparar_crear" targetRef="Preparar_guardar" name="" />
+    <bpmn:sequenceFlow id="Preparar_f2" sourceRef="Preparar_guardar" targetRef="Preparar_cancelarQ" name="" />
+    <bpmn:sequenceFlow id="Preparar_f3" sourceRef="Preparar_cancelarQ" targetRef="Preparar_cancelar" name="Sí" />
+    <bpmn:sequenceFlow id="Preparar_f4" sourceRef="Preparar_cancelar" targetRef="Preparar_cancelado" name="" />
+    <bpmn:sequenceFlow id="Preparar_f5" sourceRef="Preparar_cancelarQ" targetRef="Preparar_asignadoQ" name="No" />
+    <bpmn:sequenceFlow id="Preparar_f6" sourceRef="Preparar_asignadoQ" targetRef="Preparar_asignar" name="No" />
+    <bpmn:sequenceFlow id="Preparar_f7" sourceRef="Preparar_asignar" targetRef="Preparar_cancelarQ" name="Revisar" />
+    <bpmn:sequenceFlow id="Preparar_f8" sourceRef="Preparar_asignadoQ" targetRef="Preparar_iniciar" name="Sí" />
+    <bpmn:sequenceFlow id="Preparar_f9" sourceRef="Preparar_iniciar" targetRef="Preparar_validar" name="" />
+    <bpmn:sequenceFlow id="Preparar_f10" sourceRef="Preparar_validar" targetRef="Preparar_validoQ" name="" />
+    <bpmn:sequenceFlow id="Preparar_f11" sourceRef="Preparar_validoQ" targetRef="Preparar_curso" name="Sí" />
+    <bpmn:sequenceFlow id="Preparar_f12" sourceRef="Preparar_validoQ" targetRef="Preparar_iniciar" name="No: corregir / esperar" />
+  </bpmn:process>
+  <bpmn:process id="Ejecutar" name="Recorrido, eventual relevo y finalización" isExecutable="false">
+    <bpmn:startEvent id="Ejecutar_s" name="IN_PROGRESS">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:outgoing>Ejecutar_f0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Ejecutar_recorrer" name="Chofer: realizar el servicio">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f0</bpmn:incoming>
+      <bpmn:incoming>Ejecutar_f4</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Ejecutar_relevoQ" name="¿Se necesita reasignación?">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f1</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f2</bpmn:outgoing>
+      <bpmn:outgoing>Ejecutar_f5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Ejecutar_reasignar" name="Admin: elegir recursos y registrar km del relevo">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f2</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Ejecutar_reabrir" name="Sistema: cerrar viaje y abrir otro enlazado">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f3</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Ejecutar_finalizar" name="Chofer: finalizar con odómetro de llegada">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f5</bpmn:incoming>
+      <bpmn:incoming>Ejecutar_f8</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Ejecutar_validar" name="Sistema: validar lecturas de kilometraje">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f6</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Ejecutar_validoQ" name="¿Lectura válida?">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f7</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f8</bpmn:outgoing>
+      <bpmn:outgoing>Ejecutar_f9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Ejecutar_cerrar" name="Sistema: cerrar viaje, actualizar km y auditar">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f9</bpmn:incoming>
+      <bpmn:outgoing>Ejecutar_f10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Ejecutar_fin" name="COMPLETED">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Ejecutar_f10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Ejecutar_f0" sourceRef="Ejecutar_s" targetRef="Ejecutar_recorrer" name="" />
+    <bpmn:sequenceFlow id="Ejecutar_f1" sourceRef="Ejecutar_recorrer" targetRef="Ejecutar_relevoQ" name="" />
+    <bpmn:sequenceFlow id="Ejecutar_f2" sourceRef="Ejecutar_relevoQ" targetRef="Ejecutar_reasignar" name="Sí" />
+    <bpmn:sequenceFlow id="Ejecutar_f3" sourceRef="Ejecutar_reasignar" targetRef="Ejecutar_reabrir" name="" />
+    <bpmn:sequenceFlow id="Ejecutar_f4" sourceRef="Ejecutar_reabrir" targetRef="Ejecutar_recorrer" name="Continuar" />
+    <bpmn:sequenceFlow id="Ejecutar_f5" sourceRef="Ejecutar_relevoQ" targetRef="Ejecutar_finalizar" name="No" />
+    <bpmn:sequenceFlow id="Ejecutar_f6" sourceRef="Ejecutar_finalizar" targetRef="Ejecutar_validar" name="" />
+    <bpmn:sequenceFlow id="Ejecutar_f7" sourceRef="Ejecutar_validar" targetRef="Ejecutar_validoQ" name="" />
+    <bpmn:sequenceFlow id="Ejecutar_f8" sourceRef="Ejecutar_validoQ" targetRef="Ejecutar_finalizar" name="No: corregir" />
+    <bpmn:sequenceFlow id="Ejecutar_f9" sourceRef="Ejecutar_validoQ" targetRef="Ejecutar_cerrar" name="Sí" />
+    <bpmn:sequenceFlow id="Ejecutar_f10" sourceRef="Ejecutar_cerrar" targetRef="Ejecutar_fin" name="" />
+  </bpmn:process>
+  <bpmn:process id="Reportar" name="Reportes de servicios y centros de costos" isExecutable="false">
+    <bpmn:startEvent id="Reportar_s" name="Necesidad de reporte">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:outgoing>Reportar_f0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Reportar_periodo" name="Admin: elegir período y tipo de reporte">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f0</bpmn:incoming>
+      <bpmn:outgoing>Reportar_f1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Reportar_consulta" name="Sistema: consultar datos del establecimiento">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f1</bpmn:incoming>
+      <bpmn:outgoing>Reportar_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Reportar_tipoQ" name="¿Formato?">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f2</bpmn:incoming>
+      <bpmn:outgoing>Reportar_f3</bpmn:outgoing>
+      <bpmn:outgoing>Reportar_f4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Reportar_excel" name="Navegador: generar Excel con SheetJS">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f3</bpmn:incoming>
+      <bpmn:outgoing>Reportar_f5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Reportar_pdf" name="Servidor: generar PDF con FPDF">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f4</bpmn:incoming>
+      <bpmn:outgoing>Reportar_f6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Reportar_unir" name="">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f5</bpmn:incoming>
+      <bpmn:incoming>Reportar_f6</bpmn:incoming>
+      <bpmn:outgoing>Reportar_f7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Reportar_fin" name="Reporte descargado">
+      <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
+      <bpmn:incoming>Reportar_f7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Reportar_f0" sourceRef="Reportar_s" targetRef="Reportar_periodo" name="" />
+    <bpmn:sequenceFlow id="Reportar_f1" sourceRef="Reportar_periodo" targetRef="Reportar_consulta" name="" />
+    <bpmn:sequenceFlow id="Reportar_f2" sourceRef="Reportar_consulta" targetRef="Reportar_tipoQ" name="" />
+    <bpmn:sequenceFlow id="Reportar_f3" sourceRef="Reportar_tipoQ" targetRef="Reportar_excel" name="Excel" />
+    <bpmn:sequenceFlow id="Reportar_f4" sourceRef="Reportar_tipoQ" targetRef="Reportar_pdf" name="PDF" />
+    <bpmn:sequenceFlow id="Reportar_f5" sourceRef="Reportar_excel" targetRef="Reportar_unir" name="" />
+    <bpmn:sequenceFlow id="Reportar_f6" sourceRef="Reportar_pdf" targetRef="Reportar_unir" name="" />
+    <bpmn:sequenceFlow id="Reportar_f7" sourceRef="Reportar_unir" targetRef="Reportar_fin" name="" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Preparar_diagram">
+    <bpmndi:BPMNPlane id="Preparar_plane" bpmnElement="Preparar">
+      <bpmndi:BPMNShape id="Preparar_s_shape" bpmnElement="Preparar_s">
+        <dc:Bounds x="35" y="125" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-25" y="160" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_crear_shape" bpmnElement="Preparar_crear">
+        <dc:Bounds x="110" y="103" width="175" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_guardar_shape" bpmnElement="Preparar_guardar">
+        <dc:Bounds x="330" y="103" width="165" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_cancelarQ_shape" bpmnElement="Preparar_cancelarQ">
+        <dc:Bounds x="550" y="115" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="490" y="70" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_cancelar_shape" bpmnElement="Preparar_cancelar">
+        <dc:Bounds x="520" y="300" width="150" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_cancelado_shape" bpmnElement="Preparar_cancelado">
+        <dc:Bounds x="730" y="320" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="670" y="355" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_asignadoQ_shape" bpmnElement="Preparar_asignadoQ">
+        <dc:Bounds x="690" y="115" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="630" y="70" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_asignar_shape" bpmnElement="Preparar_asignar">
+        <dc:Bounds x="850" y="275" width="165" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_iniciar_shape" bpmnElement="Preparar_iniciar">
+        <dc:Bounds x="815" y="103" width="160" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_validar_shape" bpmnElement="Preparar_validar">
+        <dc:Bounds x="815" y="440" width="185" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_validoQ_shape" bpmnElement="Preparar_validoQ">
+        <dc:Bounds x="590" y="450" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="445" y="405" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Preparar_curso_shape" bpmnElement="Preparar_curso">
+        <dc:Bounds x="390" y="460" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="330" y="495" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Preparar_f0_edge" bpmnElement="Preparar_f0">
+        <di:waypoint x="65" y="140.0" />
+        <di:waypoint x="110" y="140.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f1_edge" bpmnElement="Preparar_f1">
+        <di:waypoint x="285" y="140.5" />
+        <di:waypoint x="330" y="140.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f2_edge" bpmnElement="Preparar_f2">
+        <di:waypoint x="495" y="140.5" />
+        <di:waypoint x="550" y="140.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f3_edge" bpmnElement="Preparar_f3">
+        <di:waypoint x="575" y="165" />
+        <di:waypoint x="575" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f4_edge" bpmnElement="Preparar_f4">
+        <di:waypoint x="670" y="335.0" />
+        <di:waypoint x="730" y="335.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f5_edge" bpmnElement="Preparar_f5">
+        <di:waypoint x="600" y="140.0" />
+        <di:waypoint x="690" y="140.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f6_edge" bpmnElement="Preparar_f6">
+        <di:waypoint x="715" y="165" />
+        <di:waypoint x="715" y="310" />
+        <di:waypoint x="850" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f7_edge" bpmnElement="Preparar_f7">
+        <di:waypoint x="932" y="275" />
+        <di:waypoint x="932" y="225" />
+        <di:waypoint x="575" y="225" />
+        <di:waypoint x="575" y="165" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f8_edge" bpmnElement="Preparar_f8">
+        <di:waypoint x="740" y="140.0" />
+        <di:waypoint x="815" y="140.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f9_edge" bpmnElement="Preparar_f9">
+        <di:waypoint x="895" y="178" />
+        <di:waypoint x="1045" y="178" />
+        <di:waypoint x="1045" y="475" />
+        <di:waypoint x="1000" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f10_edge" bpmnElement="Preparar_f10">
+        <di:waypoint x="815" y="475" />
+        <di:waypoint x="640" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f11_edge" bpmnElement="Preparar_f11">
+        <di:waypoint x="590" y="475" />
+        <di:waypoint x="420" y="475" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Preparar_f12_edge" bpmnElement="Preparar_f12">
+        <di:waypoint x="615" y="450" />
+        <di:waypoint x="615" y="395" />
+        <di:waypoint x="1065" y="395" />
+        <di:waypoint x="1065" y="140" />
+        <di:waypoint x="975" y="140" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="Ejecutar_diagram">
+    <bpmndi:BPMNPlane id="Ejecutar_plane" bpmnElement="Ejecutar">
+      <bpmndi:BPMNShape id="Ejecutar_s_shape" bpmnElement="Ejecutar_s">
+        <dc:Bounds x="35" y="135" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-25" y="170" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_recorrer_shape" bpmnElement="Ejecutar_recorrer">
+        <dc:Bounds x="110" y="113" width="160" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_relevoQ_shape" bpmnElement="Ejecutar_relevoQ">
+        <dc:Bounds x="330" y="125" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="270" y="80" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_reasignar_shape" bpmnElement="Ejecutar_reasignar">
+        <dc:Bounds x="290" y="305" width="195" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_reabrir_shape" bpmnElement="Ejecutar_reabrir">
+        <dc:Bounds x="555" y="305" width="180" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_finalizar_shape" bpmnElement="Ejecutar_finalizar">
+        <dc:Bounds x="460" y="113" width="185" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_validar_shape" bpmnElement="Ejecutar_validar">
+        <dc:Bounds x="700" y="113" width="175" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_validoQ_shape" bpmnElement="Ejecutar_validoQ">
+        <dc:Bounds x="945" y="125" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="955" y="80" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_cerrar_shape" bpmnElement="Ejecutar_cerrar">
+        <dc:Bounds x="850" y="440" width="190" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Ejecutar_fin_shape" bpmnElement="Ejecutar_fin">
+        <dc:Bounds x="680" y="462" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="620" y="497" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Ejecutar_f0_edge" bpmnElement="Ejecutar_f0">
+        <di:waypoint x="65" y="150.0" />
+        <di:waypoint x="110" y="150.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f1_edge" bpmnElement="Ejecutar_f1">
+        <di:waypoint x="270" y="150.5" />
+        <di:waypoint x="330" y="150.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f2_edge" bpmnElement="Ejecutar_f2">
+        <di:waypoint x="355" y="175" />
+        <di:waypoint x="355" y="305" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f3_edge" bpmnElement="Ejecutar_f3">
+        <di:waypoint x="485" y="342.5" />
+        <di:waypoint x="555" y="342.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f4_edge" bpmnElement="Ejecutar_f4">
+        <di:waypoint x="645" y="305" />
+        <di:waypoint x="645" y="245" />
+        <di:waypoint x="190" y="245" />
+        <di:waypoint x="190" y="188" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f5_edge" bpmnElement="Ejecutar_f5">
+        <di:waypoint x="380" y="150.0" />
+        <di:waypoint x="460" y="150.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f6_edge" bpmnElement="Ejecutar_f6">
+        <di:waypoint x="645" y="150.5" />
+        <di:waypoint x="700" y="150.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f7_edge" bpmnElement="Ejecutar_f7">
+        <di:waypoint x="875" y="150.5" />
+        <di:waypoint x="945" y="150.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f8_edge" bpmnElement="Ejecutar_f8">
+        <di:waypoint x="970" y="125" />
+        <di:waypoint x="970" y="65" />
+        <di:waypoint x="552" y="65" />
+        <di:waypoint x="552" y="113" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f9_edge" bpmnElement="Ejecutar_f9">
+        <di:waypoint x="970" y="175" />
+        <di:waypoint x="970" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Ejecutar_f10_edge" bpmnElement="Ejecutar_f10">
+        <di:waypoint x="850" y="477" />
+        <di:waypoint x="710" y="477" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="Reportar_diagram">
+    <bpmndi:BPMNPlane id="Reportar_plane" bpmnElement="Reportar">
+      <bpmndi:BPMNShape id="Reportar_s_shape" bpmnElement="Reportar_s">
+        <dc:Bounds x="35" y="135" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-25" y="170" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_periodo_shape" bpmnElement="Reportar_periodo">
+        <dc:Bounds x="110" y="113" width="185" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_consulta_shape" bpmnElement="Reportar_consulta">
+        <dc:Bounds x="345" y="113" width="190" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_tipoQ_shape" bpmnElement="Reportar_tipoQ">
+        <dc:Bounds x="600" y="125" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="80" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_excel_shape" bpmnElement="Reportar_excel">
+        <dc:Bounds x="745" y="65" width="190" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_pdf_shape" bpmnElement="Reportar_pdf">
+        <dc:Bounds x="745" y="285" width="190" height="75" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_unir_shape" bpmnElement="Reportar_unir">
+        <dc:Bounds x="995" y="195" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="935" y="150" width="170" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reportar_fin_shape" bpmnElement="Reportar_fin">
+        <dc:Bounds x="1005" y="450" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="945" y="485" width="150" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Reportar_f0_edge" bpmnElement="Reportar_f0">
+        <di:waypoint x="65" y="150.0" />
+        <di:waypoint x="110" y="150.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f1_edge" bpmnElement="Reportar_f1">
+        <di:waypoint x="295" y="150.5" />
+        <di:waypoint x="345" y="150.5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f2_edge" bpmnElement="Reportar_f2">
+        <di:waypoint x="535" y="150.5" />
+        <di:waypoint x="600" y="150.0" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f3_edge" bpmnElement="Reportar_f3">
+        <di:waypoint x="625" y="125" />
+        <di:waypoint x="625" y="102" />
+        <di:waypoint x="745" y="102" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f4_edge" bpmnElement="Reportar_f4">
+        <di:waypoint x="625" y="175" />
+        <di:waypoint x="625" y="322" />
+        <di:waypoint x="745" y="322" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f5_edge" bpmnElement="Reportar_f5">
+        <di:waypoint x="935" y="102" />
+        <di:waypoint x="1020" y="102" />
+        <di:waypoint x="1020" y="195" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f6_edge" bpmnElement="Reportar_f6">
+        <di:waypoint x="935" y="322" />
+        <di:waypoint x="1020" y="322" />
+        <di:waypoint x="1020" y="245" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reportar_f7_edge" bpmnElement="Reportar_f7">
+        <di:waypoint x="1020" y="245" />
+        <di:waypoint x="1020" y="450" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

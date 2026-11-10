@@ -26,7 +26,7 @@ type Profile = { kind: "driver" | "vehicle"; id: string; name: string };
 type OpenProfile = (profile: Profile) => void;
 const values = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); return new FormData(event.currentTarget); };
 const text = (f: FormData, key: string) => String(f.get(key) ?? "");
-const vehicleLabel = (v: { model: string | null; roleCode: string }) => `${v.model || "Modelo no registrado"} · Rol ${v.roleCode}`;
+const vehicleLabel = (v: { model: string | null; roleCode: string }) => `${v.model || "Modelo no registrado"} · Móvil ${v.roleCode}`;
 const driverVehicleLabel = (entry: Service, driverId: string) => {
   const driven = [...new Set(entry.legs.filter(leg => leg.driver.id === driverId).map(leg => vehicleLabel(leg.vehicle)))];
   return driven.length ? driven.join(' / ') : entry.vehicle ? vehicleLabel(entry.vehicle) : 'Vehículo por asignar';
@@ -361,7 +361,7 @@ function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, 
   async function audit() { try { setLogs((await api<{ logs: NonNullable<typeof logs> }>(`/api/services/${s.id}/audit`)).logs); setAuditError(""); } catch { setAuditError("No fue posible cargar la trazabilidad."); } }
   const formatKm = (km: number | null) => km === null ? "Sin registro" : new Intl.NumberFormat("es-CL").format(km) + " km";
   return <article className="ops-card ops-service-card" data-service-state={s.status}>
-    <div className="ops-card-title"><span className="ops-badge" data-state={s.status}><span className="ops-state-dot" />{labels[s.status] ?? s.status}</span>{admin && <span className="ops-service-reference">#{s.id.slice(0, 8).toUpperCase()}</span>}</div>
+    <div className="ops-card-title"><span className="ops-badge" data-state={s.status}><span className="ops-state-dot" />{labels[s.status] ?? s.status}</span>{admin && <span className="ops-service-reference">#{s.id}</span>}</div>
     <h2>{s.actionPerformed}</h2>
     {admin && s.addressRevisions.length > 1 && <p className="ops-change" role="status">Dirección corregida por {s.addressRevisions[0]?.actor?.fullName ?? "administración"} · {time(s.addressRevisions[0]?.createdAt ?? null)}</p>}
     <dl className="ops-service-summary">
@@ -378,27 +378,29 @@ function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, 
       {!admin && s.status === "IN_PROGRESS" && <button className="ops-primary-action" onClick={() => open("complete")}>Finalizar viaje</button>}
       {admin && <details className="ops-service-tools"><summary>Gestionar servicio<Icon name="chevron" /></summary><div className="ops-actions"><button onClick={() => open("cost-center")}>Asignar centro de costos</button>
       {admin && <button onClick={() => open("address")}>Corregir dirección</button>}
-      {admin && ["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(s.status) && <button onClick={() => open("assignment")}>Asignar / reasignar</button>}
+      {admin && ["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(s.status) && <button onClick={() => open("assignment")}>{s.status === "IN_PROGRESS" ? "Registrar relevo" : "Asignar / reasignar"}</button>}
       {admin && ["PENDING", "ASSIGNED"].includes(s.status) && !s.startedAt && !s.legs.length && <button className="ops-danger-action" onClick={() => open("cancel")}>Cancelar servicio</button>}
       </div></details>}
     </div>
     {edit && <form className="ops-form ops-edit" onSubmit={e => void submit(e)} onChange={() => setFormError("")}>
+      {edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS" && <p>Se cerrará este viaje con el kilometraje indicado y se iniciará otro con el chofer y el vehículo seleccionados.</p>}
       {edit.command === "cost-center" && <CostCenterField centers={costCenters} initial={edit.snapshot.costCenterId ?? UNDEFINED_COST_CENTER} />}
       {edit.snapshot.version !== s.version && <p role="alert">El servicio cambió mientras editabas. Cierra este formulario y vuelve a abrirlo con los datos actualizados.</p>}
       {edit.command === "address" && <AddressField label="Dirección corregida" initial={edit.snapshot.serviceAddress} />}
       {edit.command === "assignment" && <label>Chofer<select name="driver" defaultValue={edit.snapshot.driverId ?? ""} required><option value="">Seleccionar</option>{driverOptions(drivers)}</select></label>}
       {["assignment", "start"].includes(edit.command) && <label>Vehículo<select name="vehicle" defaultValue={edit.snapshot.vehicleId ?? ""} disabled={edit.command === "start" && !!edit.snapshot.vehicleId} required={edit.command === "start" || edit.snapshot.status === "IN_PROGRESS"}><option value="">Sin asignar</option>{vehicleOptions(vehicles)}</select>{edit.command === "start" && edit.snapshot.vehicleId && <small>Para cambiar el vehículo asignado, solicita la reasignación a administración.</small>}</label>}
-      {(edit.command === "complete" || edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS") && <label>{edit.command === "assignment" ? "Kilometraje actual del vehículo que termina el tramo" : "Kilometraje de llegada"}<input name="km" type="number" inputMode="numeric" min="0" max="5000000" step="1" placeholder="Ej. 52 480" required /></label>}
+      {(edit.command === "complete" || edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS") && <label>{edit.command === "assignment" ? "Kilometraje actual del vehículo que termina el viaje" : "Kilometraje de llegada"}<input name="km" type="number" inputMode="numeric" min="0" max="5000000" step="1" placeholder="Ej. 52 480" required /></label>}
       {edit.command === "cancel" && <label>Motivo de cancelación<textarea name="reason" minLength={3} maxLength={500} required /></label>}
       {formError && <p ref={errorRef} className="driver-error ops-form-error" role="alert">{formError}</p>}
-      <div className="ops-actions"><button className="ops-primary-action" disabled={edit.snapshot.version !== s.version}>{({ "cost-center": "Guardar centro", start: "Confirmar inicio", complete: "Confirmar finalización", assignment: "Guardar asignación", address: "Guardar dirección", cancel: "Confirmar cancelación" } as Record<string, string>)[edit.command] ?? "Confirmar"}</button><button type="button" onClick={() => { setFormError(""); setEdit(null); }}>Cerrar formulario</button></div>
+      <div className="ops-actions"><button className="ops-primary-action" disabled={edit.snapshot.version !== s.version}>{({ "cost-center": "Guardar centro", start: "Confirmar inicio", complete: "Confirmar finalización", assignment: edit.snapshot.status === "IN_PROGRESS" ? "Cerrar e iniciar otro viaje" : "Guardar asignación", address: "Guardar dirección", cancel: "Confirmar cancelación" } as Record<string, string>)[edit.command] ?? "Confirmar"}</button><button type="button" onClick={() => { setFormError(""); setEdit(null); }}>Cerrar formulario</button></div>
     </form>}
     <details className="ops-history"><summary>Detalles del servicio<Icon name="chevron" /></summary>
       <p>Referencia: {s.id}</p>
+      {s.previousTripId && <p>Continuación del viaje #{s.previousTripId}</p>}
       <dl className="ops-facts"><div><dt>Inicio</dt><dd>{time(s.startedAt)}</dd></div><div><dt>Finalización</dt><dd>{time(s.endedAt)}</dd></div></dl>
       <h3>Direcciones registradas</h3>
       <ol>{s.addressRevisions.map(r => <li key={r.id}>{r.address} · {r.actor?.fullName ?? (r.source === "LEGACY" ? "Registro histórico" : "Sin autor disponible")} · {time(r.createdAt)}</li>)}</ol>
-      {s.legs.length > 0 && <h3>Recorridos</h3>}
+      {s.legs.length > 0 && <h3>Lecturas del viaje</h3>}
       {s.legs.map(l => <section className="ops-leg" key={l.id}><p><strong>{l.driver.fullName}</strong> · {vehicleLabel(l.vehicle)}</p><dl className="ops-facts"><div><dt>Salida</dt><dd>{time(l.startedAt)}</dd></div><div><dt>Llegada</dt><dd>{time(l.endedAt)}</dd></div><div><dt>Odómetro de salida</dt><dd>{formatKm(l.departureOdometerKm)}</dd></div><div><dt>Odómetro de llegada</dt><dd>{formatKm(l.arrivalOdometerKm)}</dd></div></dl></section>)}
       {admin && <><button onClick={() => void audit()}>Consultar trazabilidad</button>{auditError && <p role="alert">{auditError}</p>}{logs?.map(l => <p key={l.id}>{time(l.createdAt)} · {l.action} · {l.actor?.fullName ?? "Sin autor"}</p>)}</>}
     </details>
@@ -408,11 +410,14 @@ function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, 
 function VehiclePanel({ vehicles, mutate, onProfile }: { vehicles: Vehicle[]; mutate: Mutation; onProfile: OpenProfile }) {
   async function create(event: FormEvent<HTMLFormElement>) {
     const form = event.currentTarget; const f = values(event);
-    if (await mutate("/api/vehicles", { roleCode: text(f, "role"), licensePlate: text(f, "plate"), vehicleType: text(f, "type") || null, model: text(f, "model") || null, year: text(f, "year") ? Number(text(f, "year")) : null, currentOdometerKm: Number(text(f, "km")) })) form.reset();
+    if (await mutate("/api/vehicles", { roleCode: text(f, "role"), licensePlate: text(f, "plate"), vehicleType: text(f, "type") || null, model: text(f, "model") || null, make: text(f, "make") || null, year: text(f, "year") ? Number(text(f, "year")) : null, currentOdometerKm: Number(text(f, "km")) })) form.reset();
   }
   return <><details className="ops-card"><summary className="ops-disclosure-heading"><span><Icon name="plus" />Registrar nuevo vehículo</span><Icon name="chevron" /></summary><p>Revisa los datos antes de registrar: después solo se podrá ajustar el kilometraje.</p><form className="ops-form" onSubmit={e => void create(e)}>
-    <label>Rol institucional<input name="role" maxLength={30} required /></label><label>Patente<input name="plate" minLength={3} maxLength={20} required /></label>
-    <label>Tipo<input name="type" minLength={2} maxLength={60} /></label><label>Modelo<input name="model" maxLength={120} /></label><label>Año<input name="year" type="number" min="1900" max="2100" /></label>
+    <label>Código de móvil<input name="role" maxLength={30} required /></label><label>Patente<input name="plate" minLength={3} maxLength={20} required /></label>
+    <label>Tipo<input name="type" minLength={2} maxLength={60} list="ops-vehicle-types" /></label><label>Marca<input name="make" maxLength={120} list="ops-vehicle-makes" /></label><label>Modelo<input name="model" maxLength={120} list="ops-vehicle-models" /></label>
+    <datalist id="ops-vehicle-types">{[...new Set(vehicles.flatMap(v => v.vehicleType ? [v.vehicleType] : []))].map(v => <option key={v} value={v} />)}</datalist>
+    <datalist id="ops-vehicle-makes">{[...new Set(vehicles.flatMap(v => v.make ? [v.make] : []))].map(v => <option key={v} value={v} />)}</datalist>
+    <datalist id="ops-vehicle-models">{[...new Set(vehicles.flatMap(v => v.model ? [v.model] : []))].map(v => <option key={v} value={v} />)}</datalist><label>Año<input name="year" type="number" min="1900" max="2100" /></label>
     <label>Kilometraje inicial<input name="km" type="number" min="0" max="5000000" required /></label><button>Registrar</button>
   </form></details><div className="ops-services ops-vehicle-grid">{vehicles.map(v => <VehicleCard key={v.id} vehicle={v} mutate={mutate} onProfile={onProfile} />)}</div></>;
 }
@@ -423,12 +428,12 @@ function VehicleCard({ vehicle: v, mutate, onProfile }: { vehicle: Vehicle; muta
     const body = { expectedUpdatedAt: snapshot.updatedAt, currentOdometerKm: Number(text(f, "km")), reason: text(f, "reason") };
     if (await mutate("/api/vehicles/" + v.id, body, "PATCH")) setSnapshot(null);
   }
-  return <article className="ops-card ops-vehicle-card"><div className="ops-vehicle-top"><span className="ops-vehicle-symbol"><Icon name="car" /></span><span className="ops-badge" data-state={!v.active ? "CANCELLED" : v.inService ? "IN_PROGRESS" : "COMPLETED"}><span className="ops-state-dot" />{!v.active ? "Inactivo" : v.inService ? "En servicio" : "Disponible"}</span></div><h2><button className="ops-entity-link" onClick={() => onProfile({ kind: "vehicle", id: v.id, name: vehicleLabel(v) })}>{vehicleLabel(v)}</button></h2><p>{[v.vehicleType, v.year, "Patente " + v.licensePlate].filter(Boolean).join(" · ")}</p><div className="ops-vehicle-odometer"><span>Odómetro</span><strong>{v.currentOdometerKm === null ? "Sin registro" : new Intl.NumberFormat("es-CL").format(v.currentOdometerKm)}<small> km</small></strong></div>
+  return <article className="ops-card ops-vehicle-card"><div className="ops-vehicle-top"><span className="ops-vehicle-symbol"><Icon name="car" /></span><span className="ops-badge" data-state={!v.active ? "CANCELLED" : v.inService ? "IN_PROGRESS" : "COMPLETED"}><span className="ops-state-dot" />{!v.active ? "Inactivo" : v.inService ? "En servicio" : "Disponible"}</span></div><h2><button className="ops-entity-link" onClick={() => onProfile({ kind: "vehicle", id: v.id, name: vehicleLabel(v) })}>{vehicleLabel(v)}</button></h2><p>{[v.make, v.vehicleType, v.year, "Patente " + v.licensePlate].filter(Boolean).join(" · ")}</p><div className="ops-vehicle-odometer"><span>Odómetro</span><strong>{v.currentOdometerKm === null ? "Sin registro" : new Intl.NumberFormat("es-CL").format(v.currentOdometerKm)}<small> km</small></strong></div>
     <div className="ops-actions"><button disabled={v.inService} onClick={() => setSnapshot(v)}>Ajustar kilometraje</button></div>
     {snapshot && <form className="ops-form ops-edit" onSubmit={e => void save(e)}>
       {snapshot.updatedAt !== v.updatedAt && <p role="alert">El vehículo cambió. Cierra y vuelve a abrir el formulario.</p>}
       <label>Nueva lectura de kilometraje<input name="km" type="number" min="0" max="5000000" required disabled={v.inService} /></label><label>Motivo del ajuste<input name="reason" minLength={3} maxLength={500} required disabled={v.inService} /></label>
-      {v.inService && <p>El ajuste de odómetro estará disponible al cerrar el tramo activo.</p>}
+      {v.inService && <p>El ajuste de odómetro estará disponible al cerrar el viaje activo.</p>}
       <div className="ops-actions"><button disabled={v.inService || snapshot.updatedAt !== v.updatedAt}>Guardar kilometraje</button><button type="button" onClick={() => setSnapshot(null)}>Cerrar formulario</button></div>
     </form>}
   </article>;

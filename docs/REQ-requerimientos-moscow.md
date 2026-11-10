@@ -1,6 +1,6 @@
 # Requerimientos MoSCoW
 
-Fecha: 2026-10-26. Versión 1.0.
+Fecha: 2026-11-10. Versión 2.0.
 
 ## TEC-01 / Must / CodeIgniter 4.x y PHP 8.4.x, separación MVC.
 
@@ -78,7 +78,7 @@ Evidencia: 01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn
 
 Estado: Entregado
 
-Criterio: Nueve entidades, cardinalidades, claves y diccionario obtenido del esquema real.
+Criterio: Trece entidades, cardinalidades, claves y diccionario obtenido del esquema real.
 
 Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
@@ -110,9 +110,9 @@ Evidencia: ServiceEngine::create; CostCenterField
 
 Estado: Verificado local
 
-Criterio: Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.
+Criterio: Viajes activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.
 
-Evidencia: service_legs; ServiceEngine; prueba concurrente
+Evidencia: viajes; ServiceEngine; prueba concurrente
 
 ## RF-03 / Must / Iniciar y finalizar desde el chofer asignado.
 
@@ -126,7 +126,7 @@ Evidencia: ServiceEngine start / complete
 
 Estado: Verificado local
 
-Criterio: PENDING / ASSIGNED sin started_at ni tramos. IN_PROGRESS no se cancela.
+Criterio: PENDING / ASSIGNED sin started_at. IN_PROGRESS no se cancela.
 
 Evidencia: ServiceEngine cancel; prueba de rechazo sin efectos
 
@@ -134,7 +134,7 @@ Evidencia: ServiceEngine cancel; prueba de rechazo sin efectos
 
 Estado: Verificado local
 
-Criterio: En ruta exige lectura del móvil saliente y registra nuevo tramo con lectura propia del entrante.
+Criterio: En ruta exige lectura del móvil saliente, finaliza su viaje y abre otro con la lectura propia del entrante.
 
 Evidencia: ServiceEngine assignment
 
@@ -144,7 +144,7 @@ Estado: Implementado
 
 Criterio: Aviso visible al actualizar datos; Entendido lo oculta en ese navegador. No es confirmación central en servidor.
 
-Evidencia: service_address_revisions; AddressChangeAlerts
+Evidencia: revisiones_direccion; AddressChangeAlerts
 
 ## RF-07 / Must / Vehículo con identidad fija; solo ajustar kilometraje.
 
@@ -174,9 +174,49 @@ Evidencia: ReportRepository::summary; CostCenterReport
 
 Estado: Implementado
 
-Criterio: Acceso administrativo desde sus nombres; incluye participación de tramos anteriores.
+Criterio: Acceso administrativo desde sus nombres; cada viaje conserva su chofer y vehículo originales, incluidos los viajes cerrados por relevo.
 
 Evidencia: OperationsDashboard; ServiceRepository
+
+## MER-01 / Must / PK enteras autoincrementables con nomenclatura institucional.
+
+Estado: Implementado
+
+Criterio: Las 13 tablas operativas usan id_[entidad]. La migración remapea referencias y separa los tramos históricos.
+
+Evidencia: ConsolidateTrips; diccionario físico
+
+## MER-02 / Must / Una entidad de viaje con lecturas de salida y llegada.
+
+Estado: Verificado local
+
+Criterio: Un chofer y vehículo por viaje. El relevo cierra y crea un viaje enlazado de forma atómica.
+
+Evidencia: viajes; ServiceEngine; pruebas de relevo
+
+## MER-03 / Must / Catálogos de roles, funcionarios y flota.
+
+Estado: Implementado
+
+Criterio: roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.
+
+Evidencia: schema-viajes.sql; pulso:roles; alta de vehículo
+
+## MER-04 / Must / MER alineado con nombres, claves y cardinalidades físicas.
+
+Estado: Entregado
+
+Criterio: Incluye relación opcional del usuario autor con cada revisión de dirección.
+
+Evidencia: MER y diccionario físico
+
+## FUT-02 / Could / Pasajeros, solicitante formal y respaldo de la salida.
+
+Estado: Por definir
+
+Criterio: Sujeto a requerimientos de Movilización. Jefatura, Despacho y Solicitante son definiciones de catálogo; faltan permisos y flujo aprobados.
+
+Evidencia: Informe de revisión MER del 09-11-2026
 
 ## RNF-01 / Must / Aislamiento, control de acceso y sesiones.
 
@@ -190,7 +230,7 @@ Evidencia: AuthRepository; AuthFilter; AuthController
 
 Estado: Verificado local
 
-Criterio: Versiones, expectedUpdatedAt, transacciones y audit_logs. No se promete inmutabilidad frente al DBA.
+Criterio: Versiones, expectedUpdatedAt, transacciones y registros_auditoria. No se promete inmutabilidad frente al DBA.
 
 Evidencia: UnitOfWork; ServiceEngine; AuditService
 

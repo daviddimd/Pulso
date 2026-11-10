@@ -12,20 +12,10 @@ export interface ExportServiceItem {
   actionPerformed: string;
   startedAt?: string | null;
   endedAt?: string | null;
+  previousTripId?: string | null;
+  departureOdometerKm?: number | null;
   odometerKm?: number | null;
   distanceKm?: number | null;
-}
-
-export interface ExportLegItem {
-  id: string;
-  serviceId: string;
-  driverName?: string | null;
-  licensePlate?: string | null;
-  startedAt?: string | null;
-  endedAt?: string | null;
-  departureOdometerKm?: number | null;
-  arrivalOdometerKm?: number | null;
-  traveledKm?: number | null;
 }
 
 export interface ExportCostCenterItem {
@@ -39,7 +29,6 @@ export interface DailyExportPayload {
   timezone: string;
   dateRange: { from: string; to: string };
   services: ExportServiceItem[];
-  legs: ExportLegItem[];
   costCenters: ExportCostCenterItem[];
 }
 
@@ -51,39 +40,26 @@ export function downloadDailyExcel(data: DailyExportPayload, filename?: string):
 
   // Hoja 1: Servicios Finalizados
   const servicesRows = data.services.map(s => ({
-    'Folio': s.id.substring(0, 8),
+    'Folio': s.id,
+    'Viaje anterior': s.previousTripId || '',
     'Chofer': s.driverName || 'Sin asignar',
     'Róster': s.driverRosterCode || '',
     'Patente': s.licensePlate || '',
-    'Rol Móvil': s.vehicleRoleCode || '',
+    'Código de móvil': s.vehicleRoleCode || '',
     'Centro Costo Código': s.costCenterCode || 'S/C',
     'Centro Costo Nombre': s.costCenterName || 'Indefinido',
     'Destino': s.serviceAddress,
     'Cometido / Actividad': s.actionPerformed,
     'Inicio': s.startedAt ? new Date(s.startedAt).toLocaleString('es-CL', { timeZone: data.timezone }) : '',
     'Término': s.endedAt ? new Date(s.endedAt).toLocaleString('es-CL', { timeZone: data.timezone }) : '',
-    'Km Término': s.odometerKm ?? '',
+    'Km salida': s.departureOdometerKm ?? '',
+    'Km llegada': s.odometerKm ?? '',
     'Km Recorridos': s.distanceKm ?? '',
   }));
   const wsServices = XLSX.utils.json_to_sheet(servicesRows);
-  XLSX.utils.book_append_sheet(wb, wsServices, 'Servicios');
+  XLSX.utils.book_append_sheet(wb, wsServices, 'Viajes');
 
-  // Hoja 2: Tramos (Legs)
-  const legsRows = data.legs.map(l => ({
-    'ID Tramo': l.id.substring(0, 8),
-    'ID Servicio': l.serviceId.substring(0, 8),
-    'Chofer Tramo': l.driverName || '',
-    'Patente Móvil': l.licensePlate || '',
-    'Salida': l.startedAt ? new Date(l.startedAt).toLocaleString('es-CL', { timeZone: data.timezone }) : '',
-    'Llegada': l.endedAt ? new Date(l.endedAt).toLocaleString('es-CL', { timeZone: data.timezone }) : '',
-    'Km Salida': l.departureOdometerKm ?? '',
-    'Km Llegada': l.arrivalOdometerKm ?? '',
-    'Km Recorridos': l.traveledKm ?? '',
-  }));
-  const wsLegs = XLSX.utils.json_to_sheet(legsRows);
-  XLSX.utils.book_append_sheet(wb, wsLegs, 'Tramos');
-
-  // Hoja 3: Resumen Centros de Costos
+  // Hoja 2: Resumen Centros de Costos
   const ccRows = data.costCenters.map(cc => ({
     'Código': cc.code,
     'Centro de Costos': cc.name,

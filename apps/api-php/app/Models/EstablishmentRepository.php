@@ -1,6 +1,6 @@
 <?php
 namespace App\Models;
-use App\Libraries\{SecurityLib,UnitOfWork};
+use App\Libraries\{UnitOfWork,UserAccounts};
 use Config\Database;
 use DomainException;
 
@@ -13,10 +13,11 @@ final class EstablishmentRepository
         if (strlen($password)<12 || strlen($password)>1024) throw new DomainException('ADMIN_PASSWORD_TOO_SHORT',400);
         $db=Database::connect(); $db->transException(true)->transBegin();
         try {
-            if ($db->table('establishments')->where('code',$code)->countAllResults() || $db->table('users')->where('username',$username)->countAllResults()) throw new DomainException('ESTABLISHMENT_OR_USERNAME_EXISTS',409);
-            $id=SecurityLib::generateUuid(); $admin=SecurityLib::generateUuid(); $now=UnitOfWork::now();
-            $db->table('establishments')->insert(['id'=>$id,'code'=>$code,'name'=>$name,'timezone'=>$timezone,'active'=>1,'created_at'=>$now,'updated_at'=>$now]);
-            $db->table('users')->insert(['id'=>$admin,'establishment_id'=>$id,'username'=>$username,'full_name'=>mb_substr('Administración · '.$name,0,120),'password_hash'=>password_hash($password,PASSWORD_ARGON2ID),'role'=>'ADMIN','active'=>1,'created_at'=>$now,'updated_at'=>$now]);
+            if ($db->table('establecimientos')->where('code',$code)->countAllResults() || $db->table('usuarios')->where('username',$username)->countAllResults()) throw new DomainException('ESTABLISHMENT_OR_USERNAME_EXISTS',409);
+            $now=UnitOfWork::now();
+            $db->table('establecimientos')->insert(['code'=>$code,'name'=>$name,'timezone'=>$timezone,'active'=>1,'created_at'=>$now,'updated_at'=>$now]);
+            $id=(string)$db->insertID();
+            $admin=UserAccounts::create($db,['establishment_id'=>$id,'username'=>$username,'full_name'=>mb_substr('Administración · '.$name,0,120),'password_hash'=>password_hash($password,PASSWORD_ARGON2ID),'active'=>1,'created_at'=>$now,'updated_at'=>$now],'ADMIN');
             if (!$db->transStatus()) throw new \RuntimeException('Provisioning failed');
             $db->transCommit(); return ['establishmentId'=>$id,'adminId'=>$admin];
         } catch (\Throwable $e) { $db->transRollback(); throw $e; }

@@ -11,7 +11,7 @@ final class ReportRepository {
     private string $end;
     private string $timezone;
     public function __construct(private array $actor,array $query) {
-        $tz=new DateTimeZone(Database::connect()->table('establishments')->where('id',$actor['establishmentId'])->get()->getRowArray()['timezone']);
+        $tz=new DateTimeZone(Database::connect()->table('establecimientos')->where('id_establecimiento',$actor['establishmentId'])->get()->getRowArray()['timezone']);
         $this->timezone=$tz->getName();
         $this->from=(string)($query['from']??''); $this->to=(string)($query['to']??'');
         $from=DateTimeImmutable::createFromFormat('!Y-m-d',$this->from,$tz);
@@ -27,9 +27,9 @@ final class ReportRepository {
         return array_map($repo->serialize(...),$q->groupEnd()->orderBy('b.ended_at')->get()->getResultArray());
     }
     public function summary(): array {
-        $centers=Database::connect()->table('cost_centers')->where('establishment_id',$this->actor['establishmentId'])->orderBy('code')->get()->getResultArray();
+        $centers=Database::connect()->table('centros_costos')->where('establishment_id',$this->actor['establishmentId'])->orderBy('code')->get()->getResultArray();
         $rows=[];
-        foreach($centers as $cc) $rows[$cc['id']]=['id'=>$cc['id'],'code'=>$cc['code'],'name'=>$cc['name'],'completedTrips'=>0,'completedKm'=>0,'completedUnknownKm'=>0,'cancelledTrips'=>0];
+        foreach($centers as $cc) $rows[(string)$cc['id_centro_costo']]=['id'=>(string)$cc['id_centro_costo'],'code'=>$cc['code'],'name'=>$cc['name'],'completedTrips'=>0,'completedKm'=>0,'completedUnknownKm'=>0,'cancelledTrips'=>0];
         foreach($this->services(true) as $s) {
             $key=$s['costCenterId']??'';
             if(!isset($rows[$key])) $rows[$key]=['id'=>null,'code'=>'S/C','name'=>'Indefinido','completedTrips'=>0,'completedKm'=>0,'completedUnknownKm'=>0,'cancelledTrips'=>0];
@@ -50,7 +50,7 @@ final class ReportRepository {
         }
         return ['timezone'=>$this->timezone,'dateRange'=>['from'=>$this->from,'to'=>$this->to],'services'=>array_map(fn($s)=>['id'=>$s['id'],'driverName'=>$s['driver']['fullName']??null,'driverRosterCode'=>$s['driver']['rosterCode']??null,
             'licensePlate'=>$s['vehicle']['licensePlate']??null,'vehicleRoleCode'=>$s['vehicle']['roleCode']??null,'costCenterCode'=>$s['costCenter']['code']??null,'costCenterName'=>$s['costCenter']['name']??null,
-            'serviceAddress'=>$s['serviceAddress'],'actionPerformed'=>$s['actionPerformed'],'startedAt'=>$s['startedAt'],'endedAt'=>$s['endedAt'],'odometerKm'=>$s['odometerKm'],'distanceKm'=>$s['distanceKm']],$services),
+            'serviceAddress'=>$s['serviceAddress'],'actionPerformed'=>$s['actionPerformed'],'startedAt'=>$s['startedAt'],'endedAt'=>$s['endedAt'],'odometerKm'=>$s['odometerKm'],'departureOdometerKm'=>$s['departureOdometerKm'],'previousTripId'=>$s['previousTripId'],'distanceKm'=>$s['distanceKm']],$services),
             'legs'=>$legs,'costCenters'=>array_values($centers)];
     }
 }
