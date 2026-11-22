@@ -7,7 +7,7 @@ final class VehicleRepository {
     private function dto(array $v): array {
         return ['id'=>(string)$v['id_vehiculo'],'roleCode'=>$v['codigo_movil'],'licensePlate'=>$v['license_plate'],'model'=>$v['model'],'year'=>$v['year']===null ? null : (int)$v['year'],
             'vehicleType'=>$v['vehicle_type'],'make'=>($v['make'] ?? null) === VehicleCatalog::UNKNOWN_MAKE ? null : ($v['make'] ?? null),'currentOdometerKm'=>$v['current_odometer_km']===null ? null : (int)$v['current_odometer_km'],'active'=>(bool)$v['active'],
-            'updatedAt'=>UnitOfWork::iso($v['updated_at']),'inService'=>Database::connect()->table('viajes')->where('vehicle_id',(string)$v['id_vehiculo'])->where('status','IN_PROGRESS')->countAllResults()>0];
+            'updatedAt'=>UnitOfWork::iso($v['updated_at']),'inService'=>Database::connect()->table('viajes_tramos')->where('id_vehiculo',(string)$v['id_vehiculo'])->where('fecha_fin',null)->countAllResults()>0];
     }
     public function listing(array $actor): array {
         $q=VehicleCatalog::query(Database::connect())->where('v.establishment_id',$actor['establishmentId']);
@@ -18,14 +18,14 @@ final class VehicleRepository {
         $db=Database::connect();
         if (!UnitOfWork::validId($id) || !$db->table('vehiculos')->where('id_vehiculo',$id)->where('establishment_id',$actor['establishmentId'])->get()->getRowArray()) throw new DomainException('NOT_FOUND',404);
         // Include older UPDATE records, excluding edits that only changed identification.
-        $q=$db->table('registros_auditoria a')->where('a.entity_type','VEHICLE')->where('a.entity_id',$id)
+        $q=$db->table('registros_auditoria a')->where('a.establishment_id',$actor['establishmentId'])->where('a.entity_type','VEHICLE')->where('a.entity_id',$id)
             ->groupStart()->where('a.action','ODOMETER_ADJUSTMENT')->orGroupStart()->where('a.action','UPDATE')
             ->where("JSON_CONTAINS_PATH(a.after_data, 'one', '$.current_odometer_km') = 1",null,false)
             ->groupStart()->where("NOT (JSON_EXTRACT(a.before_data, '$.current_odometer_km') <=> JSON_EXTRACT(a.after_data, '$.current_odometer_km'))",null,false)
             ->orWhere("NULLIF(JSON_UNQUOTE(JSON_EXTRACT(a.after_data, '$.reason')), 'null') IS NOT NULL",null,false)->groupEnd()->groupEnd()->groupEnd();
         $total=(clone $q)->countAllResults();
         $page=max(1,$page);
-        $rows=$q->select('a.id_registro_auditoria,a.created_at,a.before_data,a.after_data,u.full_name')->join('usuarios u','u.id_usuario=a.actor_user_id AND u.establishment_id='.$db->escape($actor['establishmentId']),'left')
+        $rows=$q->select('a.id_registro_auditoria,a.created_at,a.before_data,a.after_data,u.full_name')->join('usuarios u','u.id_usuario=a.actor_user_id AND u.id_funcionario IN (SELECT id_funcionario FROM funcionarios WHERE establishment_id='.$db->escape($actor['establishmentId']).')','left')
             ->orderBy('a.id_registro_auditoria','DESC')->limit(20,($page-1)*20)->get()->getResultArray();
         $corrections=array_map(function($r) {
             $before=json_decode($r['before_data']??'null',true)??[];
@@ -48,10 +48,10 @@ final class VehicleRepository {
                 $model = isset($b['model']) ? UnitOfWork::text($b['model'],120) : null;
                 $make = isset($b['make']) ? UnitOfWork::text($b['make'],120) : null;
                 if ($make !== null && $model === null) throw new DomainException('INVALID_SERVICE_DATA',400);
-                $db->table('vehiculos')->insert($r + VehicleCatalog::ids($db, $type, $model, $make));
+                $db->table('vehiculos')->insert($r + VehicleCatalog::ids($db, $type, $model, $make, '', $a['establishmentId']));
                 $id = (string)$db->insertID();
                 $r = VehicleCatalog::query($db)->where('v.id_vehiculo', $id)->get()->getRowArray();
-                AuditService::log($a['id'],'VEHICLE',$r['id_vehiculo'],'CREATE',null,$r);
+                AuditService::log($a['establishmentId'],$a['id'],'VEHICLE',$r['id_vehiculo'],'CREATE',null,$r);
                 return $r;
             });
             return $this->dto($row);
@@ -64,7 +64,7 @@ final class VehicleRepository {
                 if (($b['expectedUpdatedAt']??null) !== UnitOfWork::iso($v['updated_at'])) throw new DomainException('STALE_RECORD',409);
                 foreach (array_keys($b) as $field) if(!in_array($field,['expectedUpdatedAt','currentOdometerKm','reason'],true)) throw new DomainException('IMMUTABLE_VEHICLE_DATA',400);
                 if (!array_key_exists('currentOdometerKm',$b)) throw new DomainException('INVALID_SERVICE_DATA',400);
-                $active=$db->table('viajes')->where('vehicle_id',$id)->where('status','IN_PROGRESS')->countAllResults();
+                $active=$db->table('viajes_tramos')->where('id_vehiculo',$id)->where('fecha_fin',null)->countAllResults();
                 $updates=[];
                 if (array_key_exists('currentOdometerKm',$b)) {
                     if ($active) throw new DomainException('VEHICLE_IN_SERVICE',409);
@@ -76,7 +76,7 @@ final class VehicleRepository {
                 $updates['updated_at']=\DateTimeImmutable::createFromFormat('U.u',sprintf('%.6F',$stamp))->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s.v');
                 $db->table('vehiculos')->where('id_vehiculo',$id)->update($updates);
                 $fresh=array_merge($v,$updates);
-                AuditService::log($a['id'],'VEHICLE',$id,'ODOMETER_ADJUSTMENT',$v,$fresh+['reason'=>$reason]);
+                AuditService::log($a['establishmentId'],$a['id'],'VEHICLE',$id,'ODOMETER_ADJUSTMENT',$v,$fresh+['reason'=>$reason]);
                 return $fresh;
             });
             return $this->dto($row);

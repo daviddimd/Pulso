@@ -101,7 +101,7 @@ class PulsoSeeder extends Seeder
                     'active'              => 1,
                     'created_at'          => $now,
                     'updated_at'          => $now,
-                ] + VehicleCatalog::ids($db, $v['vehicleType'], $v['model']));
+                ] + VehicleCatalog::ids($db, $v['vehicleType'], $v['model'], null, '', (string)$estId));
             }
         }
 

@@ -1,6 +1,6 @@
 # Requerimientos MoSCoW
 
-Fecha: 2026-11-10. Versión 2.0.
+Fecha: 2026-11-22. Versión 3.0.
 
 ## TEC-01 / Must / CodeIgniter 4.x y PHP 8.4.x, separación MVC.
 
@@ -78,7 +78,7 @@ Evidencia: 01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn
 
 Estado: Entregado
 
-Criterio: Trece entidades, cardinalidades, claves y diccionario obtenido del esquema real.
+Criterio: Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.
 
 Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
@@ -110,9 +110,9 @@ Evidencia: ServiceEngine::create; CostCenterField
 
 Estado: Verificado local
 
-Criterio: Viajes activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.
+Criterio: Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.
 
-Evidencia: viajes; ServiceEngine; prueba concurrente
+Evidencia: viajes_tramos; ServiceEngine; prueba concurrente
 
 ## RF-03 / Must / Iniciar y finalizar desde el chofer asignado.
 
@@ -134,7 +134,7 @@ Evidencia: ServiceEngine cancel; prueba de rechazo sin efectos
 
 Estado: Verificado local
 
-Criterio: En ruta exige lectura del móvil saliente, finaliza su viaje y abre otro con la lectura propia del entrante.
+Criterio: En ruta exige lectura del móvil saliente, cierra su tramo y abre otro en el mismo viaje con la lectura del entrante.
 
 Evidencia: ServiceEngine assignment
 
@@ -174,7 +174,7 @@ Evidencia: ReportRepository::summary; CostCenterReport
 
 Estado: Implementado
 
-Criterio: Acceso administrativo desde sus nombres; cada viaje conserva su chofer y vehículo originales, incluidos los viajes cerrados por relevo.
+Criterio: Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.
 
 Evidencia: OperationsDashboard; ServiceRepository
 
@@ -182,7 +182,7 @@ Evidencia: OperationsDashboard; ServiceRepository
 
 Estado: Implementado
 
-Criterio: Las 13 tablas operativas usan id_[entidad]. La migración remapea referencias y separa los tramos históricos.
+Criterio: Las claves numéricas se conservan. La nueva migración consolida las cadenas anteriores y conserva sus alias.
 
 Evidencia: ConsolidateTrips; diccionario físico
 
@@ -190,7 +190,7 @@ Evidencia: ConsolidateTrips; diccionario físico
 
 Estado: Verificado local
 
-Criterio: Un chofer y vehículo por viaje. El relevo cierra y crea un viaje enlazado de forma atómica.
+Criterio: Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.
 
 Evidencia: viajes; ServiceEngine; pruebas de relevo
 
@@ -201,6 +201,14 @@ Estado: Implementado
 Criterio: roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.
 
 Evidencia: schema-viajes.sql; pulso:roles; alta de vehículo
+
+## MER-05 / Must / Institución heredada, catálogos locales y aislamiento de revisiones.
+
+Estado: Verificado local
+
+Criterio: usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan establishment_id. Los catálogos tienen unicidad y FK institucionales.
+
+Evidencia: DomainTrips; TestDomain; AuthRepository
 
 ## MER-04 / Must / MER alineado con nombres, claves y cardinalidades físicas.
 

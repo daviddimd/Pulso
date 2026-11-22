@@ -1,6 +1,6 @@
 # Casos de uso UML
 
-Fecha: 2026-11-10. Versión 2.0.
+Fecha: 2026-11-22. Versión 3.0.
 
 ## CU-01 Iniciar y cerrar sesión
 
@@ -30,7 +30,7 @@ Precondición: Sesión válida.
 
 Flujo: Filtrar por estado; consultar datos y lecturas del viaje. Administración consulta también por chofer o vehículo.
 
-Excepciones: Chofer solo ve sus servicios actuales/asignados. Administración solo consulta su institución.
+Excepciones: Chofer consulta sus servicios asignados y aquellos donde participó, dentro de su institución vigente. Solo opera el chofer actualmente asignado. Administración solo consulta su institución.
 
 ## CU-04 Iniciar viaje
 
@@ -58,7 +58,7 @@ Actores: Administración
 
 Precondición: PENDING, ASSIGNED o IN_PROGRESS.
 
-Flujo: Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el viaje actual e iniciar otro enlazado en la misma transacción.
+Flujo: Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el tramo actual e iniciar otro dentro del mismo viaje en la misma transacción.
 
 Excepciones: Sin cambios: rechazo. Recurso ocupado o lectura inválida: rollback. No modifica la identidad del vehículo.
 

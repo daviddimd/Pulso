@@ -48,9 +48,9 @@ final class ReportRepository {
             if(!isset($centers[$key])) $centers[$key]=['code'=>$s['costCenter']['code']??'S/C','name'=>$s['costCenter']['name']??'Indefinido','trips'=>0,'km'=>0,'unknownKm'=>0];
             $centers[$key]['trips']++; $centers[$key]['km']+=$s['distanceKm']??0; if($s['distanceKm']===null) $centers[$key]['unknownKm']++;
         }
-        return ['timezone'=>$this->timezone,'dateRange'=>['from'=>$this->from,'to'=>$this->to],'services'=>array_map(fn($s)=>['id'=>$s['id'],'driverName'=>$s['driver']['fullName']??null,'driverRosterCode'=>$s['driver']['rosterCode']??null,
-            'licensePlate'=>$s['vehicle']['licensePlate']??null,'vehicleRoleCode'=>$s['vehicle']['roleCode']??null,'costCenterCode'=>$s['costCenter']['code']??null,'costCenterName'=>$s['costCenter']['name']??null,
-            'serviceAddress'=>$s['serviceAddress'],'actionPerformed'=>$s['actionPerformed'],'startedAt'=>$s['startedAt'],'endedAt'=>$s['endedAt'],'odometerKm'=>$s['odometerKm'],'departureOdometerKm'=>$s['departureOdometerKm'],'previousTripId'=>$s['previousTripId'],'distanceKm'=>$s['distanceKm']],$services),
+        return ['timezone'=>$this->timezone,'dateRange'=>['from'=>$this->from,'to'=>$this->to],'services'=>array_map(fn($s)=>['id'=>$s['id'],'driverName'=>implode(' / ',array_unique(array_column(array_column($s['legs'],'driver'),'fullName'))) ?: ($s['driver']['fullName']??null),'driverRosterCode'=>$s['driver']['rosterCode']??null,
+            'licensePlate'=>implode(' / ',array_unique(array_column(array_column($s['legs'],'vehicle'),'licensePlate'))) ?: ($s['vehicle']['licensePlate']??null),'vehicleRoleCode'=>$s['vehicle']['roleCode']??null,'costCenterCode'=>$s['costCenter']['code']??null,'costCenterName'=>$s['costCenter']['name']??null,
+            'serviceAddress'=>$s['serviceAddress'],'actionPerformed'=>$s['actionPerformed'],'startedAt'=>$s['startedAt'],'endedAt'=>$s['endedAt'],'odometerKm'=>$s['odometerKm'],'departureOdometerKm'=>$s['departureOdometerKm'],'distanceKm'=>$s['distanceKm']],$services),
             'legs'=>$legs,'costCenters'=>array_values($centers)];
     }
 }

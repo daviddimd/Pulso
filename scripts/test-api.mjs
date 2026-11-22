@@ -6,10 +6,10 @@ import { ensureLocalDatabase } from './local-db.mjs';
 await ensureLocalDatabase();
 const env = {...process.env, CI_ENVIRONMENT:'development', PULSO_INTEGRATION:'1', 'database.default.database':'pulso_test', 'app.baseURL':'http://localhost:8081/', CORS_ORIGIN:'http://localhost:5177',
   CLAVE_UNICA_CLIENT_ID:'test-client', CLAVE_UNICA_CLIENT_SECRET:'test-secret', CLAVE_UNICA_REDIRECT_URI:'https://pulso.example/api/auth/clave-unica/callback'};
-for (const args of [['migrate'],['pulso:test-fixtures'],['pulso:test-auth']]) {
+for (const args of [['migrate'],['pulso:test-fixtures'],['pulso:test-auth'],['pulso:test-domain']]) {
   const p=spawnSync(php,['spark',...args],{cwd:apiDir,env,encoding:'utf8'});
   if(p.status || /Exception|Error\]/.test(p.stdout+p.stderr)) throw Error(p.stdout+p.stderr);
-  if(args[0]==='pulso:test-auth') process.stdout.write(p.stdout);
+  if(['pulso:test-auth','pulso:test-domain'].includes(args[0])) process.stdout.write(p.stdout);
 }
 const servers=[8081,8082].map(port=>spawn(php,['-S',`localhost:${port}`,'-t','public','public/router.php'],{cwd:apiDir,env,stdio:['ignore','ignore','pipe']}));
 let stderr=''; servers.forEach(p=>p.stderr.on('data',d=>stderr+=d));
@@ -87,10 +87,9 @@ try {
   check(badHandover.status===400 && (await request('/api/services/'+id,{cookie:admin})).data.entry.version===trip.version,'Un relevo inválido conserva el viaje abierto');
   r=await cmd(id,'assignment',trip.version,{driverId:'103',vehicleId:'112',odometerKm:1012},admin);
   assert.equal(r.status,200,JSON.stringify(r.data));
-  const firstTrip=r.data.entry;
-  trip=r.data.nextEntry; id=trip.id;
-  check(firstTrip.id===originalId&&firstTrip.status==='COMPLETED'&&firstTrip.driverId==='102'&&firstTrip.vehicleId==='111'&&firstTrip.distanceKm===12,'El viaje cerrado conserva chofer, vehículo y distancia');
-  check(id!==originalId&&trip.previousTripId===originalId&&trip.status==='IN_PROGRESS'&&trip.legs[0].departureOdometerKm===50000,'El relevo abre un viaje con el odómetro del vehículo entrante');
+  trip=r.data.entry;
+  check(trip.id===originalId&&trip.status==='IN_PROGRESS'&&trip.legs.length===2,'El relevo mantiene el viaje y crea un tramo');
+  check(trip.legs[0].arrivalOdometerKm===1012&&trip.legs[1].departureOdometerKm===50000,'Cada vehículo conserva sus lecturas');
   check((await cmd(id,'complete',trip.version,{odometerKm:50008},driver)).status===403,'Antiguo chofer no finaliza');
   check((await request('/api/services?vehicleId=111',{cookie:admin})).data.total===1,'Historial incluye vehículo previo');
   const formerDriverTrips=await request('/api/services?driverId=102',{cookie:admin});
@@ -101,12 +100,12 @@ try {
   const outcomes=await Promise.all([cmd(id,'complete',trip.version,{odometerKm:50008},driver2,8081),cmd(id,'complete',trip.version,{odometerKm:50009},driver2,8082)]);
   check(outcomes.filter(x=>x.status===200).length===1&&outcomes.filter(x=>x.status===409).length===1,'Finalización simultánea: un solo ganador');
   trip=outcomes.find(x=>x.status===200).data.entry;
-  check([8,9].includes(trip.distanceKm),'Distancia del segundo viaje usa sus propias lecturas');
+  check([20,21].includes(trip.distanceKm),'La distancia suma los tramos de vehículos diferentes');
   const day=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const period=`from=${day}&to=${day}`;
   r=await request('/api/cost-centers/summary?'+period,{cookie:admin}); assert.equal(r.status,200,JSON.stringify(r.data));
-  check(r.data.rows[0].completedKm===firstTrip.distanceKm+trip.distanceKm&&r.data.rows[0].completedTrips===2,'Resumen suma distancia, no odómetros');
-  r=await request('/api/exports/daily?'+period,{cookie:admin}); check(r.data.services.length===2&&r.data.legs.length===2&&r.data.services.some(s=>s.id===id&&s.distanceKm===trip.distanceKm),'Contrato Excel completo');
+  check(r.data.rows[0].completedKm===trip.distanceKm&&r.data.rows[0].completedTrips===1,'Resumen suma distancia, no odómetros');
+  r=await request('/api/exports/daily?'+period,{cookie:admin}); check(r.data.services.length===1&&r.data.legs.length===2&&r.data.services.some(s=>s.id===id&&s.distanceKm===trip.distanceKm),'Contrato Excel completo');
   check(r.data.timezone==='America/Santiago','Excel recibe la zona horaria del establecimiento');
   const foreignReport=await request('/api/exports/daily?'+period,{cookie:other});
   check(foreignReport.data.services.length===0 && foreignReport.data.timezone==='Pacific/Easter','Reporte aislado y zona horaria propia');
@@ -117,7 +116,7 @@ try {
   check(pending.status==='ASSIGNED'&&pending.costCenter===null,'Guardar con centro indefinido');
   check((await request('/api/services/mine?status=COMPLETED',{cookie:driver})).data.upcoming.length===1,'Pendientes independientes del filtro');
   r=await cmd(pending.id,'cancel',pending.version,{reason:'No se requiere traslado'},admin);check(r.data.entry.status==='CANCELLED','Cancelar antes de salir');
-  check((await request('/api/exports/daily?'+period,{cookie:admin})).data.services.length===2,'Excel excluye cancelados');
+  check((await request('/api/exports/daily?'+period,{cookie:admin})).data.services.length===1,'Excel excluye cancelados');
   check((await request('/api/services/mine',{cookie:driver})).data.active.length===0,'Viaje finalizado libera al chofer');
   r=await request('/api/vehicles',{cookie:admin}); const v=r.data.vehicles.find(v=>v.id==='111');
   const historyPath='/api/vehicles/'+v.id+'/odometer-history';
@@ -150,8 +149,8 @@ try {
   const outgoing=beforeDriverChange.data.entry;
   const driverChange=await cmd(outgoing.id,'assignment',outgoing.version,{driverId:'103',odometerKm:1020},admin);
   assert.equal(driverChange.status,200,JSON.stringify(driverChange.data));
-  const incoming=driverChange.data.nextEntry;
-  check(driverChange.data.entry.distanceKm===5&&incoming.vehicleId===outgoing.vehicleId&&incoming.departureOdometerKm===1020,'Al cambiar solo de chofer, el siguiente viaje sale con la lectura de cierre');
+  const incoming=driverChange.data.entry;
+  check(incoming.id===outgoing.id&&incoming.legs[0].arrivalOdometerKm===1020&&incoming.legs[1].departureOdometerKm===1020,'Al cambiar solo de chofer, el siguiente viaje sale con la lectura de cierre');
   check((await cmd(outgoing.id,'assignment',outgoing.version,{driverId:'103',odometerKm:1020},admin)).status===409,'Reintentar el mismo relevo no crea otro viaje');
   check((await cmd(incoming.id,'complete',incoming.version,{odometerKm:1021},driver2)).status===200,'El chofer entrante finaliza su propio viaje');
   check((await request('/api/services',{cookie:admin,origin:'https://untrusted.example'})).status===403,'Origen externo rechazado');

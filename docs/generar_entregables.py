@@ -1,10 +1,10 @@
 """Genera los entregables de revisión de Pulso desde metadatos sin registros.
 
-Requiere Python, reportlab y el archivo .runtime/schema-ti-v2.json generado mediante
-la consulta de INFORMATION_SCHEMA. No lee usuarios, servicios ni contraseñas.
+Requiere Python, reportlab y el archivo .runtime/schema-ti-domain.json generado con
+docs/exportar_esquema.php (consulta INFORMATION_SCHEMA). No lee usuarios, servicios ni contraseñas.
 """
 from pathlib import Path
-import json, re, math, textwrap, zipfile, hashlib, shutil
+import json, re, math, textwrap, zipfile, hashlib, shutil, subprocess
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 from reportlab.pdfgen import canvas
@@ -16,10 +16,14 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'output/entrega-ti-2026-11-10/pdf'; SRC=ROOT/'docs/entrega-ti-2026-11-10'
+OUT=ROOT/'output/entrega-ti-2026-11-22/pdf'; SRC=ROOT/'docs/entrega-ti-2026-11-22'
 OUT.mkdir(parents=True,exist_ok=True); SRC.mkdir(parents=True,exist_ok=True)
-SCHEMA=json.loads((ROOT/'.runtime/schema-ti-v2.json').read_text(encoding='utf-8'))
-DATE='10 de noviembre de 2026'; INK='#193c46'; TEAL='#245966'; PALE='#eef4f4'; MUTED='#52666d'
+# The audited cut is the current commit; the flag records uncommitted changes in the audited code.
+git=lambda *a: subprocess.run(['git',*a],cwd=ROOT,capture_output=True,text=True,check=True).stdout.strip()
+BRANCH=git('rev-parse','--abbrev-ref','HEAD'); COMMIT=git('rev-parse','HEAD')
+LOCAL_CHANGES=bool(git('status','--porcelain','--','apps','scripts'))
+SCHEMA=json.loads((ROOT/'.runtime/schema-ti-domain.json').read_text(encoding='utf-8'))
+DATE='22 de noviembre de 2026'; INK='#193c46'; TEAL='#245966'; PALE='#eef4f4'; MUTED='#52666d'
 for name,file in [('Pulso','arial.ttf'),('Pulso-Bold','arialbd.ttf')]:
     pdfmetrics.registerFont(TTFont(name,str(Path('C:/Windows/Fonts')/file)))
 styles=getSampleStyleSheet()
@@ -41,7 +45,7 @@ def header(c,d):
     c.drawRightString(w-38,23,f'{DATE}  |  {d.page}')
 def document(name,title,items):
     doc=SimpleDocTemplate(str(OUT/name),pagesize=A4,rightMargin=40,leftMargin=40,topMargin=48,bottomMargin=43)
-    doc.build([p(title,'Title'),p('Versión 2.0 / Revisión del MER al 10-11-2026','SmallPulso'),Spacer(1,12)]+items,onFirstPage=header,onLaterPages=header)
+    doc.build([p(title,'Title'),p('Versión 3.0 / Revisión del MER al 22-11-2026','SmallPulso'),Spacer(1,12)]+items,onFirstPage=header,onLaterPages=header)
 def table(rows,widths):
     t=Table([[p(x,'CellPulso') for x in row] for row in rows],colWidths=widths,repeatRows=1,hAlign='LEFT')
     t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor(TEAL)),('TEXTCOLOR',(0,0),(-1,0),colors.white),('VALIGN',(0,0),(-1,-1),'TOP'),('LEFTPADDING',(0,0),(-1,-1),7),('RIGHTPADDING',(0,0),(-1,-1),7),('TOPPADDING',(0,0),(-1,-1),7),('BOTTOMPADDING',(0,0),(-1,-1),7),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor(PALE)]),('LINEBELOW',(0,0),(-1,0),.6,colors.HexColor(TEAL))]))
@@ -49,7 +53,7 @@ def table(rows,widths):
     for item in t._cellvalues[0]: item.style=ParagraphStyle(name='TableHead',parent=styles['CellPulso'],textColor=colors.white,fontName='Pulso-Bold')
     return t
 def markdown(name,title,sections):
-    (SRC/name).write_text('# '+title+'\n\nFecha: 2026-11-10. Versión 2.0.\n\n'+'\n\n'.join('## '+h+'\n\n'+body for h,body in sections)+'\n',encoding='utf-8')
+    (SRC/name).write_text('# '+title+'\n\nFecha: 2026-11-22. Versión 3.0.\n\n'+'\n\n'.join('## '+h+'\n\n'+body for h,body in sections)+'\n',encoding='utf-8')
 
 class Diagram:
     """Mismos elementos vectoriales para PDF y SVG; coordenadas superiores."""
@@ -140,7 +144,7 @@ process('Ejecutar','Recorrido, eventual relevo y finalización',[
  ('recorrer','userTask','Chofer: realizar\nel servicio',110,113,160,75),
  ('relevoQ','exclusiveGateway','¿Se necesita\nreasignación?',330,125,50,50),
  ('reasignar','userTask','Admin: elegir recursos\ny registrar km del relevo',290,305,195,75),
- ('reabrir','serviceTask','Sistema: cerrar viaje\ny abrir otro enlazado',555,305,180,75),
+ ('reabrir','serviceTask','Sistema: cerrar tramo\ny abrir el siguiente',555,305,180,75),
  ('finalizar','userTask','Chofer: finalizar\ncon odómetro de llegada',460,113,185,75),
  ('validar','serviceTask','Sistema: validar\nlecturas de kilometraje',700,113,175,75),
  ('validoQ','exclusiveGateway','¿Lectura\nválida?',945,125,50,50),
@@ -212,7 +216,7 @@ for pid,title,nodes,flows in PROCESSES:
     d.svg(SRC/f'BPMN-{pid}.svg')
     notes=['Notación BPMN 2.0: círculo = evento; tarea U = usuario; tarea S = sistema; rombo con X = decisión exclusiva.']
     if pid=='Preparar':notes+=['Indefinido corresponde a centro de costos nulo. startNow ejecuta registro e inicio en la misma transacción.']
-    if pid=='Ejecutar':notes+=['El relevo cierra el viaje saliente y abre otro con el odómetro del vehículo entrante. Si falla una validación, se revierte la operación.', 'El viaje iniciado solo puede finalizarse. Las correcciones de dirección y centro conservan el estado.']
+    if pid=='Ejecutar':notes+=['El relevo cierra el tramo saliente y abre otro dentro del mismo viaje con la lectura del vehículo entrante. Si falla una validación, se revierte la operación.', 'El viaje iniciado solo puede finalizarse. Las correcciones de dirección y centro conservan el estado.']
     if pid=='Reportar':notes+=['Bitácora: solo completados. Resumen por centro: completados y cantidad de cancelados separados; no suma km cancelados.']
     bpmn_pages.append((title,d,notes))
 defs[:]=sorted(defs,key=lambda node: node.tag=='{'+NS['bpmndi']+'}BPMNDiagram')
@@ -234,62 +238,69 @@ def relation(d, points, x, y, label):
     d.line(points)
     d.text(x,y,label,9,True,'start')
 
-d=Diagram(1100,600)
-relation(d,[(245,105),(320,105),(320,250),(406,250)],324,243,'1 : 0..*')
-relation(d,[(245,283),(406,283)],267,275,'0..1 : 0..*')
-relation(d,[(245,446),(330,446),(330,316),(406,316)],334,308,'0..1 : 0..*')
-relation(d,[(850,137),(775,137),(775,250),(706,250)],715,241,'0..1 : 0..* (x2)')
-relation(d,[(706,331),(847,331),(847,422),(862,422)],725,322,'1 : 0..*')
-relation(d,[(950,165),(950,390)],955,291,'0..1 : 0..*')
-relation(d,[(522,452),(522,536),(741,536),(741,390),(706,390)],530,524,'0..1 : 0..1 (relevo)')
-entity(d,'establecimientos',25,55,220,['code','timezone'])
-entity(d,'centros_costos',25,235,220,['code','name'])
-entity(d,'vehiculos',25,395,220,['codigo_movil','current_odometer_km'])
-entity(d,'viajes',406,219,300,['destino / actividad','started_at / ended_at','departure_odometer_km','arrival_odometer_km','status'])
-entity(d,'usuarios',850,56,220,['username'])
-entity(d,'revisiones_direccion',862,390,220,['revision','address','created_at'])
+d=Diagram(1150,650)
+relation(d,[(245,116),(350,116)],265,107,'1 : 0..*')
+relation(d,[(245,333),(300,333),(300,200),(350,200)],304,191,'0..1 : 0..*')
+relation(d,[(615,172),(780,172)],654,163,'1 : 0..*')
+relation(d,[(492,271),(492,430)],501,401,'1 : 0..*')
+relation(d,[(957,146),(957,172)],969,155,'1 : 0..*')
+relation(d,[(780,303),(716,303),(716,512),(623,512)],659,390,'0..1 : 0..*')
+relation(d,[(245,512),(350,512)],266,503,'0..1 : 0..*')
+relation(d,[(615,260),(710,260),(710,490),(801,490)],717,477,'1 : 0..*')
+relation(d,[(245,490),(280,490),(280,245),(350,245)],285,236,'0..1 : 0..* (x2)')
+relation(d,[(245,544),(740,544),(740,344),(780,344)],746,335,'1 : 0..*')
+entity(d,'establecimientos',25,70,220,['code','timezone'])
+entity(d,'centros_costos',25,282,220,['code','name'])
+entity(d,'usuarios',25,456,220,['username'])
+entity(d,'viajes',350,70,265,['destino / actividad','status / version','started_at / ended_at','departure_odometer_km','arrival_odometer_km'])
+entity(d,'viajes_tramos',780,172,315,['fecha_inicio / fecha_fin','odometro_inicio / odometro_fin','active_driver_id (UNIQUE)','active_vehicle_id (UNIQUE)','active_trip_id (UNIQUE)'])
+entity(d,'vehiculos',837,25,240,['codigo_movil'])
+entity(d,'revisiones_direccion',350,430,273,['revision / address','created_at'])
+entity(d,'folios_viajes_anteriores',801,460,310,['alias de folio previo'])
 d.svg(SRC/'MER-Pulso.svg')
-
 u=Diagram(1100,600)
 relation(u,[(230,99),(365,99)],263,90,'1 : 0..*')
-relation(u,[(139,149),(139,241),(413,241)],219,232,'1 : 0..*')
 relation(u,[(470,149),(470,210)],480,183,'1 : 0..1')
 relation(u,[(850,132),(850,241),(663,241)],701,232,'1 : 0..*')
 relation(u,[(413,289),(167,289),(167,399)],192,279,'1 : 0..*')
 relation(u,[(663,291),(880,291),(880,399)],720,282,'0..1 : 0..*')
 entity(u,'establecimientos',40,71,190,['code'])
-entity(u,'funcionarios',365,71,218,['nombre','unidad'])
+entity(u,'funcionarios',365,71,218,['nombre','unidad','codigo_roster'])
 entity(u,'roles',755,70,215,['codigo','nombre_rol','descripcion'])
 entity(u,'usuarios',413,210,250,['username','active'])
 entity(u,'sesiones',48,399,225,['token_hash','expires_at'])
 entity(u,'registros_auditoria',755,399,260,['entity_type / entity_id','action'])
 u.svg(SRC/'MER-Usuarios.svg')
-
-v=Diagram(1100,500)
-relation(v,[(230,111),(425,111)],274,102,'1 : 0..*')
-relation(v,[(637,115),(747,115),(747,277),(792,277)],663,106,'0..1 : 0..*')
-relation(v,[(637,334),(792,334)],676,325,'0..1 : 0..*')
-relation(v,[(943,132),(943,225)],952,181,'1 : 0..*')
-entity(v,'marcas_vehiculo',35,68,195,['nombre'])
-entity(v,'modelos_vehiculo',425,68,212,['nombre'])
-entity(v,'tipos_vehiculo',425,290,212,['nombre'])
-entity(v,'establecimientos',821,57,211,['code'])
+v=Diagram(1100,620)
+relation(v,[(230,145),(425,145)],274,136,'1 : 0..*')
+relation(v,[(637,145),(747,145),(747,310),(792,310)],663,136,'0..1 : 0..*')
+relation(v,[(637,379),(792,379)],676,370,'0..1 : 0..*')
+relation(v,[(937,98),(937,225)],946,181,'1 : 0..*')
+relation(v,[(885,98),(885,182),(145,182),(145,155)],272,174,'establecimiento 1 : 0..* marcas')
+relation(v,[(840,98),(700,98),(700,54),(532,54),(532,70)],543,44,'1 : 0..* modelos')
+relation(v,[(1000,98),(1080,98),(1080,554),(532,554),(532,409)],680,544,'establecimiento 1 : 0..* tipos')
+entity(v,'marcas_vehiculo',35,68,220,['nombre'])
+entity(v,'modelos_vehiculo',425,68,250,['nombre'])
+entity(v,'tipos_vehiculo',425,320,250,['nombre'])
+entity(v,'establecimientos',821,25,211,['code'])
 entity(v,'vehiculos',792,225,272,['codigo_movil','license_plate','current_odometer_km'])
 v.svg(SRC/'MER-Flota.svg')
 diagram_pdf('02-Pulso-Modelo-Entidad-Relacion.pdf','Modelo entidad-relación',[
-    ('1 / Viajes y trazabilidad de dirección',d,[
-        'PK = clave primaria. FK = clave foránea. Cardinalidad escrita como padre : hijos.',
-        'Usuarios → viajes son dos relaciones opcionales: driver_id y created_by_user_id.',
-        'Cada revisión pertenece a un viaje y puede tener un autor. El historial conserva cambios de destino durante el viaje.',
-    ]),
-    ('2 / Identidad institucional, roles, sesiones y auditoría',u,[
-        'La FK compuesta usuarios(establishment_id, id_funcionario) vincula la cuenta a un funcionario de la misma institución.',
-        'Un funcionario puede existir sin una cuenta. entity_id de auditoría es una referencia lógica, no una FK.',
-    ]),
-    ('3 / Catálogos maestros de la flota',v,[
-        'Cada modelo pertenece a una marca. El vehículo referencia el modelo y el tipo de forma independiente.',
-        'La lectura actual del vehículo se actualiza al cerrar un viaje o mediante un ajuste administrativo auditado.',
-    ]),
+ ('1 / Viaje, asignaciones y trazabilidad',d,[
+  'Padre : hijos. La pertenencia de tramos y revisiones al viaje se protege mediante FK compuesta con establishment_id.',
+  'Usuarios → viajes representa chofer asignado y autor. Usuarios → tramos representa participación efectiva.',
+  'Los tramos son la fuente de verdad de chofer, vehículo y kilómetros; la cabecera guarda la asignación planificada y las lecturas globales.',
+  'Cada revisión puede tener un usuario autor (0..1); cada usuario puede generar varias revisiones (0..*).',
+ ]),
+ ('2 / Institución heredada del funcionario',u,[
+  'usuarios no almacena establishment_id. Se obtiene mediante id_funcionario, tanto al entrar como al restaurar la sesión.',
+  'El código de róster pertenece al funcionario y es único por establecimiento; un traslado que lo duplique es rechazado por MySQL.',
+  'registros_auditoria lleva establishment_id obligatorio (FK). entity_id es una referencia lógica polimórfica para auditoría general y admite identificadores históricos.',
+ ]),
+ ('3 / Catálogos propios por establecimiento',v,[
+  'Marca y tipo son únicos por institución. Modelo es único por institución y marca.',
+  'Las FK compuestas impiden asignar a un vehículo tipos o modelos de otro establecimiento.',
+ ]),
 ])
 # Añadir diccionario en un segundo PDF temporal y fusionar sin alterar el vector del MER.
 dictionary=[p('Diccionario de datos e integridad','Heading1'),p('Extraído de INFORMATION_SCHEMA y SHOW CREATE TABLE de la instalación local. No contiene registros. MySQL '+SCHEMA['databaseVersion']+'.')]
@@ -309,18 +320,22 @@ for name,meta in SCHEMA['tables'].items():
     sql[name]=re.sub(r' AUTO_INCREMENT=\d+', '', meta['ddl'])+';'
 dictionary += [PageBreak(),p('Restricciones y alcance','Heading1')]
 rules=[
- 'Las 13 tablas operativas tienen una PK entera autoincrementable con nombre id_[entidad en singular]. El MER emplea los nombres del esquema físico. migrations es infraestructura de CodeIgniter.',
- 'Cada viaje tiene un único chofer y vehículo cuando se inicia. El destino se almacena como destino y la actividad como actividad. Antes de iniciar se puede cambiar la asignación sin crear otro viaje.',
- 'En un relevo se registra la llegada del viaje saliente y se abre otro en la misma transacción. El nuevo viaje enlaza al anterior mediante id_viaje_anterior. La FK y su unicidad limitan la cadena a un sucesor por viaje.',
- 'Las columnas generadas active_driver_id y active_vehicle_id tienen índices únicos. Se activan con status IN_PROGRESS y previenen dos viajes simultáneos para el mismo recurso.',
- 'departure_odometer_km y arrival_odometer_km son las lecturas del viaje. Distancia = llegada menos salida cuando se conocen ambas. Al cerrar, la aplicación actualiza el odómetro del vehículo. Los ajustes administrativos requieren motivo y quedan auditados.',
- 'Cada revisión de dirección tiene un viaje y puede referenciar un usuario autor. Se registra el destino al crear y después de cada corrección, con número de revisión y fecha. El autor puede faltar en el legado.',
- 'Los usuarios pertenecen a un establecimiento y a un funcionario de la misma institución. roles reemplaza al ENUM. Las definiciones se mantienen por consola con php spark pulso:roles. Los permisos operativos vigentes son Administración y Chofer.',
- 'Los perfiles Jefatura de Movilización, Despacho y Solicitante están en el catálogo. Sus permisos, aprobaciones y pantallas requieren definición funcional. Los funcionarios admiten unidad institucional.',
- 'La identificación vehicular usa codigo_movil, patente y referencias a catálogos de tipos y modelos. Cada modelo tiene una marca. Si el dato histórico de marca falta, el catálogo la registra como desconocida.',
- 'El aislamiento operacional deriva de la sesión y se valida en los repositorios y en ServiceEngine. El acceso por establecimiento es una regla de aplicación además de las relaciones físicas de pertenencia.',
- 'No se cancelan viajes iniciados. Las cancelaciones anteriores y los kilometrajes históricos desconocidos se conservan como LEGACY. Un viaje histórico con varios tramos se transforma en viajes enlazados, con sus lecturas y recursos originales.',
- 'El SQL es una referencia del esquema verificado. Para actualizar una instalación existente use las migraciones CodeIgniter con la aplicación detenida y un respaldo previo verificado.',
+ 'El modelo contiene 14 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.',
+ 'usuarios hereda establishment_id desde funcionarios. El traslado del funcionario cambia la institución efectiva de su cuenta y de sus sesiones vigentes. Las participaciones históricas permanecen vinculadas a la institución del viaje.',
+ 'viajes almacena el propósito, destino, estado, fechas, centro de costos y asignación vigente. Antes de partir, driver_id y vehicle_id expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.',
+ 'El relevo cierra el tramo vigente, actualiza el odómetro del vehículo saliente y abre otro tramo en el mismo viaje. La operación es transaccional y exige la versión vigente. El folio, la fecha inicial y el centro de costos del viaje se conservan.',
+ 'viajes_tramos contiene id_viaje, id_chofer, id_vehiculo, fecha_inicio, fecha_fin, odometro_inicio y odometro_fin. Sus columnas generadas active_driver_id, active_vehicle_id y active_trip_id son STORED y UNIQUE y se activan cuando fecha_fin es NULL.',
+ 'Fuente única de verdad (informe del 09-11, sección 3): viajes_tramos es la única fuente de los recursos efectivamente usados (chofer, vehículo, fecha_inicio y fecha_fin) y de los kilómetros recorridos. viajes.driver_id y vehicle_id registran la asignación planificada, necesaria antes de que exista un tramo; durante el viaje la aplicación los iguala al tramo vigente en la misma transacción del relevo, y los informes de participación se calculan desde los tramos. viajes.departure_odometer_km y arrival_odometer_km son la lectura global de salida y llegada que pidió la segunda revisión; no se restan para obtener distancia. vehiculos.current_odometer_km es estado derivado: la aplicación lo actualiza al cerrar cada tramo, en la misma transacción, y rechaza lecturas menores a la vigente.',
+ 'Los kilómetros del viaje son la suma de odometro_fin menos odometro_inicio de sus tramos. Si falta una lectura, el total es desconocido. Las lecturas globales de cabecera son referencias al primer y último vehículo y no se restan para obtener distancia. Excepción: un viaje histórico sin tramos usó un solo vehículo, por lo que su distancia es la diferencia de esas lecturas.',
+ 'Cada tramo, revisión y registro de auditoría contiene establishment_id. Las FK compuestas impiden vincular tramos y revisiones a un viaje de otra institución. Las consultas operativas y de auditoría incluyen el filtro institucional.',
+ 'usuarios no guarda el código de róster: funcionarios.codigo_roster es único por establecimiento, de modo que la regla se mantiene también al trasladar a un funcionario.',
+ 'tipos_vehiculo, marcas_vehiculo y modelos_vehiculo son catálogos locales de cada establecimiento. Cada administrador registra los datos de su flota y la aplicación reutiliza los nombres existentes dentro de su institución.',
+ 'roles es un catálogo de definiciones mantenido por consola. Los permisos operativos implementados corresponden a Administración y Chofer. Los perfiles adicionales requieren definición funcional.',
+ 'revisiones_direccion conserva el texto, la secuencia, la fecha y el autor de cada corrección. La relación con el autor es opcional para preservar el legado.',
+ 'registros_auditoria es una auditoría general: entity_id es VARCHAR porque referencia viajes, vehículos o usuarios según entity_type y conserva identificadores históricos (legacy:...). Por eso no tiene FK a la entidad auditada. La integridad institucional se asegura con establishment_id NOT NULL y FK a establecimientos, y las consultas filtran por él.',
+ 'folios_viajes_anteriores conserva los folios de la versión de viajes enlazados y permite consultar el viaje consolidado y su auditoría. Los registros de auditoría originales mantienen su entity_id.',
+ 'La migración agrupa cadenas anteriores en un solo viaje, conserva cada recorrido como tramo y clona los catálogos usados por cada institución. Debe ejecutarse con la aplicación detenida y un respaldo restaurable. MySQL DDL no se revierte como una transacción ordinaria.',
+ 'Las cancelaciones operativas solo se admiten antes del inicio. Las excepciones LEGACY conservan registros históricos sin habilitar nuevas cancelaciones de viajes en curso.',
 ]
 dictionary += [p(x) for x in rules]
 document('_diccionario.pdf','Diccionario del modelo',dictionary)
@@ -328,19 +343,20 @@ from pypdf import PdfReader,PdfWriter
 writer=PdfWriter()
 for f in ['02-Pulso-Modelo-Entidad-Relacion.pdf','_diccionario.pdf']:writer.append(str(OUT/f))
 writer.write(str(OUT/'_mer.pdf'));writer.close();(OUT/'_mer.pdf').replace(OUT/'02-Pulso-Modelo-Entidad-Relacion.pdf');(OUT/'_diccionario.pdf').unlink()
-schema_order=re.findall(r'CREATE TABLE (\w+)', (ROOT/'apps/api-php/app/Database/schema-viajes.sql').read_text(encoding='utf-8'))
+schema_order=['establecimientos','roles','funcionarios','tipos_vehiculo','marcas_vehiculo','modelos_vehiculo',
+ 'usuarios','vehiculos','centros_costos','viajes','viajes_tramos','revisiones_direccion','sesiones','registros_auditoria','folios_viajes_anteriores']
 (SRC/'modelo-estructura.sql').write_text('-- Pulso: solo estructura de referencia. Instalar con migraciones CodeIgniter.\n\n'+'\n\n'.join(sql[name] for name in schema_order)+'\n',encoding='utf-8')
 (SRC/'modelo-metadatos.json').write_text(json.dumps(SCHEMA,ensure_ascii=False,indent=2),encoding='utf-8')
-markdown('MER-modelo-entidad-relacion.md','MER y diccionario', [('Fuente','Metadatos de 13 entidades de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.'),('Integridad','\n\n'.join(rules))])
+markdown('MER-modelo-entidad-relacion.md','MER y diccionario', [('Fuente','Metadatos de 14 entidades de negocio y una tabla de alias de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.'),('Integridad','\n\n'.join(rules))])
 
 # UML de casos de uso: actores, asociaciones y frontera del sistema.
 CASES=[
  ('CU-01','Iniciar y cerrar sesión',['Chofer','Administración'],'Cuenta y establecimiento activos.','Validar credenciales; crear sesión con token aleatorio y hash en base; revocar al salir.','Credenciales inválidas: rechazo; cinco fallos bloquean 15 minutos. Clave Única solo si está configurada.'),
  ('CU-02','Registrar servicio',['Chofer','Administración'],'Sesión válida.','Ingresar destino, actividad y centro o Indefinido; opcionalmente chofer y vehículo. Guardar o iniciar.','Sin chofer: PENDING. Con chofer: ASSIGNED. El chofer queda asignado a sí mismo. startNow fallido revierte el registro completo.'),
- ('CU-03','Consultar servicios e historial',['Chofer','Administración'],'Sesión válida.','Filtrar por estado; consultar datos y lecturas del viaje. Administración consulta también por chofer o vehículo.','Chofer solo ve sus servicios actuales/asignados. Administración solo consulta su institución.'),
+ ('CU-03','Consultar servicios e historial',['Chofer','Administración'],'Sesión válida.','Filtrar por estado; consultar datos y lecturas del viaje. Administración consulta también por chofer o vehículo.','Chofer consulta sus servicios asignados y aquellos donde participó, dentro de su institución vigente. Solo opera el chofer actualmente asignado. Administración solo consulta su institución.'),
  ('CU-04','Iniciar viaje',['Chofer'],'ASSIGNED y chofer actual; vehículo activo y odómetro conocido.','Tomar automáticamente odómetro actual, registrar salida y pasar a IN_PROGRESS.','Recurso ocupado: rechazo. El administrador no puede iniciar en nombre del chofer. Un cambio de vehículo ya asignado requiere administración.'),
  ('CU-05','Finalizar viaje',['Chofer'],'IN_PROGRESS; chofer actualmente asignado.','Ingresar odómetro de llegada; validar; registrar llegada, actualizar vehículo y marcar COMPLETED.','Lectura inferior o versión antigua: rechazo sin cierre. Administración no ejecuta complete por el chofer.'),
- ('CU-06','Asignar o reasignar recursos',['Administración'],'PENDING, ASSIGNED o IN_PROGRESS.','Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el viaje actual e iniciar otro enlazado en la misma transacción.','Sin cambios: rechazo. Recurso ocupado o lectura inválida: rollback. No modifica la identidad del vehículo.'),
+ ('CU-06','Asignar o reasignar recursos',['Administración'],'PENDING, ASSIGNED o IN_PROGRESS.','Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el tramo actual e iniciar otro dentro del mismo viaje en la misma transacción.','Sin cambios: rechazo. Recurso ocupado o lectura inválida: rollback. No modifica la identidad del vehículo.'),
  ('CU-07','Corregir dirección',['Administración'],'Servicio existente de la institución y versión vigente.','Guardar corrección y revisión de dirección; el chofer ve aviso y puede marcar Entendido.','El reconocimiento del aviso se conserva localmente en el navegador; no es un acuse centralizado de lectura.'),
  ('CU-08','Asignar centro de costos',['Administración'],'Servicio existente, centro activo de la institución.','Cambiar centro o dejar Indefinido; registrar cambio auditado.','No se aceptan centros ajenos ni inactivos. El centro puede asignarse después del inicio o del cierre.'),
  ('CU-09','Cancelar antes del inicio',['Administración'],'PENDING o ASSIGNED, started_at nulo.','Registrar motivo y pasar a CANCELLED con fecha.','IN_PROGRESS y COMPLETED: rechazo. No hay cierre de cancelación, km cancelados ni creación automática de retorno.'),
@@ -395,22 +411,23 @@ REQS=[
  ('TEC-07','Must','Operación independiente por establecimiento.','Verificado local','Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de administrador por consola.','AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento'),
  ('TEC-08','Must','Facilitar integración de autenticación con Clave Única.','Implementado; piloto pendiente','Inicio OAuth, state de un solo uso, callback, consulta de identidad y vínculo a RUN registrado. Falta validación con proveedor real.','ClaveUnicaClient; AuthController; AuthRepository; TestAuth'),
  ('DOC-01','Must','Diagrama de procesos BPMN.','Entregado','Tres procesos BPMN descriptivos con XML editable y DI, SVG y PDF.','01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn'),
- ('DOC-02','Must','Modelo entidad-relación.','Entregado','Trece entidades, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
+ ('DOC-02','Must','Modelo entidad-relación.','Entregado','Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
  ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y trece casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
  ('DOC-04','Must','Copia de requerimientos levantados; MoSCoW deseable.','Entregado para revisión','Matriz derivada del correo TI y acuerdos del usuario; debe ser validada por la contraparte funcional.','04-Pulso-Requerimientos-MoSCoW.pdf'),
  ('RF-01','Must','Crear servicio con destino, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o destino no se guarda. Indefinido es cost_center_id NULL y se asigna después.','ServiceEngine::create; CostCenterField'),
- ('RF-02','Must','Solo un servicio simultáneo por chofer y vehículo.','Verificado local','Viajes activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.','viajes; ServiceEngine; prueba concurrente'),
+ ('RF-02','Must','Solo un servicio simultáneo por chofer y vehículo.','Verificado local','Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.','viajes_tramos; ServiceEngine; prueba concurrente'),
  ('RF-03','Must','Iniciar y finalizar desde el chofer asignado.','Verificado local','Inicio toma lectura del vehículo; cierre exige odómetro válido y registra fechas. Administración no suplanta al chofer.','ServiceEngine start / complete'),
  ('RF-04','Must','Cancelación solo administrativa y previa al inicio.','Verificado local','PENDING / ASSIGNED sin started_at. IN_PROGRESS no se cancela.','ServiceEngine cancel; prueba de rechazo sin efectos'),
- ('RF-05','Must','Permitir reasignación de chofer o vehículo.','Verificado local','En ruta exige lectura del móvil saliente, finaliza su viaje y abre otro con la lectura propia del entrante.','ServiceEngine assignment'),
+ ('RF-05','Must','Permitir reasignación de chofer o vehículo.','Verificado local','En ruta exige lectura del móvil saliente, cierra su tramo y abre otro en el mismo viaje con la lectura del entrante.','ServiceEngine assignment'),
  ('RF-06','Must','Corregir dirección con historial y aviso al chofer.','Implementado','Aviso visible al actualizar datos; Entendido lo oculta en ese navegador. No es confirmación central en servidor.','revisiones_direccion; AddressChangeAlerts'),
  ('RF-07','Must','Vehículo con identidad fija; solo ajustar kilometraje.','Verificado local','Alta permitida; PATCH rechaza rol, patente, tipo, modelo, año y active. Motivo y versión obligatorios para km.','VehicleRepository; VehicleCard; pruebas API'),
  ('RF-08','Must','Exportar bitácora solo con completados del período.','Verificado local','Se usa ended_at y zona del establecimiento; excluye pendientes, activos y cancelados.','ReportRepository::daily; pruebas exportación'),
  ('RF-09','Must','Totales por centro con viajes y km.','Verificado local','Completados y cancelados separados; km solo completados con lecturas completas. Mostrar centros con actividad e incluir restantes opcionalmente.','ReportRepository::summary; CostCenterReport'),
- ('RF-10','Must','Historial de servicios por chofer y vehículo.','Implementado','Acceso administrativo desde sus nombres; cada viaje conserva su chofer y vehículo originales, incluidos los viajes cerrados por relevo.','OperationsDashboard; ServiceRepository'),
- ('MER-01','Must','PK enteras autoincrementables con nomenclatura institucional.','Implementado','Las 13 tablas operativas usan id_[entidad]. La migración remapea referencias y separa los tramos históricos.','ConsolidateTrips; diccionario físico'),
- ('MER-02','Must','Una entidad de viaje con lecturas de salida y llegada.','Verificado local','Un chofer y vehículo por viaje. El relevo cierra y crea un viaje enlazado de forma atómica.','viajes; ServiceEngine; pruebas de relevo'),
+ ('RF-10','Must','Historial de servicios por chofer y vehículo.','Implementado','Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.','OperationsDashboard; ServiceRepository'),
+ ('MER-01','Must','PK enteras autoincrementables con nomenclatura institucional.','Implementado','Las claves numéricas se conservan. La nueva migración consolida las cadenas anteriores y conserva sus alias.','ConsolidateTrips; diccionario físico'),
+ ('MER-02','Must','Una entidad de viaje con lecturas de salida y llegada.','Verificado local','Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.','viajes; ServiceEngine; pruebas de relevo'),
  ('MER-03','Must','Catálogos de roles, funcionarios y flota.','Implementado','roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.','schema-viajes.sql; pulso:roles; alta de vehículo'),
+ ('MER-05','Must','Institución heredada, catálogos locales y aislamiento de revisiones.','Verificado local','usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan establishment_id. Los catálogos tienen unicidad y FK institucionales.','DomainTrips; TestDomain; AuthRepository'),
  ('MER-04','Must','MER alineado con nombres, claves y cardinalidades físicas.','Entregado','Incluye relación opcional del usuario autor con cada revisión de dirección.','MER y diccionario físico'),
  ('FUT-02','Could','Pasajeros, solicitante formal y respaldo de la salida.','Por definir','Sujeto a requerimientos de Movilización. Jefatura, Despacho y Solicitante son definiciones de catálogo; faltan permisos y flujo aprobados.','Informe de revisión MER del 09-11-2026'),
  ('RNF-01','Must','Aislamiento, control de acceso y sesiones.','Verificado local','Roles ADMIN / DRIVER, Argon2id, cookie HttpOnly, token hash, bloqueo 5 fallos / 15 min. HTTPS y despliegue se verifican con TI.','AuthRepository; AuthFilter; AuthController'),
@@ -470,7 +487,7 @@ styles['BodyText'].fontSize=10;styles['BodyText'].leading=14;styles['BodyText'].
 styles['Heading2'].fontSize=12;styles['Heading2'].leading=16
 markdown('REQ-requerimientos-moscow.md','Requerimientos MoSCoW',[(id+' / '+priority+' / '+desc,'Estado: '+status+'\n\nCriterio: '+criterion+'\n\nEvidencia: '+evidence) for id,priority,desc,status,criterion,evidence in REQS]+[('Anexo: mensaje de TI',original)])
 
-audit=[p('Resultado de la corroboración','Heading1'),p('El sistema cumple localmente con el stack PHP / CodeIgniter, React, Bootstrap, FPDF y SheetJS solicitado; tiene aislamiento multiestablecimiento y recursos de interfaz locales. La aceptación integral permanece pendiente por la versión exacta de base de datos, la habilitación real de Clave Única y la validación de despliegue por TI. Esta revisión no certifica producción, rendimiento regional ni aprobación institucional.'),p('Corte auditado','Heading2'),p('Rama hospital-v2, base 77ce6a8e7b18c19f31b21c8983baf1931637402a más los cambios de consolidación de viajes y ajuste del MER. Los archivos y sus hashes se incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.'),p('Matriz de lineamientos','TableSection')]
+audit=[p('Resultado de la corroboración','Heading1'),p('El sistema cumple localmente con el stack PHP / CodeIgniter, React, Bootstrap, FPDF y SheetJS solicitado; tiene aislamiento multiestablecimiento y recursos de interfaz locales. La aceptación integral permanece pendiente por la versión exacta de base de datos, la habilitación real de Clave Única y la validación de despliegue por TI. Esta revisión no certifica producción, rendimiento regional ni aprobación institucional.'),p('Corte auditado','Heading2'),p('Rama '+BRANCH+', commit '+COMMIT+(' más cambios locales sin commit' if LOCAL_CHANGES else '')+'. Incluye los cambios solicitados por TI sobre institución heredada, tramos, catálogos, róster y aislamiento de la auditoría. Los archivos y sus hashes se incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.'),p('Matriz de lineamientos','TableSection')]
 audit += [table([['Lineamiento','Estado','Evidencia / límite']]+[[r[2],r[3],r[4]+' Fuente: '+r[5]] for r in REQS if r[0].startswith(('TEC','DOC'))],[155,105,255])]
 audit += [p('Arquitectura MVC con vista React','Heading1'),p('La capa Controller recibe REST y aplica autorización; Models contiene repositorios y consultas; Libraries concentra reglas de dominio, transacciones y exportadores. La vista es la SPA React compilada, servida por FrontendController desde public/index.html. No hay plantillas PHP para cada pantalla operacional: la vista React está separada del backend. React está expresamente incluido entre las tecnologías permitidas; TI debe conocer esta distribución al evaluar MVC.'),p('Dependencias locales y comunicaciones externas','Heading1'),p('Bootstrap 5.3.8 (utilidades), React, fuentes Inter e iconos SVG forman parte del build local. SheetJS se obtiene desde su distribuidor al instalar dependencias, y Vite lo empaqueta dentro de public/assets; no se referencia un CDN en ejecución. Composer instala CI y FPDF en vendor. Node se usa para compilar/desarrollar; el despliegue de la SPA compilada y PHP no necesita un servidor Node activo.'),p('El enlace Ver en Maps abre Google Maps por decisión del usuario. Clave Única, cuando se habilite, requiere comunicación HTTPS con el proveedor estatal. Son servicios externos, no bibliotecas cargadas por CDN. Una política de intranet que prohíba toda salida a internet requiere que TI decida si permite estos dos usos.'),p('Multiestablecimiento y límites reales','Heading1'),p('El aislamiento se implementa en la aplicación y se comprueba con dos instituciones de prueba, consultas, mutaciones, reportes y zonas horarias distintas. Las FK físicas por id no constituyen una política de seguridad por fila del motor. La provisión de nuevos establecimientos es por consola y sus catálogos deben cargarse por separado. Los RUN y usuarios son únicos globalmente: una cuenta pertenece a una institución; no hay selector de múltiples instituciones para una misma persona.'),p('La transacción bloquea una fila por institución; favorece consistencia para el piloto. No se realizó prueba de carga regional, alta disponibilidad ni recuperación ante desastres. Escalabilidad de infraestructura y concurrencia real deben validarse con TI.'),p('Autenticación y Clave Única','Heading1'),p('Autenticación local Argon2id, sesión opaca con hash SHA-256, HttpOnly y SameSite Strict; Secure en producción. La integración Clave Única usa state consumible y con vencimiento, intercambio de código, consulta de identidad y enlace a RUN preexistente. Pruebas con transporte simulado y validación de errores cubren el contrato; no sustituyen homologación ni sesión real del proveedor. TI debe registrar cliente y callback HTTPS, configurar secretos fuera del repositorio y validar RUN de usuarios autorizados.'),p('Verificaciones del código','Heading1'),p('La validación local ejecutó las pruebas de sesión, autenticación, provisión e integración PHP/MySQL. npm run build y npm run lint correctos. Las pruebas incluyen permisos, aislamiento, concurrencia, odómetros, restricciones de cancelación e identidad vehicular, reporte de completados y PDF real. El contrato de datos Excel está probado; la revisión no incluye abrir cada archivo en todas las versiones de Excel ni probar todos los navegadores/dispositivos.'),p('Pendientes para aceptación','Heading1')]
 for text in [
@@ -480,26 +497,26 @@ for text in [
  'TI / Clave Única: habilitación y prueba real del proveedor con credenciales institucionales, URL callback y usuarios autorizados. El requisito de facilitar integración está implementado; su puesta en servicio está pendiente.',
  'Equipo funcional: prueba piloto desde dispositivos y red del hospital; validar legibilidad, fechas, asignaciones, reportes y flujo diario. Las pruebas automatizadas no equivalen a aceptación de usuarios.'
 ]:audit.append(p(text))
-audit += [p('Respuesta al informe MER del 09-11-2026','Heading1'), table([
+audit += [p('Respuesta a las observaciones de TI / 22-11-2026','Heading1'), table([
  ['Observación','Resolución','Evidencia'],
  ['PK y nomenclatura','PK enteras AUTO_INCREMENT y nombres id_[entidad]. Tablas operativas en español. Se conservan algunos nombres técnicos de columnas.','SQL, diccionario y migración.'],
- ['Diagrama y atributos','Destinos y actividades coinciden con las columnas físicas. Se dibujan PK, FK y cardinalidades del historial de direcciones.','MER, vistas 1 a 3.'],
- ['Viajes y kilometraje','Una fila por viaje. El relevo cierra e inicia viajes enlazados de forma atómica. Lecturas por viaje y odómetro vigente derivado al cerrar.','ServiceEngine, viajes y pruebas de relevo.'],
- ['Personal y roles','Catálogo de roles y entidad funcionarios. Mantenedor por consola. Las nuevas definiciones no otorgan permisos por sí solas.','roles, funcionarios, pulso:roles.'],
- ['Flota','codigo_movil y referencias a tipo, modelo y marca. Los registros históricos conservan las marcas desconocidas como tales.','MER de flota y alta del vehículo.'],
+ ['Diagrama y atributos','Destinos y actividades coinciden con las columnas físicas. Revisiones y tramos llevan establishment_id con FK institucional compuesta.','MER, vistas 1 a 3.'],
+ ['Viajes y kilometraje','El viaje permanece abierto durante el relevo. Sus tramos registran los recursos y odómetros. El recorrido suma las diferencias por tramo.','ServiceEngine, viajes y pruebas de relevo.'],
+ ['Personal y roles','Institución heredada del funcionario, catálogo de roles y entidad funcionarios. Mantenedor por consola. Las nuevas definiciones no otorgan permisos por sí solas.','roles, funcionarios, pulso:roles.'],
+ ['Flota','codigo_movil y catálogos con establishment_id. Unicidad y FK compuestas por institución. Las marcas históricas desconocidas permanecen identificadas como tales.','MER de flota y alta del vehículo.'],
  ['Pasajeros y respaldo','Pendiente de confirmación funcional.','MoSCoW FUT-02.'],
  ],[133,248,134]), p('Actualización de instalaciones existentes','Heading2'),
- p('Antes del cambio, detenga el servicio y verifique un respaldo restaurable. Ejecute php spark migrate. La migración copia primero a tablas temporales de esquema, remapea los UUID y activa el nuevo modelo con un renombrado atómico. Los folios anteriores cambian y los tramos históricos conservan sus recursos y lecturas como viajes enlazados. La reversión requiere restaurar el respaldo.')]
+ p('Antes del cambio, detenga el servicio y verifique un respaldo restaurable. Ejecute php spark migrate. La migración conserva las cabeceras raíz, convierte sus recorridos en tramos y registra alias de los folios anteriores. Los catálogos se copian por institución. MySQL DDL requiere restauración del respaldo si falla una actualización parcial. La reversión requiere restaurar el respaldo.')]
 audit += [p('Referencias técnicas consultadas','Heading1'),p('Oracle MySQL: https://dev.mysql.com/doc/refman/8.4/en/mysql-releases.html','SmallPulso'),p('CodeIgniter MVC: https://codeigniter.com/user_guide/concepts/mvc.html','SmallPulso'),p('OMG BPMN 2.0.2: https://www.omg.org/spec/BPMN/2.0.2/About-BPMN','SmallPulso'),p('Los paquetes y versiones se corroboraron en los lockfiles y archivos instalados. No se sustituyen requisitos institucionales por recomendaciones de fabricantes.','SmallPulso')]
 document('00-Pulso-Corroboracion-Tecnica.pdf','Corroboración de lineamientos TI',audit)
-markdown('AUDITORIA-cumplimiento-2026-11-10.md','Corroboración de lineamientos TI',[
+markdown('AUDITORIA-cumplimiento-2026-11-22.md','Corroboración de lineamientos TI',[
  ('Resultado','Cumplimiento local del stack y aislamiento. Aceptación integral pendiente: versión de MySQL solicitada, habilitación real Clave Única y despliegue hospitalario.'),
  ('Matriz','\n\n'.join(r[0]+': '+r[2]+'\nEstado: '+r[3]+'\n'+r[4]+'\nEvidencia: '+r[5] for r in REQS if r[0].startswith(('TEC','DOC')))),
  ('Validación','Suite local PHP/MySQL y sesión, build y lint correctos. No hay pruebas de carga regional ni homologación real Clave Única.'),
  ('Arquitectura','Controllers REST + Models/repositorios + Libraries de dominio; vista React compilada servida por FrontendController. Sin Node en ejecución productiva.'),
  ('Salidas externas','No hay scripts CSS o fuentes de CDN en ejecución. Maps es enlace voluntario; Clave Única usa HTTPS al proveedor cuando esté habilitado.'),
  ('Límites','Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origin=LEGACY preserva registros históricos sin permitir nuevas cancelaciones en ruta.')])
-markdown('BPMN-procesos.md','Procesos BPMN',[(pid+' / '+title,'Ver BPMN-'+pid+'.svg y Pulso-procesos.bpmn.\n\n'+('El relevo cierra el viaje actual y abre otro enlazado. Un viaje iniciado se finaliza con sus lecturas.' if pid=='Ejecutar' else 'Modelo descriptivo del comportamiento actual, no ejecutable.')) for pid,title,*_ in PROCESSES])
+markdown('BPMN-procesos.md','Procesos BPMN',[(pid+' / '+title,'Ver BPMN-'+pid+'.svg y Pulso-procesos.bpmn.\n\n'+('El relevo cierra el tramo actual y abre otro dentro del mismo viaje. Un viaje iniciado se finaliza con sus lecturas.' if pid=='Ejecutar' else 'Modelo descriptivo del comportamiento actual, no ejecutable.')) for pid,title,*_ in PROCESSES])
 
 # Sustituir borradores antiguos por sus versiones actuales; conservar auditoría histórica con advertencia.
 for name in ['BPMN-procesos.md','MER-modelo-entidad-relacion.md','UML-casos-de-uso.md','REQ-requerimientos-moscow.md']:
@@ -507,14 +524,14 @@ for name in ['BPMN-procesos.md','MER-modelo-entidad-relacion.md','UML-casos-de-u
 old=ROOT/'docs/AUDITORIA-migracion-php-2026-10-08.md'
 if old.exists():
     text=old.read_text(encoding='utf-8')
-    if not text.startswith('> HISTÓRICO'):old.write_text('> HISTÓRICO: evaluación del 08-10-2026. No acredita el estado actual. Consultar entrega-ti-2026-11-10/AUDITORIA-cumplimiento-2026-11-10.md.\n\n'+text,encoding='utf-8')
+    if not text.startswith('> HISTÓRICO'):old.write_text('> HISTÓRICO: evaluación del 08-10-2026. No acredita el estado actual. Consultar entrega-ti-2026-11-22/AUDITORIA-cumplimiento-2026-11-22.md.\n\n'+text,encoding='utf-8')
 evidence={}
 for file in [ROOT/'apps/api-php/app/Database/schema-viajes.sql',ROOT/'apps/api-php/composer.lock',ROOT/'apps/web/package-lock.json',ROOT/'scripts/test-api.mjs']+list((ROOT/'apps/api-php/app').rglob('*.php'))+list((ROOT/'apps/web/src').rglob('*')):
     if file.is_file():evidence[str(file.relative_to(ROOT)).replace('\\','/')]=hashlib.sha256(file.read_bytes()).hexdigest()
-(SRC/'inventario-auditado.json').write_text(json.dumps({'fecha':'2026-11-10','baseCommit':'77ce6a8e7b18c19f31b21c8983baf1931637402a','incluyeCambiosLocales':True,'sha256':evidence},indent=2),encoding='utf-8')
+(SRC/'inventario-auditado.json').write_text(json.dumps({'fecha':'2026-11-22','baseCommit':COMMIT,'incluyeCambiosLocales':LOCAL_CHANGES,'sha256':evidence},indent=2),encoding='utf-8')
 (SRC/'LEEME.md').write_text('''# Pulso / entrega para revisión TI
 
-Fecha: 2026-11-10. No equivale a aceptación institucional ni certificado de producción.
+Fecha: 2026-11-22. No equivale a aceptación institucional ni certificado de producción.
 
 Los cinco PDF están en la carpeta pdf del ZIP. Fuentes editables:
 - Pulso-procesos.bpmn: BPMN 2.0 con tres procesos y geometría DI; importar en editor compatible.
@@ -522,10 +539,10 @@ Los cinco PDF están en la carpeta pdf del ZIP. Fuentes editables:
 - MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql: MER y esquema sin registros.
 - UML-casos-de-uso.puml y UML-*.svg: casos de uso editables y vistas por actor.
 - REQ-requerimientos-moscow.md: línea base y transcripción de solicitud TI.
-- AUDITORIA-cumplimiento-2026-11-10.md: matriz y límites de verificación.
+- AUDITORIA-cumplimiento-2026-11-22.md: matriz y límites de verificación.
 - inventario-auditado.json: hashes del código revisado, sin secretos.
 
-Esta entrega incorpora las observaciones del informe MER del 09-11-2026 y la regla de cierre y apertura por relevo. Las cancelaciones solo existen antes del inicio; solo se edita el kilometraje de un vehículo. La excepción histórica LEGACY no habilita nuevas cancelaciones en ruta. No incluye .env, credenciales, registros de usuarios ni bitácoras.
+Esta entrega incorpora el informe MER del 09-11-2026 y las observaciones posteriores de TI confirmadas el 22-11-2026 sobre institución heredada, catálogos por establecimiento y relevos dentro del viaje. Las cancelaciones solo existen antes del inicio; solo se edita el kilometraje de un vehículo. La excepción histórica LEGACY no habilita nuevas cancelaciones en ruta. No incluye .env, credenciales, registros de usuarios ni bitácoras.
 
 Pendiente de TI: versión literal «MySQL 16.x», habilitación real de Clave Única, despliegue y aceptación del piloto. Para actualizar una base existente, detener el servicio y comprobar un respaldo restaurable antes de ejecutar php spark migrate. Usar el SQL adjunto como referencia. La reversión requiere restauración.
 ''',encoding='utf-8')
@@ -539,7 +556,7 @@ for pdf in sorted(OUT.glob('0?-Pulso-*.pdf')):
         page.merge_page(PdfReader(buffer).pages[0]);writer.add_page(page)
     writer.add_metadata({'/Title':pdf.stem,'/Author':'Pulso / Oficina de Movilización'})
     destination=ROOT/'.runtime'/pdf.name;writer.write(destination);writer.close();shutil.copyfile(destination,pdf);destination.unlink()
-archive=ROOT/'output/Pulso-Entregables-TI-2026-11-10.zip'
+archive=ROOT/'output/Pulso-Entregables-TI-2026-11-22.zip'
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
     for f in sorted(SRC.rglob('*')):
         if f.is_file():z.write(f,'editables/'+str(f.relative_to(SRC)))

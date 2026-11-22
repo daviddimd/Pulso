@@ -10,6 +10,8 @@ final class LegacyTripImport
         'service_legs', 'service_address_revisions', 'sessions', 'audit_logs'];
 
     private array $ids = [];
+    private bool $domain = false;
+    private array $tripTenants = [];
 
     public function __construct(private BaseConnection $db, private string $prefix = '') {}
 
@@ -34,6 +36,7 @@ final class LegacyTripImport
 
     public function copy(callable $rows): void
     {
+        $this->domain = $this->prefix === '' && $this->db->tableExists('viajes_tramos');
         $roles = [];
         foreach ([
             'ADMIN' => ['Administración', 'Gestiona los viajes y la flota del establecimiento.'],
@@ -51,13 +54,14 @@ final class LegacyTripImport
         }
         foreach ($rows('users') as $row) {
             $tenant = $this->id('establishments', $row['establishment_id']);
-            $staff = $this->insert('funcionarios', ['establishment_id'=>$tenant, 'nombre'=>$row['full_name']]);
+            $staff = $this->insert('funcionarios', ['establishment_id'=>$tenant, 'nombre'=>$row['full_name']] +
+                ($this->domain ? ['codigo_roster'=>$row['roster_code'] ?? null] : []));
             $this->ids['users'][$row['id']] = $this->insert('usuarios', $this->fields($row,
-                'username roster_code full_name password_hash active failed_login_attempts locked_until rut clave_unica_sub auth_provider created_at updated_at') +
-                ['establishment_id'=>$tenant, 'id_funcionario'=>$staff, 'id_rol'=>$roles[$row['role']]]);
+                ($this->domain ? '' : 'roster_code ').'username full_name password_hash active failed_login_attempts locked_until rut clave_unica_sub auth_provider created_at updated_at') +
+                ($this->domain ? [] : ['establishment_id'=>$tenant]) + ['id_funcionario'=>$staff, 'id_rol'=>$roles[$row['role']]]);
         }
         foreach ($rows('vehicles') as $row) {
-            $catalog = VehicleCatalog::ids($this->db, $row['vehicle_type'] ?? null, $row['model'] ?? null, null, $this->prefix);
+            $catalog = VehicleCatalog::ids($this->db, $row['vehicle_type'] ?? null, $row['model'] ?? null, null, $this->prefix, $this->domain ? $this->id('establishments', $row['establishment_id']) : null);
             $this->ids['vehicles'][$row['id']] = $this->insert('vehiculos', $catalog +
                 $this->fields($row, 'license_plate current_odometer_km year active created_at updated_at') +
                 ['establishment_id'=>$this->id('establishments', $row['establishment_id']), 'codigo_movil'=>$row['role_code']]);
@@ -72,10 +76,12 @@ final class LegacyTripImport
         foreach ($rows('service_legs') as $leg) $legs[$leg['service_id']][] = $leg;
         foreach ($rows('bitacora_entries') as $row) {
             if (!empty($row['closure_pending'])) throw new \RuntimeException('Cierre los viajes históricos pendientes antes de importar.');
-            $this->copyTrip($row, $legs[$row['id']] ?? []);
+            $this->tripTenants[$row['id']] = $this->id('establishments', $row['establishment_id']);
+            if ($this->domain) $this->copyDomainTrip($row, $legs[$row['id']] ?? []);
+            else $this->copyTrip($row, $legs[$row['id']] ?? []);
         }
         foreach ($rows('service_address_revisions') as $row) {
-            $this->insert('revisiones_direccion', $this->fields($row, 'revision address source created_at') +
+            $this->insert('revisiones_direccion', $this->fields($row, 'revision address source created_at') + ($this->domain ? ['establishment_id'=>$this->tripTenants[$row['service_id']]] : []) +
                 ['service_id'=>$this->id('bitacora_entries', $row['service_id']), 'actor_user_id'=>$this->id('users', $row['actor_user_id'] ?? null)]);
         }
         foreach ($rows('sessions') as $row) {
@@ -87,10 +93,50 @@ final class LegacyTripImport
                 'USER' => 'users', 'VEHICLE' => 'vehicles', 'BITACORA' => 'bitacora_entries', default => null,
             };
             $oldId = (string)$row['entity_id'];
+            $actor = $this->id('users', $row['actor_user_id'] ?? null);
+            $entity = $type === null ? null : ($this->ids[$type][$oldId] ?? null);
             $this->insert('registros_auditoria', $this->fields($row, 'entity_type action before_data after_data ip_address created_at') +
-                ['actor_user_id'=>$this->id('users', $row['actor_user_id'] ?? null),
-                 'entity_id'=>($type === null ? null : ($this->ids[$type][$oldId] ?? null)) ?? 'legacy:' . $oldId]);
+                ($this->domain ? ['establishment_id'=>$this->auditTenant($type, $entity, $actor)] : []) +
+                ['actor_user_id'=>$actor, 'entity_id'=>$entity ?? 'legacy:' . $oldId]);
         }
+    }
+
+    /** The audited record decides the institution; orphaned records fall back to their author. */
+    private function auditTenant(?string $type, ?string $entity, ?string $actor): string
+    {
+        $tenant = match (true) {
+            $entity === null => null,
+            $type === 'bitacora_entries' => $this->db->table('viajes')->select('establishment_id')->where('id_viaje', $entity)->get()->getRowArray(),
+            $type === 'vehicles' => $this->db->table('vehiculos')->select('establishment_id')->where('id_vehiculo', $entity)->get()->getRowArray(),
+            $type === 'users' => UserAccounts::query($this->db)->where('u.id_usuario', $entity)->get()->getRowArray(),
+            default => null,
+        };
+        $tenant ??= $actor === null ? null : UserAccounts::query($this->db)->where('u.id_usuario', $actor)->get()->getRowArray();
+        if (!$tenant) throw new \RuntimeException('Registro de auditoría histórico sin institución identificable.');
+        return (string)$tenant['establishment_id'];
+    }
+
+    private function copyDomainTrip(array $row, array $legs): void
+    {
+        $tenant=$this->id('establishments',$row['establishment_id']);
+        usort($legs,fn($a,$b)=>[$a['started_at'],$a['id']]<=>[$b['started_at'],$b['id']]);
+        $first=$legs[0] ?? null;
+        $last=$legs ? $legs[count($legs)-1] : null;
+        $id=$this->insert('viajes',[
+            'establishment_id'=>$tenant,'cost_center_id'=>$this->id('cost_centers',$row['cost_center_id']??null),
+            'created_by_user_id'=>$this->id('users',$row['created_by_user_id']??null),
+            'driver_id'=>$this->id('users',$row['driver_id']??null),'vehicle_id'=>$this->id('vehicles',$row['vehicle_id']??null),
+            'destino'=>$row['service_address'],'actividad'=>$row['action_performed'],'origin'=>'LEGACY',
+            'status'=>$row['status'],'version'=>$row['version']??0,'started_at'=>$row['started_at']??null,
+            'ended_at'=>$row['ended_at']??null,'cancelled_at'=>$row['cancelled_at']??null,'void_reason'=>$row['void_reason']??null,
+            'departure_odometer_km'=>$first['departure_odometer_km']??null,
+            'arrival_odometer_km'=>$last['arrival_odometer_km']??($row['odometer_km']??null),
+            'created_at'=>$row['created_at']??null,'updated_at'=>$row['updated_at']??null]);
+        $this->ids['bitacora_entries'][$row['id']]=$id;
+        foreach ($legs as $leg) $this->insert('viajes_tramos',[
+            'establishment_id'=>$tenant,'id_viaje'=>$id,'id_chofer'=>$this->id('users',$leg['driver_id']),
+            'id_vehiculo'=>$this->id('vehicles',$leg['vehicle_id']),'fecha_inicio'=>$leg['started_at'],
+            'fecha_fin'=>$leg['ended_at'],'odometro_inicio'=>$leg['departure_odometer_km'],'odometro_fin'=>$leg['arrival_odometer_km']]);
     }
 
     private function copyTrip(array $row, array $legs): void

@@ -13,20 +13,21 @@ final class VehicleCatalog
         $existing = $builder->select($key)->where($values)->get()->getRowArray();
         if ($existing) return (string)$existing[$key];
 
-        // Concurrent registrations from different institutions may share a catalog entry.
+        // Deduplicate names within the institution using the database unique key.
         $columns = implode(', ', array_keys($values));
         $placeholders = implode(', ', array_fill(0, count($values), '?'));
         $db->query("INSERT INTO $table ($columns) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $key = LAST_INSERT_ID($key)", array_values($values));
         return (string)$db->insertID();
     }
 
-    public static function ids(BaseConnection $db, ?string $type, ?string $model, ?string $make = null, string $prefix = ''): array
+    public static function ids(BaseConnection $db, ?string $type, ?string $model, ?string $make = null, string $prefix = '', ?string $establishment = null): array
     {
-        $typeId = $type === null ? null : self::reference($db, $prefix . 'tipos_vehiculo', 'id_tipo_vehiculo', ['nombre' => $type]);
+        $tenant = $establishment === null ? [] : ['establishment_id'=>$establishment];
+        $typeId = $type === null ? null : self::reference($db, $prefix . 'tipos_vehiculo', 'id_tipo_vehiculo', $tenant + ['nombre' => $type]);
         if ($model === null) return ['id_tipo_vehiculo' => $typeId, 'id_modelo_vehiculo' => null];
 
-        $makeId = self::reference($db, $prefix . 'marcas_vehiculo', 'id_marca_vehiculo', ['nombre' => $make ?? self::UNKNOWN_MAKE]);
-        $modelId = self::reference($db, $prefix . 'modelos_vehiculo', 'id_modelo_vehiculo', ['id_marca_vehiculo' => $makeId, 'nombre' => $model]);
+        $makeId = self::reference($db, $prefix . 'marcas_vehiculo', 'id_marca_vehiculo', $tenant + ['nombre' => $make ?? self::UNKNOWN_MAKE]);
+        $modelId = self::reference($db, $prefix . 'modelos_vehiculo', 'id_modelo_vehiculo', $tenant + ['id_marca_vehiculo' => $makeId, 'nombre' => $model]);
         return ['id_tipo_vehiculo' => $typeId, 'id_modelo_vehiculo' => $modelId];
     }
 

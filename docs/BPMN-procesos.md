@@ -1,6 +1,6 @@
 # Procesos BPMN
 
-Fecha: 2026-11-10. Versión 2.0.
+Fecha: 2026-11-22. Versión 3.0.
 
 ## Preparar / Registro, asignación e inicio
 
@@ -12,7 +12,7 @@ Modelo descriptivo del comportamiento actual, no ejecutable.
 
 Ver BPMN-Ejecutar.svg y Pulso-procesos.bpmn.
 
-El relevo cierra el viaje actual y abre otro enlazado. Un viaje iniciado se finaliza con sus lecturas.
+El relevo cierra el tramo actual y abre otro dentro del mismo viaje. Un viaje iniciado se finaliza con sus lecturas.
 
 ## Reportar / Reportes de servicios y centros de costos
 

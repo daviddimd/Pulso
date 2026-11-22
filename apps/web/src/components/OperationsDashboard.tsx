@@ -205,8 +205,8 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
       {admin && profile && tab === 'history' && <button className="ops-profile-back" onClick={() => { setProfile(null); setTab(profile.kind === 'vehicle' ? 'vehicles' : 'services'); }}>← Volver a {profile.kind === 'vehicle' ? 'vehículos' : 'servicios'}</button>}
       {tab === "costs" && admin ? <CostCenterReport /> : tab === "history" && admin && profile ? <ProfileHistory costCenters={costCenters} key={profile.kind + profile.id} profile={profile} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} /> : tab === "vehicles" && admin ? <VehiclePanel vehicles={vehicles} mutate={mutate} onProfile={openProfile} /> : <>
         <section hidden={tab !== "start"} className="ops-start-workspace">
-        {!admin && activeServices.length > 0 && <><p className="ops-section-note">Registra los kilómetros al llegar.</p>{activeServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</>}
-        {!admin && upcomingServices.length > 0 && <section aria-label="Viajes pendientes"><h2 className="ops-section-heading"><Icon name="clock" />Por iniciar<span>{upcomingServices.length}</span></h2><div className="ops-services">{upcomingServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</div></section>}
+        {!admin && activeServices.length > 0 && <><p className="ops-section-note">Registra los kilómetros al llegar.</p>{activeServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} viewerId={user.id} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</>}
+        {!admin && upcomingServices.length > 0 && <section aria-label="Viajes pendientes"><h2 className="ops-section-heading"><Icon name="clock" />Por iniciar<span>{upcomingServices.length}</span></h2><div className="ops-services">{upcomingServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} viewerId={user.id} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</div></section>}
         {(admin || activeServices.length === 0) && <section className="ops-card ops-start-card">
           <div className="ops-form-heading"><span className="ops-form-symbol"><Icon name="route" /></span><div><h2>Datos del traslado</h2><p>{admin ? "Asigna los recursos para coordinar el servicio." : "Ingresa los datos del nuevo servicio."}</p></div></div>
           <form onSubmit={e => void create(e)} onChange={() => setCreateError("")} className="ops-form">
@@ -238,7 +238,7 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
         <div className="ops-filter-results" aria-busy={filtering} data-loading={filtering} data-instant={!filterMotion} inert={filtering || !currentResults}>
         <div className={admin ? 'ops-services ops-services-compact' : 'ops-services'}>{entries.map(entry => admin ? <ServiceDisclosure key={entry.id} entry={entry} subtitle={`${entry.driver?.fullName ?? 'Chofer por asignar'} · ${entry.vehicle ? vehicleLabel(entry.vehicle) : 'Vehículo por asignar'}`}>
           <ServiceCard costCenters={costCenters} entry={entry} admin vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} />
-        </ServiceDisclosure> : <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} />)}</div>
+        </ServiceDisclosure> : <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} viewerId={user.id} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} />)}</div>
         {updated && currentResults && !entries.length && <div className="ops-empty"><span className="ops-empty-symbol"><Icon name="route" /></span><h2>Todo despejado por aquí</h2><p>No hay servicios con este estado.</p></div>}
         {(total > 30 || page > 1) && <div className="ops-pagination"><button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Anterior</button><span>Página {page}</span><button disabled={page * 30 >= total} onClick={() => setPage(p => p + 1)}>Siguiente</button></div>}
         </div>
@@ -336,7 +336,7 @@ function ProfileHistory({ profile, costCenters, vehicles, drivers, mutate, onPro
     </>}
   </section>;
 }
-function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, onProfile }: { entry: Service; costCenters: CostCenter[]; admin: boolean; vehicles: Vehicle[]; drivers: Driver[]; mutate: Mutation; onProfile?: OpenProfile }) {
+function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, onProfile, viewerId }: { viewerId?: string; entry: Service; costCenters: CostCenter[]; admin: boolean; vehicles: Vehicle[]; drivers: Driver[]; mutate: Mutation; onProfile?: OpenProfile }) {
   const [edit, setEdit] = useState<{ command: string; snapshot: Service } | null>(null);
   const [logs, setLogs] = useState<{ id: string; action: string; createdAt: string; actor: { fullName: string } | null }[] | null>(null);
   const [auditError, setAuditError] = useState("");
@@ -374,8 +374,8 @@ function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, 
     {(s.endedAt || s.startedAt) && <p className="ops-service-date">{s.endedAt ? "Finalizado: " + time(s.endedAt) : "Inicio: " + time(s.startedAt)}</p>}
     {s.voidReason && <p className="ops-change">Cancelación: {s.voidReason}</p>}
     <div className="ops-actions ops-service-actions">
-      {!admin && s.status === "ASSIGNED" && <button className="ops-primary-action" onClick={() => open("start")}>Iniciar viaje</button>}
-      {!admin && s.status === "IN_PROGRESS" && <button className="ops-primary-action" onClick={() => open("complete")}>Finalizar viaje</button>}
+      {!admin && viewerId === s.driverId && s.status === "ASSIGNED" && <button className="ops-primary-action" onClick={() => open("start")}>Iniciar viaje</button>}
+      {!admin && viewerId === s.driverId && s.status === "IN_PROGRESS" && <button className="ops-primary-action" onClick={() => open("complete")}>Finalizar viaje</button>}
       {admin && <details className="ops-service-tools"><summary>Gestionar servicio<Icon name="chevron" /></summary><div className="ops-actions"><button onClick={() => open("cost-center")}>Asignar centro de costos</button>
       {admin && <button onClick={() => open("address")}>Corregir dirección</button>}
       {admin && ["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(s.status) && <button onClick={() => open("assignment")}>{s.status === "IN_PROGRESS" ? "Registrar relevo" : "Asignar / reasignar"}</button>}
@@ -383,24 +383,23 @@ function ServiceCard({ entry: s, costCenters, admin, vehicles, drivers, mutate, 
       </div></details>}
     </div>
     {edit && <form className="ops-form ops-edit" onSubmit={e => void submit(e)} onChange={() => setFormError("")}>
-      {edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS" && <p>Se cerrará este viaje con el kilometraje indicado y se iniciará otro con el chofer y el vehículo seleccionados.</p>}
+      {edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS" && <p>Se cerrará el tramo actual y el viaje continuará con el chofer y el vehículo seleccionados.</p>}
       {edit.command === "cost-center" && <CostCenterField centers={costCenters} initial={edit.snapshot.costCenterId ?? UNDEFINED_COST_CENTER} />}
       {edit.snapshot.version !== s.version && <p role="alert">El servicio cambió mientras editabas. Cierra este formulario y vuelve a abrirlo con los datos actualizados.</p>}
       {edit.command === "address" && <AddressField label="Dirección corregida" initial={edit.snapshot.serviceAddress} />}
       {edit.command === "assignment" && <label>Chofer<select name="driver" defaultValue={edit.snapshot.driverId ?? ""} required><option value="">Seleccionar</option>{driverOptions(drivers)}</select></label>}
       {["assignment", "start"].includes(edit.command) && <label>Vehículo<select name="vehicle" defaultValue={edit.snapshot.vehicleId ?? ""} disabled={edit.command === "start" && !!edit.snapshot.vehicleId} required={edit.command === "start" || edit.snapshot.status === "IN_PROGRESS"}><option value="">Sin asignar</option>{vehicleOptions(vehicles)}</select>{edit.command === "start" && edit.snapshot.vehicleId && <small>Para cambiar el vehículo asignado, solicita la reasignación a administración.</small>}</label>}
-      {(edit.command === "complete" || edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS") && <label>{edit.command === "assignment" ? "Kilometraje actual del vehículo que termina el viaje" : "Kilometraje de llegada"}<input name="km" type="number" inputMode="numeric" min="0" max="5000000" step="1" placeholder="Ej. 52 480" required /></label>}
+      {(edit.command === "complete" || edit.command === "assignment" && edit.snapshot.status === "IN_PROGRESS") && <label>{edit.command === "assignment" ? "Kilometraje actual del vehículo saliente" : "Kilometraje de llegada"}<input name="km" type="number" inputMode="numeric" min="0" max="5000000" step="1" placeholder="Ej. 52 480" required /></label>}
       {edit.command === "cancel" && <label>Motivo de cancelación<textarea name="reason" minLength={3} maxLength={500} required /></label>}
       {formError && <p ref={errorRef} className="driver-error ops-form-error" role="alert">{formError}</p>}
-      <div className="ops-actions"><button className="ops-primary-action" disabled={edit.snapshot.version !== s.version}>{({ "cost-center": "Guardar centro", start: "Confirmar inicio", complete: "Confirmar finalización", assignment: edit.snapshot.status === "IN_PROGRESS" ? "Cerrar e iniciar otro viaje" : "Guardar asignación", address: "Guardar dirección", cancel: "Confirmar cancelación" } as Record<string, string>)[edit.command] ?? "Confirmar"}</button><button type="button" onClick={() => { setFormError(""); setEdit(null); }}>Cerrar formulario</button></div>
+      <div className="ops-actions"><button className="ops-primary-action" disabled={edit.snapshot.version !== s.version}>{({ "cost-center": "Guardar centro", start: "Confirmar inicio", complete: "Confirmar finalización", assignment: edit.snapshot.status === "IN_PROGRESS" ? "Confirmar relevo" : "Guardar asignación", address: "Guardar dirección", cancel: "Confirmar cancelación" } as Record<string, string>)[edit.command] ?? "Confirmar"}</button><button type="button" onClick={() => { setFormError(""); setEdit(null); }}>Cerrar formulario</button></div>
     </form>}
     <details className="ops-history"><summary>Detalles del servicio<Icon name="chevron" /></summary>
       <p>Referencia: {s.id}</p>
-      {s.previousTripId && <p>Continuación del viaje #{s.previousTripId}</p>}
       <dl className="ops-facts"><div><dt>Inicio</dt><dd>{time(s.startedAt)}</dd></div><div><dt>Finalización</dt><dd>{time(s.endedAt)}</dd></div></dl>
       <h3>Direcciones registradas</h3>
       <ol>{s.addressRevisions.map(r => <li key={r.id}>{r.address} · {r.actor?.fullName ?? (r.source === "LEGACY" ? "Registro histórico" : "Sin autor disponible")} · {time(r.createdAt)}</li>)}</ol>
-      {s.legs.length > 0 && <h3>Lecturas del viaje</h3>}
+      {s.legs.length > 0 && <h3>Tramos y lecturas</h3>}
       {s.legs.map(l => <section className="ops-leg" key={l.id}><p><strong>{l.driver.fullName}</strong> · {vehicleLabel(l.vehicle)}</p><dl className="ops-facts"><div><dt>Salida</dt><dd>{time(l.startedAt)}</dd></div><div><dt>Llegada</dt><dd>{time(l.endedAt)}</dd></div><div><dt>Odómetro de salida</dt><dd>{formatKm(l.departureOdometerKm)}</dd></div><div><dt>Odómetro de llegada</dt><dd>{formatKm(l.arrivalOdometerKm)}</dd></div></dl></section>)}
       {admin && <><button onClick={() => void audit()}>Consultar trazabilidad</button>{auditError && <p role="alert">{auditError}</p>}{logs?.map(l => <p key={l.id}>{time(l.createdAt)} · {l.action} · {l.actor?.fullName ?? "Sin autor"}</p>)}</>}
     </details>
