@@ -18,6 +18,9 @@ rectangle Pulso {
   usecase "CU-11\nAjustar kilometraje" as CU11
   usecase "CU-12\nConsultar centros y exportar" as CU12
   usecase "CU-13\nProvisionar establecimiento" as CU13
+  usecase "CU-14\nGestionar cuentas" as CU14
+  usecase "CU-15\nConfigurar instalación nueva" as CU15
+  usecase "CU-16\nRestablecer contraseña" as CU16
 }
 Chofer -- CU01
 Admin -- CU01
@@ -35,5 +38,8 @@ Admin -- CU10
 Admin -- CU11
 Admin -- CU12
 TI -- CU13
+Admin -- CU14
+TI -- CU15
+TI -- CU16
 CU -- CU01
 @enduml

@@ -27,7 +27,7 @@
     {
       "archivo": "00-Pulso-Corroboracion-Tecnica.pdf",
       "paginas": 4,
-      "sha256": "4138bfa5af663f820faf828d716d966dc48f1d5bbef412f70663b8c38f3e5ad3"
+      "sha256": "85c0947f2581a6cb20e5b6fba6103741e94a299b4249cd44da5055351e1ac882"
     },
     {
       "archivo": "01-Pulso-Procesos-BPMN.pdf",
@@ -41,13 +41,13 @@
     },
     {
       "archivo": "03-Pulso-Casos-de-Uso-UML.pdf",
-      "paginas": 5,
-      "sha256": "dc6e18390565c79a1e7eca37636f65aac94fe5b2001076da422c642558fab88f"
+      "paginas": 6,
+      "sha256": "1b11cc6c92b84700987452f28920100e58ec2164bda578a2a2810fd7e05db5db"
     },
     {
       "archivo": "04-Pulso-Requerimientos-MoSCoW.pdf",
       "paginas": 7,
-      "sha256": "0a5f9ffaed96314103167b9bfdfd0744ec5231b82af3005dd078545777622f63"
+      "sha256": "b72f54809a702bb3953c128e2ca4d625c324ccf8cb7a5ee5fd17153b1320892b"
     }
   ],
   "limites": "Esta validación documental no acredita una instalación hospitalaria, carga regional ni autenticación real contra Clave Única."

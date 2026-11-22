@@ -131,3 +131,33 @@ Precondición: Acceso autorizado a consola del servidor.
 Flujo: Ejecutar pulso:establishment con código, nombre, zona IANA y usuario; clave inicial por variable de entorno.
 
 Excepciones: Código/usuario duplicado o zona inválida: rechazo. Crea institución y administrador; no copia catálogos de otras instituciones.
+
+## CU-14 Gestionar cuentas
+
+Actores: Administración
+
+Precondición: Sesión de administración.
+
+Flujo: Consultar las cuentas de la institución y crear cuentas de chofer o de administración con nombre, usuario, código de róster opcional y contraseña inicial de al menos 12 caracteres.
+
+Excepciones: Usuario duplicado, róster repetido en la institución o rol distinto de Chofer o Administración: rechazo. La cuenta queda en la institución del administrador. La auditoría no guarda la contraseña ni su hash.
+
+## CU-15 Configurar instalación nueva
+
+Actores: Operador TI
+
+Precondición: Base migrada sin instituciones y acceso al servidor para leer el código de un solo uso.
+
+Flujo: Abrir /configurar, ingresar el código obtenido con pulso:codigo-configuracion y crear la institución y su cuenta de administración.
+
+Excepciones: Código inválido: rechazo sin efectos. Con una institución existente /configurar queda cerrado. El código se elimina al usarse.
+
+## CU-16 Restablecer contraseña
+
+Actores: Operador TI
+
+Precondición: Acceso autorizado a consola del servidor.
+
+Flujo: Ejecutar pulso:clave con el usuario; la contraseña nueva se entrega por variable de entorno. Desbloquea la cuenta y cierra sus sesiones.
+
+Excepciones: Contraseña de menos de 12 caracteres o usuario inexistente: rechazo. Las contraseñas no se recuperan; solo se reemplazan. Queda registrado en la auditoría.

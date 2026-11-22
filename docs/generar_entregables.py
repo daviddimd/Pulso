@@ -364,13 +364,18 @@ CASES=[
  ('CU-11','Ajustar kilometraje',['Administración'],'Vehículo de su institución sin viaje activo y updatedAt vigente.','Ingresar nueva lectura entera y motivo; guardar con auditoría.','No permite cambiar rol, patente, modelo, tipo, año ni activación. El ajuste administrativo puede corregir inconsistencias del odómetro.'),
  ('CU-12','Consultar centros y exportar',['Administración'],'Período válido de hasta 365 días de diferencia.','Consultar bitácora o resumen por centro; exportar Excel local o PDF del servidor.','Bitácora incluye solo completados por fecha de finalización. Resumen cuenta cancelados por separado y no suma sus km. Fechas en zona institucional.'),
  ('CU-13','Provisionar establecimiento',['Operador TI'],'Acceso autorizado a consola del servidor.','Ejecutar pulso:establishment con código, nombre, zona IANA y usuario; clave inicial por variable de entorno.','Código/usuario duplicado o zona inválida: rechazo. Crea institución y administrador; no copia catálogos de otras instituciones.'),
+ ('CU-14','Gestionar cuentas',['Administración'],'Sesión de administración.','Consultar las cuentas de la institución y crear cuentas de chofer o de administración con nombre, usuario, código de róster opcional y contraseña inicial de al menos 12 caracteres.','Usuario duplicado, róster repetido en la institución o rol distinto de Chofer o Administración: rechazo. La cuenta queda en la institución del administrador. La auditoría no guarda la contraseña ni su hash.'),
+ ('CU-15','Configurar instalación nueva',['Operador TI'],'Base migrada sin instituciones y acceso al servidor para leer el código de un solo uso.','Abrir /configurar, ingresar el código obtenido con pulso:codigo-configuracion y crear la institución y su cuenta de administración.','Código inválido: rechazo sin efectos. Con una institución existente /configurar queda cerrado. El código se elimina al usarse.'),
+ ('CU-16','Restablecer contraseña',['Operador TI'],'Acceso autorizado a consola del servidor.','Ejecutar pulso:clave con el usuario; la contraseña nueva se entrega por variable de entorno. Desbloquea la cuenta y cierra sus sesiones.','Contraseña de menos de 12 caracteres o usuario inexistente: rechazo. Las contraseñas no se recuperan; solo se reemplazan. Queda registrado en la auditoría.'),
 ]
 def actor(d,x,y,name):
     d.ellipse(x-9,y,18,18);d.line([(x,y+18),(x,y+48)]);d.line([(x-20,y+29),(x+20,y+29)]);d.line([(x,y+48),(x-17,y+68)]);d.line([(x,y+48),(x+17,y+68)]);d.text(x,y+86,name,11,True)
 uml_pages=[]
 for who in ['Chofer','Administración']:
     cases=[case for case in CASES if who in case[2]]
-    height=690 if who=='Administración' else 590
+    ti_cases=[case for case in CASES if 'Operador TI' in case[2]] if who=='Administración' else []
+    ti_top=55+len(cases)*54+24
+    height=ti_top+len(ti_cases)*54+40 if who=='Administración' else 590
     d=Diagram(1100,height);d.rect(265,15,620,height-30);d.text(575,39,'Pulso / frontera del sistema',13,True)
     actor(d,90,200,who);actor(d,1010,65,'Clave Única')
     for i,(cid,title,*_) in enumerate(cases):
@@ -381,7 +386,10 @@ for who in ['Chofer','Administración']:
         x=340;y=55+i*(54 if who=='Administración' else 92)
         d.ellipse(x,y,500,46,PALE);d.text(x+250,y+28,cid+' '+title,11)
     if who=='Administración':
-        actor(d,1010,585,'Operador TI');d.line([(990,620),(840,630)],color='#a1b4b8');d.ellipse(340,607,500,46,PALE);d.text(590,635,'CU-13 Provisionar establecimiento',11)
+        actor(d,1010,ti_top,'Operador TI')
+        for i,(cid,title,*_) in enumerate(ti_cases):
+            y=ti_top+i*54
+            d.line([(990,ti_top+35),(840,y+23)],color='#a1b4b8');d.ellipse(340,y,500,46,PALE);d.text(590,y+28,cid+' '+title,11)
     d.svg(SRC/('UML-Chofer.svg' if who=='Chofer' else 'UML-Administracion.svg'))
     uml_pages.append((who+' / asociaciones y casos de uso',d,['Líneas continuas = asociaciones actor-caso; no representan flujo temporal. Los casos comunes conservan el mismo identificador en ambas vistas.','Clave Única es opcional; requiere habilitación. Operador TI usa consola y no es un rol de la aplicación. Ver especificaciones siguientes.']))
 (SRC/'UML-casos-de-uso.svg').unlink(missing_ok=True)
@@ -408,11 +416,12 @@ REQS=[
  ('TEC-04','Must','PDF con FPDF 1.9.x.','Verificado local','FPDF 1.9.0; respuestas PDF verificadas en pruebas de API.','PdfExporter.php; ExportsController.php; CostCentersController.php'),
  ('TEC-05','Must','Excel con SheetJS / xlsx.','Verificado local','SheetJS 0.20.3 compilado dentro del frontend; sin carga de scripts remotos al exportar.','src/xlsx-export.ts; lockfile frontend'),
  ('TEC-06','Must','Bibliotecas y fuentes servidas localmente; sin CDN en ejecución.','Verificado estático','CSS, JS, fuentes y SVG locales. La URL npm de SheetJS se usa al instalar/compilar, no por el navegador en producción.','main.tsx; index.html compilado; assets locales'),
- ('TEC-07','Must','Operación independiente por establecimiento.','Verificado local','Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de administrador por consola.','AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento'),
+ ('TEC-07','Must','Operación independiente por establecimiento.','Verificado local','Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de la primera institución en /configurar y de las siguientes por consola.','AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento'),
  ('TEC-08','Must','Facilitar integración de autenticación con Clave Única.','Implementado; piloto pendiente','Inicio OAuth, state de un solo uso, callback, consulta de identidad y vínculo a RUN registrado. Falta validación con proveedor real.','ClaveUnicaClient; AuthController; AuthRepository; TestAuth'),
+ ('INS-01','Must','Instalación nueva configurable sin credenciales precargadas.','Verificado local','/configurar solo existe mientras no hay instituciones; exige un código de un solo uso guardado en writable/, crea institución y administrador y se cierra al usarse. Probado desde un clon con base vacía.','SetupRepository; SetupPage; pulso:test-setup'),
  ('DOC-01','Must','Diagrama de procesos BPMN.','Entregado','Tres procesos BPMN descriptivos con XML editable y DI, SVG y PDF.','01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn'),
  ('DOC-02','Must','Modelo entidad-relación.','Entregado','Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
- ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y trece casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
+ ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y dieciséis casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
  ('DOC-04','Must','Copia de requerimientos levantados; MoSCoW deseable.','Entregado para revisión','Matriz derivada del correo TI y acuerdos del usuario; debe ser validada por la contraparte funcional.','04-Pulso-Requerimientos-MoSCoW.pdf'),
  ('RF-01','Must','Crear servicio con destino, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o destino no se guarda. Indefinido es cost_center_id NULL y se asigna después.','ServiceEngine::create; CostCenterField'),
  ('RF-02','Must','Solo un servicio simultáneo por chofer y vehículo.','Verificado local','Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.','viajes_tramos; ServiceEngine; prueba concurrente'),
@@ -424,6 +433,7 @@ REQS=[
  ('RF-08','Must','Exportar bitácora solo con completados del período.','Verificado local','Se usa ended_at y zona del establecimiento; excluye pendientes, activos y cancelados.','ReportRepository::daily; pruebas exportación'),
  ('RF-09','Must','Totales por centro con viajes y km.','Verificado local','Completados y cancelados separados; km solo completados con lecturas completas. Mostrar centros con actividad e incluir restantes opcionalmente.','ReportRepository::summary; CostCenterReport'),
  ('RF-10','Must','Historial de servicios por chofer y vehículo.','Implementado','Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.','OperationsDashboard; ServiceRepository'),
+ ('RF-11','Must','Administración crea cuentas de chofer y de administración.','Verificado local','Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.','AccountRepository; AccountsPanel; pruebas API'),
  ('MER-01','Must','PK enteras autoincrementables con nomenclatura institucional.','Implementado','Las claves numéricas se conservan. La nueva migración consolida las cadenas anteriores y conserva sus alias.','ConsolidateTrips; diccionario físico'),
  ('MER-02','Must','Una entidad de viaje con lecturas de salida y llegada.','Verificado local','Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.','viajes; ServiceEngine; pruebas de relevo'),
  ('MER-03','Must','Catálogos de roles, funcionarios y flota.','Implementado','roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.','schema-viajes.sql; pulso:roles; alta de vehículo'),
@@ -432,6 +442,7 @@ REQS=[
  ('FUT-02','Could','Pasajeros, solicitante formal y respaldo de la salida.','Por definir','Sujeto a requerimientos de Movilización. Jefatura, Despacho y Solicitante son definiciones de catálogo; faltan permisos y flujo aprobados.','Informe de revisión MER del 09-11-2026'),
  ('RNF-01','Must','Aislamiento, control de acceso y sesiones.','Verificado local','Roles ADMIN / DRIVER, Argon2id, cookie HttpOnly, token hash, bloqueo 5 fallos / 15 min. HTTPS y despliegue se verifican con TI.','AuthRepository; AuthFilter; AuthController'),
  ('RNF-02','Must','Evitar sobrescrituras y conservar trazabilidad.','Verificado local','Versiones, expectedUpdatedAt, transacciones y registros_auditoria. No se promete inmutabilidad frente al DBA.','UnitOfWork; ServiceEngine; AuditService'),
+ ('RNF-03','Should','Restablecer contraseñas olvidadas sin exponerlas.','Verificado local','pulso:clave por consola con la contraseña en variable de entorno; desbloquea, cierra sesiones y audita. Las contraseñas con Argon2id no se recuperan.','ResetPassword; UserAccounts::resetPassword; pulso:test-setup'),
  ('UX-01','Should','Interfaz móvil legible, sobria y con temas claro/oscuro.','Implementado','Controles amplios, SVG locales, navegación adaptable y reduced-motion. Falta aceptación en dispositivos institucionales.','CSS responsive; ThemeToggle; componentes'),
  ('UX-02','Should','Autocompletar centro por código o nombre.','Implementado','Un campo con sugerencias y primera opción Indefinido.','CostCenterField.tsx'),
  ('FUT-01','Could','Canales de avisos centralizados y acuse de lectura.','Fuera de versión','Solo se ofrece aviso en la app mediante actualización periódica y reconocimiento local.','Propuesta; sin compromiso actual'),

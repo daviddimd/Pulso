@@ -40,7 +40,7 @@ Evidencia: main.tsx; index.html compilado; assets locales
 
 TEC-07: Operación independiente por establecimiento.
 Estado: Verificado local
-Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de administrador por consola.
+Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de la primera institución en /configurar y de las siguientes por consola.
 Evidencia: AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento
 
 TEC-08: Facilitar integración de autenticación con Clave Única.
@@ -60,7 +60,7 @@ Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
 DOC-03: Casos de uso UML.
 Estado: Entregado
-Actores, frontera del sistema y trece casos con flujos y excepciones.
+Actores, frontera del sistema y dieciséis casos con flujos y excepciones.
 Evidencia: 03-Pulso-Casos-de-Uso-UML.pdf
 
 DOC-04: Copia de requerimientos levantados; MoSCoW deseable.

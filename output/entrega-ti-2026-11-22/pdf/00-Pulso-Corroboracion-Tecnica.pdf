@@ -44,7 +44,7 @@ endobj
 endobj
 5 0 obj
 <<
-/Length 7395
+/Length 7450
 >>
 stream
 q
@@ -94,7 +94,7 @@ q
 1 0 0 1 46 563.8898 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Rama hospital-v2, commit a6c2bdc61a134006145265e14be836fc9de9f509. Incluye los cambios solicitados por) Tj T* (TI sobre instituci\001n heredada, tramos, cat\004logos, r\001ster y aislamiento de la auditor\005a. Los archivos y sus hashes) Tj T* (se incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.) Tj T* ET
+BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Rama hospital-v2, commit 597aba2198ff304d6425e483cd47a2d38f69d57d. Incluye los cambios solicitados por TI) Tj T* (sobre instituci\001n heredada, tramos, cat\004logos, r\001ster y aislamiento de la auditor\005a. Los archivos y sus hashes se) Tj T* (incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.) Tj T* ET
 Q
 Q
 q
@@ -105,24 +105,24 @@ BT 1 0 0 1 0 5 Tm /F3+0 17 Tf 22 TL (Matriz de lineamientos) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 91.88976 cm
+1 0 0 1 46 80.88976 cm
 q
 .141176 .34902 .4 rg
-n 0 437 515 -25 re f*
+n 0 448 515 -25 re f*
 1 1 1 rg
-n 0 412 515 -47 re f*
+n 0 423 515 -47 re f*
 .933333 .956863 .956863 rg
-n 0 365 515 -47 re f*
+n 0 376 515 -47 re f*
 1 1 1 rg
-n 0 318 515 -47 re f*
+n 0 329 515 -47 re f*
 .933333 .956863 .956863 rg
-n 0 271 515 -47 re f*
+n 0 282 515 -47 re f*
 1 1 1 rg
-n 0 224 515 -36 re f*
+n 0 235 515 -36 re f*
 .933333 .956863 .956863 rg
-n 0 188 515 -47 re f*
+n 0 199 515 -47 re f*
 1 1 1 rg
-n 0 141 515 -47 re f*
+n 0 152 515 -58 re f*
 .933333 .956863 .956863 rg
 n 0 94 515 -58 re f*
 1 1 1 rg
@@ -130,21 +130,21 @@ n 0 36 515 -36 re f*
 1 1 1 rg
 BT /F1 10 Tf 12 TL ET
 q
-1 0 0 1 7 419 cm
+1 0 0 1 7 430 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Lineamiento) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 419 cm
+1 0 0 1 162 430 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Estado) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 419 cm
+1 0 0 1 267 430 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Evidencia / l\005mite) Tj T* ET
@@ -152,140 +152,140 @@ Q
 Q
 0 0 0 rg
 q
-1 0 0 1 7 383 cm
+1 0 0 1 7 394 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (CodeIgniter 4.x y PHP 8.4.x,) Tj T* (separaci\001n MVC.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 394 cm
+1 0 0 1 162 405 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 372 cm
+1 0 0 1 267 383 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (CI 4.7.5 / PHP 8.4.27; controladores, repositorios, dominio y vista) Tj T* (React. Fuente: composer.lock; app/Controllers; app/Models;) Tj T* (apps/web/src) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 336 cm
+1 0 0 1 7 347 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Frontend HTML5, Bootstrap 5.x y) Tj T* (React; Ajax mediante JavaScript.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 347 cm
+1 0 0 1 162 358 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 325 cm
+1 0 0 1 267 336 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (React 19.2.8; Bootstrap utilities 5.3.8; fetch REST. No requiere) Tj T* (jQuery al usar React. Fuente: apps/web/package.json; src/main.tsx;) Tj T* (src/operations.ts) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 289 cm
+1 0 0 1 7 300 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Base de datos: MySQL 16.x, seg\006n) Tj T* (correo de TI.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 300 cm
+1 0 0 1 162 311 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Pendiente TI) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 278 cm
+1 0 0 1 267 289 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (Motor local MySQL 8.4.11. Confirmar producto y versi\001n exactos;) Tj T* (no asumir PostgreSQL ni MariaDB. Fuente: metadata de la base;) Tj T* (migraci\001n CreatePulsoTables) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 253 cm
+1 0 0 1 7 264 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (PDF con FPDF 1.9.x.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 253 cm
+1 0 0 1 162 264 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 231 cm
+1 0 0 1 267 242 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (FPDF 1.9.0; respuestas PDF verificadas en pruebas de API.) Tj T* (Fuente: PdfExporter.php; ExportsController.php;) Tj T* (CostCentersController.php) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 206 cm
+1 0 0 1 7 217 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Excel con SheetJS / xlsx.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 206 cm
+1 0 0 1 162 217 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 195 cm
+1 0 0 1 267 206 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (SheetJS 0.20.3 compilado dentro del frontend; sin carga de scripts) Tj T* (remotos al exportar. Fuente: src/xlsx-export.ts; lockfile frontend) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 159 cm
+1 0 0 1 7 170 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Bibliotecas y fuentes servidas) Tj T* (localmente; sin CDN en ejecuci\001n.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 170 cm
+1 0 0 1 162 181 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado est\004tico) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 148 cm
+1 0 0 1 267 159 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (CSS, JS, fuentes y SVG locales. La URL npm de SheetJS se usa al) Tj T* (instalar/compilar, no por el navegador en producci\001n. Fuente:) Tj T* (main.tsx; index.html compilado; assets locales) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 112 cm
+1 0 0 1 7 123 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Operaci\001n independiente por) Tj T* (establecimiento.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 123 cm
+1 0 0 1 162 134 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
@@ -295,7 +295,7 @@ q
 1 0 0 1 267 101 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (Consultas y mutaciones por instituci\001n; cat\004logos propios, zona) Tj T* -0.000977 Tw (horaria y provisi\001n de administrador por consola. Fuente: AuthFilter;) Tj T* 0 Tw (repositorios; UnitOfWork; pruebas de aislamiento) Tj T* ET
+BT 1 0 0 1 0 36 Tm /F2+0 8 Tf 11 TL (Consultas y mutaciones por instituci\001n; cat\004logos propios, zona) Tj T* (horaria y provisi\001n de la primera instituci\001n en /configurar y de las) Tj T* -0.072917 Tw (siguientes por consola. Fuente: AuthFilter; repositorios; UnitOfWork;) Tj T* 0 Tw (pruebas de aislamiento) Tj T* ET
 Q
 Q
 q
@@ -345,7 +345,7 @@ q
 1 j
 .141176 .34902 .4 RG
 .6 w
-n 0 412 m 515 412 l S
+n 0 423 m 515 423 l S
 Q
 Q
 Q
@@ -1011,7 +1011,7 @@ endobj
 endobj
 21 0 obj
 <<
-/Length 6233
+/Length 6240
 >>
 stream
 q
@@ -1093,7 +1093,7 @@ q
 1 0 0 1 267 54 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Actores, frontera del sistema y trece casos con flujos y) Tj T* (excepciones. Fuente: 03-Pulso-Casos-de-Uso-UML.pdf) Tj T* ET
+BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Actores, frontera del sistema y diecis\002is casos con flujos y) Tj T* (excepciones. Fuente: 03-Pulso-Casos-de-Uso-UML.pdf) Tj T* ET
 Q
 Q
 q
@@ -2219,41 +2219,41 @@ xref
 0000000231 00000 n 
 0000000280 00000 n 
 0000000553 00000 n 
-0000008000 00000 n 
-0000008107 00000 n 
-0000008214 00000 n 
-0000009346 00000 n 
-0000009588 00000 n 
-0000048336 00000 n 
-0000049109 00000 n 
-0000050200 00000 n 
-0000050443 00000 n 
-0000088169 00000 n 
-0000088914 00000 n 
-0000090066 00000 n 
-0000090321 00000 n 
-0000120283 00000 n 
-0000121050 00000 n 
-0000121326 00000 n 
-0000127612 00000 n 
-0000127720 00000 n 
-0000128811 00000 n 
-0000129054 00000 n 
-0000166780 00000 n 
-0000167525 00000 n 
-0000167801 00000 n 
-0000174381 00000 n 
-0000174489 00000 n 
-0000175580 00000 n 
-0000175823 00000 n 
-0000213549 00000 n 
-0000214294 00000 n 
-0000214570 00000 n 
-0000216643 00000 n 
-0000216751 00000 n 
-0000217842 00000 n 
-0000218085 00000 n 
-0000255811 00000 n 
+0000008055 00000 n 
+0000008162 00000 n 
+0000008269 00000 n 
+0000009401 00000 n 
+0000009643 00000 n 
+0000048391 00000 n 
+0000049164 00000 n 
+0000050255 00000 n 
+0000050498 00000 n 
+0000088224 00000 n 
+0000088969 00000 n 
+0000090121 00000 n 
+0000090376 00000 n 
+0000120338 00000 n 
+0000121105 00000 n 
+0000121381 00000 n 
+0000127674 00000 n 
+0000127782 00000 n 
+0000128873 00000 n 
+0000129116 00000 n 
+0000166842 00000 n 
+0000167587 00000 n 
+0000167863 00000 n 
+0000174443 00000 n 
+0000174551 00000 n 
+0000175642 00000 n 
+0000175885 00000 n 
+0000213611 00000 n 
+0000214356 00000 n 
+0000214632 00000 n 
+0000216705 00000 n 
+0000216813 00000 n 
+0000217904 00000 n 
+0000218147 00000 n 
+0000255873 00000 n 
 trailer
 <<
 /Size 41
@@ -2261,5 +2261,5 @@ trailer
 /Info 1 0 R
 >>
 startxref
-256556
+256618
 %%EOF

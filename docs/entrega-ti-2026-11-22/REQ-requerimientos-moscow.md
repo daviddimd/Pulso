@@ -54,7 +54,7 @@ Evidencia: main.tsx; index.html compilado; assets locales
 
 Estado: Verificado local
 
-Criterio: Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de administrador por consola.
+Criterio: Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de la primera institución en /configurar y de las siguientes por consola.
 
 Evidencia: AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento
 
@@ -65,6 +65,14 @@ Estado: Implementado; piloto pendiente
 Criterio: Inicio OAuth, state de un solo uso, callback, consulta de identidad y vínculo a RUN registrado. Falta validación con proveedor real.
 
 Evidencia: ClaveUnicaClient; AuthController; AuthRepository; TestAuth
+
+## INS-01 / Must / Instalación nueva configurable sin credenciales precargadas.
+
+Estado: Verificado local
+
+Criterio: /configurar solo existe mientras no hay instituciones; exige un código de un solo uso guardado en writable/, crea institución y administrador y se cierra al usarse. Probado desde un clon con base vacía.
+
+Evidencia: SetupRepository; SetupPage; pulso:test-setup
 
 ## DOC-01 / Must / Diagrama de procesos BPMN.
 
@@ -86,7 +94,7 @@ Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
 Estado: Entregado
 
-Criterio: Actores, frontera del sistema y trece casos con flujos y excepciones.
+Criterio: Actores, frontera del sistema y dieciséis casos con flujos y excepciones.
 
 Evidencia: 03-Pulso-Casos-de-Uso-UML.pdf
 
@@ -178,6 +186,14 @@ Criterio: Acceso administrativo desde sus nombres; incluye la participación de 
 
 Evidencia: OperationsDashboard; ServiceRepository
 
+## RF-11 / Must / Administración crea cuentas de chofer y de administración.
+
+Estado: Verificado local
+
+Criterio: Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.
+
+Evidencia: AccountRepository; AccountsPanel; pruebas API
+
 ## MER-01 / Must / PK enteras autoincrementables con nomenclatura institucional.
 
 Estado: Implementado
@@ -241,6 +257,14 @@ Estado: Verificado local
 Criterio: Versiones, expectedUpdatedAt, transacciones y registros_auditoria. No se promete inmutabilidad frente al DBA.
 
 Evidencia: UnitOfWork; ServiceEngine; AuditService
+
+## RNF-03 / Should / Restablecer contraseñas olvidadas sin exponerlas.
+
+Estado: Verificado local
+
+Criterio: pulso:clave por consola con la contraseña en variable de entorno; desbloquea, cierra sesiones y audita. Las contraseñas con Argon2id no se recuperan.
+
+Evidencia: ResetPassword; UserAccounts::resetPassword; pulso:test-setup
 
 ## UX-01 / Should / Interfaz móvil legible, sobria y con temas claro/oscuro.
 
