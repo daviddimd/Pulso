@@ -13,6 +13,7 @@ import { PulsoMark } from "./components/PulsoMark";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { DriverDashboard } from "./components/DriverDashboard";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { SetupPage } from "./components/SetupPage";
 
 type BaseUser = {
   id: string;
@@ -78,6 +79,31 @@ function App() {
 
   const [loading, setLoading] =
     useState(false);
+
+  const [setupMode, setSetupMode] = useState(() => window.location.pathname === "/configurar");
+  const [setupNotice, setSetupNotice] = useState(false);
+
+  // A fresh installation without institutions goes straight to /configurar.
+  useEffect(() => {
+    if (setupMode) return;
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/setup`, { signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (data?.required !== true) return;
+        window.history.replaceState(null, "", "/configurar");
+        setSetupMode(true);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [setupMode]);
+
+  function finishSetup(createdUsername: string) {
+    window.history.replaceState(null, "", "/");
+    setUsername(createdUsername);
+    setSetupNotice(true);
+    setSetupMode(false);
+  }
 
   const [
     checkingSession,
@@ -237,12 +263,15 @@ function App() {
     );
   }
 
+  if (setupMode) return <SetupPage onDone={finishSetup} />;
+
   return (
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
         <header className="login-header"><div className="brand"><PulsoMark size="small" /><strong>Pulso<span>Oficina de Movilización</span></strong></div><ThemeToggle /></header>
         <div className="login-content">
           <div className="login-heading"><h1 id="login-title">Acceso al sistema</h1><p>Ingresa con las credenciales asignadas por administración.</p></div>
+          {setupNotice && <p className="setup-notice" role="status">Institución creada. Ingresa con la cuenta de administración que acabas de definir.</p>}
           <form className="login-form" onSubmit={handleSubmit}>
             <label>Usuario<input type="text" name="username" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Tu nombre de usuario" value={username} onChange={event=>setUsername(event.target.value)} disabled={loading} required /></label>
             <label>Contraseña<input type="password" name="password" autoComplete="current-password" placeholder="Tu contraseña" value={password} onChange={event=>setPassword(event.target.value)} disabled={loading} required /></label>

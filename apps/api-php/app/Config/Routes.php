@@ -27,6 +27,10 @@ $routes->group('api', ['namespace' => 'App\Controllers'], static function ($rout
         });
     });
 
+    // First-run setup, closed once an establishment exists
+    $routes->get('setup', 'SetupController::status');
+    $routes->post('setup', 'SetupController::create');
+
     // Services routes
     $routes->group('services', static function ($routes) {
         $routes->get('/', 'ServicesController::index');
@@ -47,6 +51,8 @@ $routes->group('api', ['namespace' => 'App\Controllers'], static function ($rout
 
     // Admin routes
     $routes->group('admin', static function ($routes) {
+        $routes->get('accounts', 'AdminController::accounts');
+        $routes->post('accounts', 'AdminController::createAccount');
         $routes->get('drivers', 'AdminController::drivers');
         $routes->get('drivers/(:segment)', 'AdminController::driver/$1');
     });
@@ -68,3 +74,4 @@ $routes->group('api', ['namespace' => 'App\Controllers'], static function ($rout
 });
 
 $routes->get('/', 'FrontendController::index');
+$routes->get('configurar', 'FrontendController::index');

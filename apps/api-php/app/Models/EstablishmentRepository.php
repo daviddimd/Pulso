@@ -10,7 +10,7 @@ final class EstablishmentRepository
     public function provision(string $code,string $name,string $timezone,string $username,string $password): array {
         $code=UnitOfWork::text($code,30); $name=UnitOfWork::text($name,200); $username=UnitOfWork::text($username,50);
         if (!preg_match('/^[A-Za-z0-9_-]+$/',$code) || !in_array($timezone,\DateTimeZone::listIdentifiers(),true)) throw new DomainException('INVALID_ESTABLISHMENT',400);
-        if (strlen($password)<12 || strlen($password)>1024) throw new DomainException('ADMIN_PASSWORD_TOO_SHORT',400);
+        if (mb_strlen($password)<12 || strlen($password)>1024) throw new DomainException('ADMIN_PASSWORD_TOO_SHORT',400);
         $db=Database::connect(); $db->transException(true)->transBegin();
         try {
             if ($db->table('establecimientos')->where('code',$code)->countAllResults() || $db->table('usuarios')->where('username',$username)->countAllResults()) throw new DomainException('ESTABLISHMENT_OR_USERNAME_EXISTS',409);

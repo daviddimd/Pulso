@@ -2257,3 +2257,53 @@ details[open]>.ops-disclosure-heading>.ui-icon {
     font-size: 14px;
   }
 }
+
+/* Cuentas y primeros pasos */
+.ops-onboarding h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+.ops-onboarding p {
+  margin: 0 0 14px;
+  color: var(--color-text-secondary);
+}
+.ops-account-role {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.ops-account-role legend {
+  width: 100%;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.ops-account-role label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.ops-account-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.ops-account-list li {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+.ops-account-list li span {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.ops-account-list li[data-inactive="true"] {
+  opacity: .6;
+}

@@ -13,7 +13,7 @@ final class CreateEstablishment extends BaseCommand
         if (count($params)!==4) { CLI::error($this->usage); return EXIT_ERROR; }
         // A dedicated environment variable avoids placing the password in command history.
         $password=getenv('PULSO_INITIAL_ADMIN_PASSWORD') ?: '';
-        if (strlen($password)<12) { CLI::error('Define PULSO_INITIAL_ADMIN_PASSWORD con al menos 12 caracteres.'); return EXIT_ERROR; }
+        if (mb_strlen($password)<12) { CLI::error('Define PULSO_INITIAL_ADMIN_PASSWORD con al menos 12 caracteres.'); return EXIT_ERROR; }
         try {
             (new EstablishmentRepository())->provision($params[0],$params[1],$params[2],$params[3],$password);
             CLI::write('Institución y administrador creados. Los catálogos de otras instituciones no se copiaron.','green');

@@ -27,7 +27,13 @@ const messages: Record<string, string> = {
   INVALID_TRANSITION: "Esta operación ya no corresponde al estado del servicio.",
   ENTRY_NOT_OPEN: "El servicio ya no está en curso.",
   INVALID_SERVICE_DATA: "Revisa los datos obligatorios y sus formatos.",
+  INVALID_ACCOUNT_DATA: "Revisa el nombre, el rol y el código de róster.",
+  INVALID_USERNAME: "El usuario debe tener entre 3 y 50 caracteres: letras, números, punto, guion o guion bajo.",
+  PASSWORD_TOO_SHORT: "La contraseña inicial debe tener al menos 12 caracteres.",
+  USERNAME_EXISTS: "Ya existe una cuenta con ese usuario.",
+  ROSTER_CODE_EXISTS: "Ese código de róster ya pertenece a otra persona de la institución.",
 };
+export type Account = { id: string; fullName: string; username: string; role: "ADMIN" | "DRIVER"; rosterCode: string | null; active: boolean };
 export async function api<T>(path: string, body?: unknown, method = "POST", signal?: AbortSignal): Promise<T> {
   const response = await fetch(API_URL + path, { credentials: "include", ...(signal ? { signal } : {}), ...(body === undefined ? {} : { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }) });
   const data = await response.json();

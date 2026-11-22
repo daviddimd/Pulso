@@ -6,10 +6,10 @@ import { ensureLocalDatabase } from './local-db.mjs';
 await ensureLocalDatabase();
 const env = {...process.env, CI_ENVIRONMENT:'development', PULSO_INTEGRATION:'1', 'database.default.database':'pulso_test', 'app.baseURL':'http://localhost:8081/', CORS_ORIGIN:'http://localhost:5177',
   CLAVE_UNICA_CLIENT_ID:'test-client', CLAVE_UNICA_CLIENT_SECRET:'test-secret', CLAVE_UNICA_REDIRECT_URI:'https://pulso.example/api/auth/clave-unica/callback'};
-for (const args of [['migrate'],['pulso:test-fixtures'],['pulso:test-auth'],['pulso:test-domain']]) {
+for (const args of [['migrate'],['pulso:test-setup'],['pulso:test-fixtures'],['pulso:test-auth'],['pulso:test-domain']]) {
   const p=spawnSync(php,['spark',...args],{cwd:apiDir,env,encoding:'utf8'});
   if(p.status || /Exception|Error\]/.test(p.stdout+p.stderr)) throw Error(p.stdout+p.stderr);
-  if(['pulso:test-auth','pulso:test-domain'].includes(args[0])) process.stdout.write(p.stdout);
+  if(['pulso:test-setup','pulso:test-auth','pulso:test-domain'].includes(args[0])) process.stdout.write(p.stdout);
 }
 const servers=[8081,8082].map(port=>spawn(php,['-S',`localhost:${port}`,'-t','public','public/router.php'],{cwd:apiDir,env,stdio:['ignore','ignore','pipe']}));
 let stderr=''; servers.forEach(p=>p.stderr.on('data',d=>stderr+=d));
@@ -154,6 +154,24 @@ try {
   check((await cmd(outgoing.id,'assignment',outgoing.version,{driverId:'103',odometerKm:1020},admin)).status===409,'Reintentar el mismo relevo no crea otro viaje');
   check((await cmd(incoming.id,'complete',incoming.version,{odometerKm:1021},driver2)).status===200,'El chofer entrante finaliza su propio viaje');
   check((await request('/api/services',{cookie:admin,origin:'https://untrusted.example'})).status===403,'Origen externo rechazado');
+  // Cuentas creadas por administración
+  r=await request('/api/admin/accounts',{cookie:admin}); check(r.status===200&&r.data.accounts.some(a=>a.username==='a-driver1'&&a.role==='DRIVER')&&!r.data.accounts.some(a=>a.username.startsWith('b-')),'Cuentas de la propia institución');
+  check((await request('/api/admin/accounts',{cookie:driver})).status===403,'Un chofer no administra cuentas');
+  const newDriver={fullName:'Chofer Nuevo',username:'a-nuevo',role:'DRIVER',rosterCode:'MOV-NUEVO',password:'clave-inicial-segura'};
+  check((await request('/api/admin/accounts',{cookie:admin,body:{...newDriver,password:'corta'}})).data.error==='PASSWORD_TOO_SHORT','Contraseña inicial corta rechazada');
+  check((await request('/api/admin/accounts',{cookie:admin,body:{...newDriver,role:'SUPERADMIN'}})).data.error==='INVALID_ACCOUNT_DATA','Solo roles operativos');
+  r=await request('/api/admin/accounts',{cookie:admin,body:newDriver}); assert.equal(r.status,201,JSON.stringify(r.data));
+  check(r.data.account.role==='DRIVER'&&r.data.account.rosterCode==='MOV-NUEVO'&&r.data.account.active,'Crear cuenta de chofer');
+  check((await request('/api/admin/accounts',{cookie:admin,body:newDriver})).data.error==='USERNAME_EXISTS','Usuario duplicado rechazado');
+  check((await request('/api/admin/accounts',{cookie:admin,body:{...newDriver,username:'a-nuevo2'}})).data.error==='ROSTER_CODE_EXISTS','Róster duplicado en la institución rechazado');
+  check((await request('/api/admin/accounts',{cookie:other,body:{...newDriver,username:'b-nuevo'}})).status===201,'El mismo róster es válido en otra institución');
+  check((await request('/api/admin/drivers',{cookie:admin})).data.drivers.some(d=>d.fullName==='Chofer Nuevo'),'El chofer creado queda disponible para asignar');
+  check(!(await request('/api/admin/drivers',{cookie:other})).data.drivers.some(d=>d.fullName==='Chofer Nuevo'&&d.id===r.data.account.id),'Chofer aislado por institución');
+  r=await request('/api/auth/login',{body:{username:'a-nuevo',password:'clave-inicial-segura'}}); check(r.status===200&&r.data.user.role==='DRIVER','La cuenta creada puede ingresar');
+  r=await request('/api/admin/accounts',{cookie:admin,body:{fullName:'Jefatura Nueva',username:'a-jefatura',role:'ADMIN',password:'clave-inicial-segura'}}); check(r.status===201&&r.data.account.role==='ADMIN'&&r.data.account.rosterCode===null,'Crear cuenta de administración sin róster');
+  r=await request('/api/setup'); check(r.status===200&&r.data.required===false&&r.data.codeFile===undefined,'Configuración cerrada en una instalación existente');
+  r=await request('/api/setup',{body:{setupCode:'x',establishmentCode:'X',establishmentName:'X',timezone:'America/Santiago',username:'intruso',password:'una-clave-larga-segura'}});
+  check(r.status===409&&r.data.error==='SETUP_COMPLETED','No se puede reconfigurar una instalación existente');
   check((await request('/api/services',{cookie:admin,body:{...input,vehicleId:['invalid']}})).status===400,'Identificadores malformados rechazados');
   check((await request(`/api/services/${id}/address`,{cookie:admin,body:{serviceAddress:'Dirección sin versión'}})).status===400,'Versión obligatoria');
   check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,serviceAddress:'x'.repeat(351)}})).status===400,'Longitud máxima validada');

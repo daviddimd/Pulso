@@ -16,6 +16,7 @@ import { AddressChangeAlerts } from "./AddressChangeAlerts";
 import { CostCenterReport } from "./CostCenterReport";
 import { VehicleOdometerHistory } from "./VehicleOdometerHistory";
 import { PulsoMark } from "./PulsoMark";
+import { AccountsPanel } from "./AccountsPanel";
 import { API_URL, ApiError, api, labels, time, today, type CostCenter, type Driver, type DriverDetails, type Service, type Vehicle } from "../operations";
 import "./OperationsDashboard.css";
 
@@ -95,8 +96,9 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
   const [updated, setUpdated] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [expired, setExpired] = useState(false);
-  const [tab, setTab] = useState<"start" | "services" | "vehicles" | "history" | "costs">(admin ? "services" : "start");
+  const [tab, setTab] = useState<"start" | "services" | "vehicles" | "history" | "costs" | "accounts">(admin ? "services" : "start");
   const [profile, setProfile] = useState<Profile | null>(null);
+  const markExpired = useCallback(() => setExpired(true), []);
   const openProfile: OpenProfile = profile => { setProfile(profile); setTab("history"); window.scrollTo({ top: 0 }); };
   const [createError, setCreateError] = useState("");
   const [createRevision, setCreateRevision] = useState(0);
@@ -177,9 +179,9 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
   }
 
   const navigation: { key: typeof tab; label: string; short: string; icon: IconName }[] = admin
-    ? [{key:'services', label:'Servicios',short:'Servicios',icon:'route'}, {key:'start',label:'Nuevo servicio',short:'Nuevo',icon:'plus'}, {key:'vehicles',label:'Vehículos',short:'Flota',icon:'car'}, {key:'costs',label:'Centros de costos',short:'Costos',icon:'chart'}]
+    ? [{key:'services', label:'Servicios',short:'Servicios',icon:'route'}, {key:'start',label:'Nuevo servicio',short:'Nuevo',icon:'plus'}, {key:'vehicles',label:'Vehículos',short:'Flota',icon:'car'}, {key:'costs',label:'Centros de costos',short:'Costos',icon:'chart'}, {key:'accounts',label:'Cuentas',short:'Cuentas',icon:'people'}]
     : [{key:'start',label:'Iniciar servicio',short:'Iniciar servicio',icon:'plus'},{key:'services',label:'Mis servicios',short:'Mis servicios',icon:'route'}];
-  const pageTitle = tab==='history' ? (profile?.kind === 'vehicle' ? 'Ficha del vehículo' : 'Ficha del chofer') : tab==='start' ? (!admin && activeServices.length ? 'Tu viaje en curso' : 'Nuevo servicio') : tab==='services' ? (admin ? 'Servicios' : 'Mis servicios') : tab==='vehicles' ? 'Vehículos' : 'Centros de costos';
+  const pageTitle = tab==='history' ? (profile?.kind === 'vehicle' ? 'Ficha del vehículo' : 'Ficha del chofer') : tab==='start' ? (!admin && activeServices.length ? 'Tu viaje en curso' : 'Nuevo servicio') : tab==='services' ? (admin ? 'Servicios' : 'Mis servicios') : tab==='vehicles' ? 'Vehículos' : tab==='accounts' ? 'Cuentas' : 'Centros de costos';
   const availableVehicles = vehicles.filter(v=>v.active && !v.inService).length;
   const availableDrivers = drivers.filter(d=>!d.serviceLegs.length).length;
   return <main className={'driver-page ops-dashboard '+(admin ? 'ops-admin' : 'ops-driver')}>
@@ -201,9 +203,10 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
       {(error || pollError) && <div className="driver-error" role="alert">{error || pollError}{pollError && ' Los datos pueden estar desactualizados.'}</div>}
       {expired && <div className="driver-error" role="alert">Tu sesión terminó. <button onClick={() => void onLogout()}>Volver al acceso</button></div>}
       {admin && updated && (tab==='services' || tab==='start') && <div className="ops-overview" aria-label="Disponibilidad actual"><div><span><Icon name="activity" />En curso</span><strong>{activeServices.length}<small>servicios</small></strong></div><div><span><Icon name="car" />Vehículos disponibles</span><strong>{availableVehicles}<small>de {vehicles.filter(v=>v.active).length}</small></strong></div><div><span><Icon name="people" />Choferes disponibles</span><strong>{availableDrivers}<small>de {drivers.length}</small></strong></div></div>}
+      {admin && updated && tab==='services' && (drivers.length === 0 || vehicles.length === 0) && <section className="ops-card ops-onboarding" aria-label="Primeros pasos"><h2>Primeros pasos</h2><p>Para coordinar servicios, la institución necesita choferes y vehículos.</p><div className="ops-actions">{drivers.length === 0 && <button className="ops-primary-action" onClick={()=>{setTab('accounts');window.scrollTo({top:0});}}><Icon name="people" />Crear cuentas de choferes</button>}{vehicles.length === 0 && <button onClick={()=>{setTab('vehicles');window.scrollTo({top:0});}}><Icon name="car" />Registrar vehículos</button>}</div></section>}
       <fieldset className="ops-workspace" disabled={busy || expired || !updated}>
       {admin && profile && tab === 'history' && <button className="ops-profile-back" onClick={() => { setProfile(null); setTab(profile.kind === 'vehicle' ? 'vehicles' : 'services'); }}>← Volver a {profile.kind === 'vehicle' ? 'vehículos' : 'servicios'}</button>}
-      {tab === "costs" && admin ? <CostCenterReport /> : tab === "history" && admin && profile ? <ProfileHistory costCenters={costCenters} key={profile.kind + profile.id} profile={profile} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} /> : tab === "vehicles" && admin ? <VehiclePanel vehicles={vehicles} mutate={mutate} onProfile={openProfile} /> : <>
+      {tab === "accounts" && admin ? <AccountsPanel onChanged={() => void reload()} onExpired={markExpired} /> : tab === "costs" && admin ? <CostCenterReport /> : tab === "history" && admin && profile ? <ProfileHistory costCenters={costCenters} key={profile.kind + profile.id} profile={profile} vehicles={vehicles} drivers={drivers} mutate={mutate} onProfile={openProfile} /> : tab === "vehicles" && admin ? <VehiclePanel vehicles={vehicles} mutate={mutate} onProfile={openProfile} /> : <>
         <section hidden={tab !== "start"} className="ops-start-workspace">
         {!admin && activeServices.length > 0 && <><p className="ops-section-note">Registra los kilómetros al llegar.</p>{activeServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} viewerId={user.id} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</>}
         {!admin && upcomingServices.length > 0 && <section aria-label="Viajes pendientes"><h2 className="ops-section-heading"><Icon name="clock" />Por iniciar<span>{upcomingServices.length}</span></h2><div className="ops-services">{upcomingServices.map(entry => <ServiceCard costCenters={costCenters} key={entry.id} entry={entry} admin={false} viewerId={user.id} vehicles={vehicles} drivers={drivers} mutate={mutate} />)}</div></section>}

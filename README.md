@@ -23,6 +23,39 @@ npm run build
 
 Las pruebas usan exclusivamente la base `pulso_test`; nunca la base configurada para la aplicación. El build coloca la interfaz y sus dependencias locales en `apps/api-php/public`.
 
+## Instalación nueva: `/configurar`
+
+Después de clonar el repositorio:
+
+1. Instalar dependencias: `composer install` en `apps/api-php` y `npm ci` en `apps/web`.
+2. Crear una base MySQL vacía (utf8mb4) y copiar `apps/api-php/.env.example` como `apps/api-php/.env` con su conexión. La plantilla apunta a producción; para probar en el equipo local usar `CI_ENVIRONMENT = development`, `app.baseURL = 'http://localhost:8080/'` (la URL exacta en la que se abrirá Pulso) y `app.forceGlobalSecureRequests = false`.
+3. Ejecutar `php spark migrate` en `apps/api-php` y `npm run build` en la raíz.
+4. Abrir Pulso en el navegador.
+
+Mientras la base no tenga instituciones, la aplicación lleva a `/configurar`, donde se crean la institución (nombre, código y zona horaria) y su cuenta de administración (usuario y contraseña de al menos 12 caracteres). Después, en la sección **Cuentas** del panel de administración se crean las cuentas de choferes y de otros administradores; mientras falten choferes o vehículos, el panel muestra **Primeros pasos** con accesos directos.
+
+La página exige un código de un solo uso que solo puede leer quien tiene acceso al servidor:
+
+```sh
+php spark pulso:codigo-configuracion
+```
+
+El código también queda en `apps/api-php/writable/pulso-codigo-configuracion.txt`, fuera de Git y de `public/`. Se elimina al crear la primera institución, y desde ese momento `/configurar` queda cerrado. Las instituciones adicionales se crean por consola con `php spark pulso:establishment`. No ejecutar la semilla `PulsoSeeder` en una instalación real: crea cuentas de prototipo y cierra `/configurar`.
+
+## Contraseña olvidada
+
+Las contraseñas se guardan con Argon2id y no se pueden recuperar; se restablecen por consola. La contraseña nueva (mínimo 12 caracteres) se pasa en una variable de entorno para que no quede en el historial:
+
+```powershell
+$env:PULSO_NEW_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'Contraseña nueva' -AsSecureString)).Password
+npm.cmd run php -- pulso:clave admin
+Remove-Item Env:PULSO_NEW_PASSWORD
+```
+
+`npm.cmd` evita el bloqueo de PowerShell cuando la ejecución de scripts está deshabilitada; `-AsSecureString` oculta lo que se escribe.
+
+En el servidor se usa `php spark pulso:clave <usuario>` con la misma variable. El comando desbloquea la cuenta, cierra sus sesiones abiertas y registra `PASSWORD_RESET_CONSOLE` en la auditoría de su institución.
+
 ## Servidor PHP
 
 Configurar el directorio público del sitio en `apps/api-php/public`, PHP 8.4.27+ de la rama 8.4 con extensiones intl, mbstring, mysqli, openssl, curl y gd, y permisos de escritura para `apps/api-php/writable`. Instalar dependencias con `composer install --no-dev`, compilar la interfaz y ejecutar `php spark migrate`. Configurar HTTPS, el acceso MySQL y la URL institucional en `.env`; nunca publicar ese archivo ni exponer la raíz del repositorio.

@@ -5,8 +5,22 @@
 node_modules/
 vendor/
 dist/
+# writable/: version the directory skeleton CodeIgniter needs on a fresh clone, never its contents.
 apps/api-php/writable/*
 !apps/api-php/writable/.gitkeep
+!apps/api-php/writable/.htaccess
+!apps/api-php/writable/index.html
+!apps/api-php/writable/cache/
+!apps/api-php/writable/logs/
+!apps/api-php/writable/session/
+!apps/api-php/writable/uploads/
+apps/api-php/writable/cache/*
+apps/api-php/writable/logs/*
+apps/api-php/writable/session/*
+apps/api-php/writable/uploads/*
+!apps/api-php/writable/*/index.html
+# Local database dumps.
+tmp/
 *.log
 apps/api-php/public/assets/
 apps/api-php/public/index.html
