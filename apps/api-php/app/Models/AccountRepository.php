@@ -14,9 +14,9 @@ final class AccountRepository
 
     public function listing(): array
     {
-        $rows = UserAccounts::query(Database::connect())->where('f.establishment_id', $this->actor['establishmentId'])
-            ->whereIn('r.codigo', self::ROLES)->where('u.username NOT LIKE', 'archived-%')
-            ->orderBy('u.active', 'DESC')->orderBy('r.codigo')->orderBy('u.full_name')->get()->getResultArray();
+        $rows = UserAccounts::query(Database::connect())->where('f.id_establecimiento', $this->actor['establishmentId'])
+            ->whereIn('r.codigo', self::ROLES)->where('u.nombre_usuario NOT LIKE', 'archived-%')
+            ->orderBy('u.activo', 'DESC')->orderBy('r.codigo')->orderBy('u.nombre_completo')->get()->getResultArray();
         return array_map($this->dto(...), $rows);
     }
 
@@ -33,14 +33,14 @@ final class AccountRepository
 
         return UnitOfWork::run($this->actor, function () use ($fullName, $username, $role, $roster, $password) {
             $db = Database::connect();
-            if ($db->table('usuarios')->where('username', $username)->countAllResults()) throw new DomainException('USERNAME_EXISTS', 409);
-            if ($roster !== null && $db->table('funcionarios')->where('establishment_id', $this->actor['establishmentId'])->where('codigo_roster', $roster)->countAllResults()) {
+            if ($db->table('usuarios')->where('nombre_usuario', $username)->countAllResults()) throw new DomainException('USERNAME_EXISTS', 409);
+            if ($roster !== null && $db->table('funcionarios')->where('id_establecimiento', $this->actor['establishmentId'])->where('codigo_roster', $roster)->countAllResults()) {
                 throw new DomainException('ROSTER_CODE_EXISTS', 409);
             }
             $now = UnitOfWork::now();
-            $id = UserAccounts::create($db, ['establishment_id' => $this->actor['establishmentId'], 'username' => $username, 'full_name' => $fullName,
-                'roster_code' => $roster, 'password_hash' => SecurityLib::hashPassword($password), 'active' => 1, 'failed_login_attempts' => 0,
-                'auth_provider' => 'local', 'created_at' => $now, 'updated_at' => $now], $role);
+            $id = UserAccounts::create($db, ['id_establecimiento' => $this->actor['establishmentId'], 'nombre_usuario' => $username, 'nombre_completo' => $fullName,
+                'codigo_roster' => $roster, 'hash_contrasena' => SecurityLib::hashPassword($password), 'activo' => 1, 'intentos_fallidos' => 0,
+                'proveedor_autenticacion' => 'local', 'fecha_creacion' => $now, 'fecha_actualizacion' => $now], $role);
             // The audit keeps identity data only; the password hash is never logged.
             AuditService::log($this->actor['establishmentId'], $this->actor['id'], 'USER', $id, 'CREATE', null,
                 ['username' => $username, 'fullName' => $fullName, 'role' => $role, 'rosterCode' => $roster]);
@@ -56,7 +56,7 @@ final class AccountRepository
 
     private function dto(array $u): array
     {
-        return ['id' => (string)$u['id_usuario'], 'fullName' => $u['full_name'], 'username' => $u['username'], 'role' => $u['role'],
-            'rosterCode' => $u['roster_code'], 'active' => (bool)$u['active']];
+        return ['id' => (string)$u['id_usuario'], 'fullName' => $u['nombre_completo'], 'username' => $u['nombre_usuario'], 'role' => $u['role'],
+            'rosterCode' => $u['codigo_roster'], 'active' => (bool)$u['activo']];
     }
 }

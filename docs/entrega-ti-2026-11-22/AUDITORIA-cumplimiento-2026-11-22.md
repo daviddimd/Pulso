@@ -82,4 +82,4 @@ No hay scripts CSS o fuentes de CDN en ejecución. Maps es enlace voluntario; Cl
 
 ## Límites
 
-Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origin=LEGACY preserva registros históricos sin permitir nuevas cancelaciones en ruta.
+Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origen=LEGACY preserva registros históricos sin permitir nuevas cancelaciones en ruta.

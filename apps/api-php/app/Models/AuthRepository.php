@@ -8,11 +8,11 @@ final class AuthRepository
 {
     public function sessionUser(mixed $token): ?array {
         if (!is_string($token) || $token==='') return null;
-        $row=Database::connect()->table('sesiones s')->select('u.*, f.establishment_id, f.codigo_roster AS roster_code, r.codigo AS role, e.name as establishment_name, e.timezone as establishment_timezone')
-            ->join('usuarios u','u.id_usuario=s.user_id')->join('funcionarios f','f.id_funcionario=u.id_funcionario')->join('establecimientos e','e.id_establecimiento=f.establishment_id')
-            ->join('roles r','r.id_rol=u.id_rol')->whereIn('r.codigo',['ADMIN','DRIVER'])->where('s.token_hash',SecurityLib::hashToken($token))->where('s.expires_at >',gmdate('Y-m-d H:i:s'))
-            ->where('s.revoked_at',null)->where('u.active',1)->where('e.active',1)->get()->getRowArray();
-        return $row ? $this->payload($row,['id_establecimiento'=>$row['establishment_id'],'name'=>$row['establishment_name'],'timezone'=>$row['establishment_timezone']]) : null;
+        $row=Database::connect()->table('sesiones s')->select('u.*, f.id_establecimiento, f.codigo_roster, r.codigo AS role, e.nombre AS nombre_establecimiento, e.zona_horaria AS zona_horaria_establecimiento')
+            ->join('usuarios u','u.id_usuario=s.id_usuario')->join('funcionarios f','f.id_funcionario=u.id_funcionario')->join('establecimientos e','e.id_establecimiento=f.id_establecimiento')
+            ->join('roles r','r.id_rol=u.id_rol')->whereIn('r.codigo',['ADMIN','DRIVER'])->where('s.hash_token',SecurityLib::hashToken($token))->where('s.fecha_expiracion >',gmdate('Y-m-d H:i:s'))
+            ->where('s.fecha_revocacion',null)->where('u.activo',1)->where('e.activo',1)->get()->getRowArray();
+        return $row ? $this->payload($row,['id_establecimiento'=>$row['id_establecimiento'],'nombre'=>$row['nombre_establecimiento'],'zona_horaria'=>$row['zona_horaria_establecimiento']]) : null;
     }
     private function transaction(callable $work): mixed {
         $db=Database::connect(); $db->transException(true)->transBegin();
@@ -25,42 +25,42 @@ final class AuthRepository
     public function login(string $username,string $password,string $ip): array {
         // Failed attempts must commit before the controller returns an error.
         return $this->transaction(function ($db) use ($username,$password,$ip) {
-            $u=$db->query('SELECT u.*, f.establishment_id, f.codigo_roster AS roster_code, r.codigo AS role FROM usuarios u JOIN funcionarios f ON f.id_funcionario=u.id_funcionario JOIN roles r ON r.id_rol=u.id_rol WHERE u.username = ? FOR UPDATE',[$username])->getRowArray();
+            $u=$db->query('SELECT u.*, f.id_establecimiento, f.codigo_roster, r.codigo AS role FROM usuarios u JOIN funcionarios f ON f.id_funcionario=u.id_funcionario JOIN roles r ON r.id_rol=u.id_rol WHERE u.nombre_usuario = ? FOR UPDATE',[$username])->getRowArray();
             if (!$u) return ['error'=>'INVALID_CREDENTIALS','status'=>401];
-            $e=$this->establishment($u['establishment_id']);
-            if (!$u['active'] || !$e || !in_array($u['role'], ['ADMIN','DRIVER'], true)) return ['error'=>'ACCOUNT_DISABLED','status'=>403];
-            if ($u['locked_until'] && $u['locked_until']>gmdate('Y-m-d H:i:s')) return ['error'=>'ACCOUNT_LOCKED','status'=>423];
-            if (!SecurityLib::verifyPassword($password,$u['password_hash'])) {
-                $attempts=(int)$u['failed_login_attempts']+1;
-                $changes=['failed_login_attempts'=>$attempts];
-                if ($attempts>=5) $changes=['failed_login_attempts'=>0,'locked_until'=>gmdate('Y-m-d H:i:s',time()+900)];
+            $e=$this->establishment($u['id_establecimiento']);
+            if (!$u['activo'] || !$e || !in_array($u['role'], ['ADMIN','DRIVER'], true)) return ['error'=>'ACCOUNT_DISABLED','status'=>403];
+            if ($u['bloqueado_hasta'] && $u['bloqueado_hasta']>gmdate('Y-m-d H:i:s')) return ['error'=>'ACCOUNT_LOCKED','status'=>423];
+            if (!SecurityLib::verifyPassword($password,$u['hash_contrasena'])) {
+                $attempts=(int)$u['intentos_fallidos']+1;
+                $changes=['intentos_fallidos'=>$attempts];
+                if ($attempts>=5) $changes=['intentos_fallidos'=>0,'bloqueado_hasta'=>gmdate('Y-m-d H:i:s',time()+900)];
                 $db->table('usuarios')->where('id_usuario',(string)$u['id_usuario'])->update($changes);
-                AuditService::log((string)$u['establishment_id'],(string)$u['id_usuario'],'USER',(string)$u['id_usuario'],'LOGIN_FAILED',null,['failedAttempts'=>$attempts],$ip);
+                AuditService::log((string)$u['id_establecimiento'],(string)$u['id_usuario'],'USER',(string)$u['id_usuario'],'LOGIN_FAILED',null,['failedAttempts'=>$attempts],$ip);
                 return ['error'=>'INVALID_CREDENTIALS','status'=>401];
             }
-            $db->table('usuarios')->where('id_usuario',(string)$u['id_usuario'])->update(['failed_login_attempts'=>0,'locked_until'=>null]);
+            $db->table('usuarios')->where('id_usuario',(string)$u['id_usuario'])->update(['intentos_fallidos'=>0,'bloqueado_hasta'=>null]);
             return $this->session($u,$e,$ip);
         });
     }
     public function establishment(string $id): ?array {
-        return Database::connect()->table('establecimientos')->where('id_establecimiento',$id)->where('active',1)->get()->getRowArray();
+        return Database::connect()->table('establecimientos')->where('id_establecimiento',$id)->where('activo',1)->get()->getRowArray();
     }
     private function payload(array $u,array $e): array {
-        return ['id'=>(string)$u['id_usuario'],'username'=>$u['username'],'fullName'=>$u['full_name'],'role'=>$u['role'],'rosterCode'=>$u['roster_code'],
-            'establishmentId'=>(string)$e['id_establecimiento'],'establishmentName'=>$e['name'],'establishmentTimezone'=>$e['timezone']];
+        return ['id'=>(string)$u['id_usuario'],'username'=>$u['nombre_usuario'],'fullName'=>$u['nombre_completo'],'role'=>$u['role'],'rosterCode'=>$u['codigo_roster'],
+            'establishmentId'=>(string)$e['id_establecimiento'],'establishmentName'=>$e['nombre'],'establishmentTimezone'=>$e['zona_horaria']];
     }
     public function current(string $id): ?array {
-        $u=UserAccounts::query(Database::connect())->where('u.id_usuario',$id)->where('u.active',1)->whereIn('r.codigo',['ADMIN','DRIVER'])->get()->getRowArray();
-        $e=$u ? $this->establishment($u['establishment_id']) : null;
+        $u=UserAccounts::query(Database::connect())->where('u.id_usuario',$id)->where('u.activo',1)->whereIn('r.codigo',['ADMIN','DRIVER'])->get()->getRowArray();
+        $e=$u ? $this->establishment($u['id_establecimiento']) : null;
         return $u && $e ? $this->payload($u,$e) : null;
     }
     private function session(array $u,array $e,string $ip): array {
         $token=SecurityLib::generateSessionToken();
         $ttl=max(1,min(24,(int)(getenv('PULSO_SESSION_TTL_HOURS') ?: 12)))*3600;
         $db=Database::connect();
-        $db->table('sesiones')->insert(['user_id'=>(string)$u['id_usuario'],'token_hash'=>SecurityLib::hashToken($token),
-            'expires_at'=>gmdate('Y-m-d H:i:s',time()+$ttl),'created_at'=>UnitOfWork::now(),'last_seen_at'=>UnitOfWork::now()]);
-        AuditService::log((string)$u['establishment_id'],(string)$u['id_usuario'],'USER',(string)$u['id_usuario'],'LOGIN_SUCCESS',null,['sessionId'=>(string)$db->insertID()],$ip);
+        $db->table('sesiones')->insert(['id_usuario'=>(string)$u['id_usuario'],'hash_token'=>SecurityLib::hashToken($token),
+            'fecha_expiracion'=>gmdate('Y-m-d H:i:s',time()+$ttl),'fecha_creacion'=>UnitOfWork::now(),'fecha_ultimo_uso'=>UnitOfWork::now()]);
+        AuditService::log((string)$u['id_establecimiento'],(string)$u['id_usuario'],'USER',(string)$u['id_usuario'],'LOGIN_SUCCESS',null,['sessionId'=>(string)$db->insertID()],$ip);
         return ['token'=>$token,'ttl'=>$ttl,'user'=>$this->payload($u,$e)];
     }
     public function claveUnica(array $identity,string $ip): array {
@@ -69,18 +69,18 @@ final class AuthRepository
         $rut=$number.'-'.strtoupper($dv);
         if (!preg_match('/^\d{1,8}-[0-9K]$/',$rut)) throw new DomainException('OAUTH_USER_ERROR',400);
         return $this->transaction(function ($db) use ($rut,$sub,$ip) {
-            $u=$db->query('SELECT u.*, f.establishment_id, f.codigo_roster AS roster_code, r.codigo AS role FROM usuarios u JOIN funcionarios f ON f.id_funcionario=u.id_funcionario JOIN roles r ON r.id_rol=u.id_rol WHERE u.rut = ? FOR UPDATE',[$rut])->getRowArray();
-            if (!$u || ($u['clave_unica_sub'] && !hash_equals($u['clave_unica_sub'],$sub))) throw new DomainException('USER_NOT_REGISTERED',403);
-            $e=$this->establishment($u['establishment_id']);
-            if (!$u['active'] || !$e || !in_array($u['role'], ['ADMIN','DRIVER'], true)) throw new DomainException('ACCOUNT_DISABLED',403);
-            $db->table('usuarios')->where('id_usuario',(string)$u['id_usuario'])->update(['clave_unica_sub'=>$sub,'failed_login_attempts'=>0,'locked_until'=>null]);
+            $u=$db->query('SELECT u.*, f.id_establecimiento, f.codigo_roster, r.codigo AS role FROM usuarios u JOIN funcionarios f ON f.id_funcionario=u.id_funcionario JOIN roles r ON r.id_rol=u.id_rol WHERE u.rut = ? FOR UPDATE',[$rut])->getRowArray();
+            if (!$u || ($u['sub_clave_unica'] && !hash_equals($u['sub_clave_unica'],$sub))) throw new DomainException('USER_NOT_REGISTERED',403);
+            $e=$this->establishment($u['id_establecimiento']);
+            if (!$u['activo'] || !$e || !in_array($u['role'], ['ADMIN','DRIVER'], true)) throw new DomainException('ACCOUNT_DISABLED',403);
+            $db->table('usuarios')->where('id_usuario',(string)$u['id_usuario'])->update(['sub_clave_unica'=>$sub,'intentos_fallidos'=>0,'bloqueado_hasta'=>null]);
             return $this->session($u,$e,$ip);
         });
     }
     public function logout(string $token,?string $userId,string $ip): void {
-        Database::connect()->table('sesiones')->where('token_hash',SecurityLib::hashToken($token))->update(['revoked_at'=>UnitOfWork::now()]);
+        Database::connect()->table('sesiones')->where('hash_token',SecurityLib::hashToken($token))->update(['fecha_revocacion'=>UnitOfWork::now()]);
         if (!$userId) return;
         $u=UserAccounts::query(Database::connect())->where('u.id_usuario',$userId)->get()->getRowArray();
-        if ($u) AuditService::log((string)$u['establishment_id'],$userId,'USER',$userId,'LOGOUT',null,null,$ip);
+        if ($u) AuditService::log((string)$u['id_establecimiento'],$userId,'USER',$userId,'LOGOUT',null,null,$ip);
     }
 }

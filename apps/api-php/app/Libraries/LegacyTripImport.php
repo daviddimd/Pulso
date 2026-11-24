@@ -17,6 +17,8 @@ final class LegacyTripImport
 
     private function insert(string $table, array $row): string
     {
+        // The current schema uses Spanish column names; the staging schema keeps the original ones.
+        if ($this->domain) $row = ColumnNames::translate($table, $row);
         if (!$this->db->table($this->prefix . $table)->insert($row)) {
             throw new \RuntimeException("No se pudo importar $table.");
         }
@@ -106,14 +108,14 @@ final class LegacyTripImport
     {
         $tenant = match (true) {
             $entity === null => null,
-            $type === 'bitacora_entries' => $this->db->table('viajes')->select('establishment_id')->where('id_viaje', $entity)->get()->getRowArray(),
-            $type === 'vehicles' => $this->db->table('vehiculos')->select('establishment_id')->where('id_vehiculo', $entity)->get()->getRowArray(),
+            $type === 'bitacora_entries' => $this->db->table('viajes')->select('id_establecimiento')->where('id_viaje', $entity)->get()->getRowArray(),
+            $type === 'vehicles' => $this->db->table('vehiculos')->select('id_establecimiento')->where('id_vehiculo', $entity)->get()->getRowArray(),
             $type === 'users' => UserAccounts::query($this->db)->where('u.id_usuario', $entity)->get()->getRowArray(),
             default => null,
         };
         $tenant ??= $actor === null ? null : UserAccounts::query($this->db)->where('u.id_usuario', $actor)->get()->getRowArray();
         if (!$tenant) throw new \RuntimeException('Registro de auditoría histórico sin institución identificable.');
-        return (string)$tenant['establishment_id'];
+        return (string)$tenant['id_establecimiento'];
     }
 
     private function copyDomainTrip(array $row, array $legs): void

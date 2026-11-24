@@ -22,7 +22,7 @@ final class VehicleCatalog
 
     public static function ids(BaseConnection $db, ?string $type, ?string $model, ?string $make = null, string $prefix = '', ?string $establishment = null): array
     {
-        $tenant = $establishment === null ? [] : ['establishment_id'=>$establishment];
+        $tenant = $establishment === null ? [] : ['id_establecimiento'=>$establishment];
         $typeId = $type === null ? null : self::reference($db, $prefix . 'tipos_vehiculo', 'id_tipo_vehiculo', $tenant + ['nombre' => $type]);
         if ($model === null) return ['id_tipo_vehiculo' => $typeId, 'id_modelo_vehiculo' => null];
 

@@ -110,7 +110,7 @@ Evidencia: 04-Pulso-Requerimientos-MoSCoW.pdf
 
 Estado: Verificado local
 
-Criterio: Sin actividad o destino no se guarda. Indefinido es cost_center_id NULL y se asigna después.
+Criterio: Sin actividad o destino no se guarda. Indefinido es id_centro_costo NULL y se asigna después.
 
 Evidencia: ServiceEngine::create; CostCenterField
 
@@ -134,7 +134,7 @@ Evidencia: ServiceEngine start / complete
 
 Estado: Verificado local
 
-Criterio: PENDING / ASSIGNED sin started_at. IN_PROGRESS no se cancela.
+Criterio: PENDING / ASSIGNED sin fecha_inicio. IN_PROGRESS no se cancela.
 
 Evidencia: ServiceEngine cancel; prueba de rechazo sin efectos
 
@@ -166,7 +166,7 @@ Evidencia: VehicleRepository; VehicleCard; pruebas API
 
 Estado: Verificado local
 
-Criterio: Se usa ended_at y zona del establecimiento; excluye pendientes, activos y cancelados.
+Criterio: Se usa fecha_fin y zona del establecimiento; excluye pendientes, activos y cancelados.
 
 Evidencia: ReportRepository::daily; pruebas exportación
 
@@ -194,13 +194,13 @@ Criterio: Sección Cuentas en la propia institución; usuario único; róster ú
 
 Evidencia: AccountRepository; AccountsPanel; pruebas API
 
-## MER-01 / Must / PK enteras autoincrementables con nomenclatura institucional.
+## MER-01 / Must / PK enteras autoincrementables y nomenclatura institucional en español.
 
-Estado: Implementado
+Estado: Verificado local
 
-Criterio: Las claves numéricas se conservan. La nueva migración consolida las cadenas anteriores y conserva sus alias.
+Criterio: PK id_[tabla] enteras y autoincrementables. Todas las tablas, columnas, índices y restricciones están en español; una prueba de dominio falla si reaparece un nombre en inglés.
 
-Evidencia: ConsolidateTrips; diccionario físico
+Evidencia: ConsolidateTrips; SpanishColumns; pulso:test-domain; diccionario físico
 
 ## MER-02 / Must / Una entidad de viaje con lecturas de salida y llegada.
 
@@ -222,7 +222,7 @@ Evidencia: schema-viajes.sql; pulso:roles; alta de vehículo
 
 Estado: Verificado local
 
-Criterio: usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan establishment_id. Los catálogos tienen unicidad y FK institucionales.
+Criterio: usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan id_establecimiento. Los catálogos tienen unicidad y FK institucionales.
 
 Evidencia: DomainTrips; TestDomain; AuthRepository
 

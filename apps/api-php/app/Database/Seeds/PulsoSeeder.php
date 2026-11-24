@@ -14,33 +14,33 @@ class PulsoSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
 
         // 1. Establishments: Hospital Regional de Talca
-        $estExists = $db->table('establecimientos')->where('code', 'HRT')->get()->getRow();
+        $estExists = $db->table('establecimientos')->where('codigo', 'HRT')->get()->getRow();
         if (!$estExists) {
             $db->table('establecimientos')->insert([
-                'code'       => 'HRT',
-                'name'       => 'Hospital Regional de Talca',
-                'timezone'   => 'America/Santiago',
-                'active'     => 1,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'codigo'       => 'HRT',
+                'nombre'       => 'Hospital Regional de Talca',
+                'zona_horaria' => 'America/Santiago',
+                'activo'       => 1,
+                'fecha_creacion' => $now,
+                'fecha_actualizacion' => $now,
             ]);
         }
 
         $estId = $estExists ? (string)$estExists->id_establecimiento : (string)$db->insertID();
 
         // 2. Administrator account (admin / admin)
-        $adminExists = $db->table('usuarios')->where('username', 'admin')->get()->getRow();
+        $adminExists = $db->table('usuarios')->where('nombre_usuario', 'admin')->get()->getRow();
         if (!$adminExists) {
             UserAccounts::create($db, [
-                'establishment_id'      => $estId,
-                'username'              => 'admin',
-                'full_name'             => 'Administrador Movilización',
-                'password_hash'         => SecurityLib::hashPassword('admin'),
-                'active'                => 1,
-                'failed_login_attempts' => 0,
-                'auth_provider'         => 'local',
-                'created_at'            => $now,
-                'updated_at'            => $now,
+                'id_establecimiento'      => $estId,
+                'nombre_usuario'        => 'admin',
+                'nombre_completo'             => 'Administrador Movilización',
+                'hash_contrasena'         => SecurityLib::hashPassword('admin'),
+                'activo'                => 1,
+                'intentos_fallidos' => 0,
+                'proveedor_autenticacion'         => 'local',
+                'fecha_creacion'            => $now,
+                'fecha_actualizacion'            => $now,
             ], 'ADMIN');
         }
 
@@ -60,19 +60,19 @@ class PulsoSeeder extends Seeder
         $driverPasswordHash = SecurityLib::hashPassword('chofer');
 
         foreach ($drivers as $d) {
-            $exists = $db->table('usuarios')->where('username', $d['username'])->get()->getRow();
+            $exists = $db->table('usuarios')->where('nombre_usuario', $d['username'])->get()->getRow();
             if (!$exists) {
                 UserAccounts::create($db, [
-                    'establishment_id'      => $estId,
-                    'username'              => $d['username'],
-                    'roster_code'           => $d['rosterCode'],
-                    'full_name'             => $d['fullName'],
-                    'password_hash'         => $driverPasswordHash,
-                    'active'                => 1,
-                    'failed_login_attempts' => 0,
-                    'auth_provider'         => 'local',
-                    'created_at'            => $now,
-                    'updated_at'            => $now,
+                    'id_establecimiento'      => $estId,
+                    'nombre_usuario'        => $d['username'],
+                    'codigo_roster'         => $d['rosterCode'],
+                    'nombre_completo'             => $d['fullName'],
+                    'hash_contrasena'         => $driverPasswordHash,
+                    'activo'                => 1,
+                    'intentos_fallidos' => 0,
+                    'proveedor_autenticacion'         => 'local',
+                    'fecha_creacion'            => $now,
+                    'fecha_actualizacion'            => $now,
                 ], 'DRIVER');
             }
         }
@@ -90,17 +90,17 @@ class PulsoSeeder extends Seeder
         ];
 
         foreach ($vehicles as $v) {
-            $exists = $db->table('vehiculos')->where('establishment_id', $estId)->where('codigo_movil', $v['roleCode'])->get()->getRow();
+            $exists = $db->table('vehiculos')->where('id_establecimiento', $estId)->where('codigo_movil', $v['roleCode'])->get()->getRow();
             if (!$exists) {
                 $db->table('vehiculos')->insert([
-                    'establishment_id'    => $estId,
+                    'id_establecimiento'    => $estId,
                     'codigo_movil'           => $v['roleCode'],
-                    'license_plate'       => $v['licensePlate'],
-                    'year'                => $v['year'],
-                    'current_odometer_km' => $v['currentOdometerKm'],
-                    'active'              => 1,
-                    'created_at'          => $now,
-                    'updated_at'          => $now,
+                    'patente'       => $v['licensePlate'],
+                    'anio'                => $v['year'],
+                    'odometro_actual' => $v['currentOdometerKm'],
+                    'activo'              => 1,
+                    'fecha_creacion'          => $now,
+                    'fecha_actualizacion'          => $now,
                 ] + VehicleCatalog::ids($db, $v['vehicleType'], $v['model'], null, '', (string)$estId));
             }
         }
@@ -110,19 +110,19 @@ class PulsoSeeder extends Seeder
 
         foreach ($costCenters as $cc) {
             $exists = $db->table('centros_costos')
-                ->where('establishment_id', $estId)
-                ->where('code', $cc['code'])
+                ->where('id_establecimiento', $estId)
+                ->where('codigo', $cc['code'])
                 ->get()
                 ->getRow();
 
             if (!$exists) {
                 $db->table('centros_costos')->insert([
-                    'establishment_id' => $estId,
-                    'code'             => $cc['code'],
-                    'name'             => $cc['name'],
-                    'active'           => 1,
-                    'created_at'       => $now,
-                    'updated_at'       => $now,
+                    'id_establecimiento' => $estId,
+                    'codigo'           => $cc['code'],
+                    'nombre'           => $cc['name'],
+                    'activo'           => 1,
+                    'fecha_creacion'       => $now,
+                    'fecha_actualizacion'       => $now,
                 ]);
             }
         }

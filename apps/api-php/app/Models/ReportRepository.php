@@ -11,7 +11,7 @@ final class ReportRepository {
     private string $end;
     private string $timezone;
     public function __construct(private array $actor,array $query) {
-        $tz=new DateTimeZone(Database::connect()->table('establecimientos')->where('id_establecimiento',$actor['establishmentId'])->get()->getRowArray()['timezone']);
+        $tz=new DateTimeZone(Database::connect()->table('establecimientos')->where('id_establecimiento',$actor['establishmentId'])->get()->getRowArray()['zona_horaria']);
         $this->timezone=$tz->getName();
         $this->from=(string)($query['from']??''); $this->to=(string)($query['to']??'');
         $from=DateTimeImmutable::createFromFormat('!Y-m-d',$this->from,$tz);
@@ -22,14 +22,14 @@ final class ReportRepository {
     }
     public function services(bool $cancelled=false): array {
         $repo=new ServiceRepository($this->actor);
-        $q=$repo->query()->groupStart()->groupStart()->where('b.status','COMPLETED')->where('b.ended_at >=',$this->start)->where('b.ended_at <',$this->end)->groupEnd();
-        if($cancelled) $q->orGroupStart()->where('b.status','CANCELLED')->where('b.cancelled_at >=',$this->start)->where('b.cancelled_at <',$this->end)->groupEnd();
-        return array_map($repo->serialize(...),$q->groupEnd()->orderBy('b.ended_at')->get()->getResultArray());
+        $q=$repo->query()->groupStart()->groupStart()->where('b.estado','COMPLETED')->where('b.fecha_fin >=',$this->start)->where('b.fecha_fin <',$this->end)->groupEnd();
+        if($cancelled) $q->orGroupStart()->where('b.estado','CANCELLED')->where('b.fecha_cancelacion >=',$this->start)->where('b.fecha_cancelacion <',$this->end)->groupEnd();
+        return array_map($repo->serialize(...),$q->groupEnd()->orderBy('b.fecha_fin')->get()->getResultArray());
     }
     public function summary(): array {
-        $centers=Database::connect()->table('centros_costos')->where('establishment_id',$this->actor['establishmentId'])->orderBy('code')->get()->getResultArray();
+        $centers=Database::connect()->table('centros_costos')->where('id_establecimiento',$this->actor['establishmentId'])->orderBy('codigo')->get()->getResultArray();
         $rows=[];
-        foreach($centers as $cc) $rows[(string)$cc['id_centro_costo']]=['id'=>(string)$cc['id_centro_costo'],'code'=>$cc['code'],'name'=>$cc['name'],'completedTrips'=>0,'completedKm'=>0,'completedUnknownKm'=>0,'cancelledTrips'=>0];
+        foreach($centers as $cc) $rows[(string)$cc['id_centro_costo']]=['id'=>(string)$cc['id_centro_costo'],'code'=>$cc['codigo'],'name'=>$cc['nombre'],'completedTrips'=>0,'completedKm'=>0,'completedUnknownKm'=>0,'cancelledTrips'=>0];
         foreach($this->services(true) as $s) {
             $key=$s['costCenterId']??'';
             if(!isset($rows[$key])) $rows[$key]=['id'=>null,'code'=>'S/C','name'=>'Indefinido','completedTrips'=>0,'completedKm'=>0,'completedUnknownKm'=>0,'cancelledTrips'=>0];

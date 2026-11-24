@@ -13,11 +13,11 @@ final class EstablishmentRepository
         if (mb_strlen($password)<12 || strlen($password)>1024) throw new DomainException('ADMIN_PASSWORD_TOO_SHORT',400);
         $db=Database::connect(); $db->transException(true)->transBegin();
         try {
-            if ($db->table('establecimientos')->where('code',$code)->countAllResults() || $db->table('usuarios')->where('username',$username)->countAllResults()) throw new DomainException('ESTABLISHMENT_OR_USERNAME_EXISTS',409);
+            if ($db->table('establecimientos')->where('codigo',$code)->countAllResults() || $db->table('usuarios')->where('nombre_usuario',$username)->countAllResults()) throw new DomainException('ESTABLISHMENT_OR_USERNAME_EXISTS',409);
             $now=UnitOfWork::now();
-            $db->table('establecimientos')->insert(['code'=>$code,'name'=>$name,'timezone'=>$timezone,'active'=>1,'created_at'=>$now,'updated_at'=>$now]);
+            $db->table('establecimientos')->insert(['codigo'=>$code,'nombre'=>$name,'zona_horaria'=>$timezone,'activo'=>1,'fecha_creacion'=>$now,'fecha_actualizacion'=>$now]);
             $id=(string)$db->insertID();
-            $admin=UserAccounts::create($db,['establishment_id'=>$id,'username'=>$username,'full_name'=>mb_substr('Administración · '.$name,0,120),'password_hash'=>password_hash($password,PASSWORD_ARGON2ID),'active'=>1,'created_at'=>$now,'updated_at'=>$now],'ADMIN');
+            $admin=UserAccounts::create($db,['id_establecimiento'=>$id,'nombre_usuario'=>$username,'nombre_completo'=>mb_substr('Administración · '.$name,0,120),'hash_contrasena'=>password_hash($password,PASSWORD_ARGON2ID),'activo'=>1,'fecha_creacion'=>$now,'fecha_actualizacion'=>$now],'ADMIN');
             if (!$db->transStatus()) throw new \RuntimeException('Provisioning failed');
             $db->transCommit(); return ['establishmentId'=>$id,'adminId'=>$admin];
         } catch (\Throwable $e) { $db->transRollback(); throw $e; }

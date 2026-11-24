@@ -12,7 +12,7 @@ final class UnitOfWork
         $db = Database::connect();
         $db->transException(true)->transBegin();
         try {
-            $tenant = $db->query('SELECT id_establecimiento FROM establecimientos WHERE id_establecimiento = ? AND active = 1 FOR UPDATE', [$actor['establishmentId']])->getRowArray();
+            $tenant = $db->query('SELECT id_establecimiento FROM establecimientos WHERE id_establecimiento = ? AND activo = 1 FOR UPDATE', [$actor['establishmentId']])->getRowArray();
             if (!$tenant) throw new DomainException('FORBIDDEN', 403);
             $result = $work($db);
             if (!$db->transStatus()) throw new \RuntimeException('Transaction failed');

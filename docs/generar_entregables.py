@@ -249,13 +249,13 @@ relation(d,[(245,512),(350,512)],266,503,'0..1 : 0..*')
 relation(d,[(615,260),(710,260),(710,490),(801,490)],717,477,'1 : 0..*')
 relation(d,[(245,490),(280,490),(280,245),(350,245)],285,236,'0..1 : 0..* (x2)')
 relation(d,[(245,544),(740,544),(740,344),(780,344)],746,335,'1 : 0..*')
-entity(d,'establecimientos',25,70,220,['code','timezone'])
-entity(d,'centros_costos',25,282,220,['code','name'])
-entity(d,'usuarios',25,456,220,['username'])
-entity(d,'viajes',350,70,265,['destino / actividad','status / version','started_at / ended_at','departure_odometer_km','arrival_odometer_km'])
-entity(d,'viajes_tramos',780,172,315,['fecha_inicio / fecha_fin','odometro_inicio / odometro_fin','active_driver_id (UNIQUE)','active_vehicle_id (UNIQUE)','active_trip_id (UNIQUE)'])
+entity(d,'establecimientos',25,70,220,['codigo','zona_horaria'])
+entity(d,'centros_costos',25,282,220,['codigo','nombre'])
+entity(d,'usuarios',25,456,220,['nombre_usuario'])
+entity(d,'viajes',350,70,265,['destino / actividad','estado / version','fecha_inicio / fecha_fin','odometro_salida','odometro_llegada'])
+entity(d,'viajes_tramos',780,172,315,['fecha_inicio / fecha_fin','odometro_inicio / odometro_fin','id_chofer_activo (UNIQUE)','id_vehiculo_activo (UNIQUE)','id_viaje_activo (UNIQUE)'])
 entity(d,'vehiculos',837,25,240,['codigo_movil'])
-entity(d,'revisiones_direccion',350,430,273,['revision / address','created_at'])
+entity(d,'revisiones_direccion',350,430,273,['revision / direccion','fecha_creacion'])
 entity(d,'folios_viajes_anteriores',801,460,310,['alias de folio previo'])
 d.svg(SRC/'MER-Pulso.svg')
 u=Diagram(1100,600)
@@ -264,12 +264,12 @@ relation(u,[(470,149),(470,210)],480,183,'1 : 0..1')
 relation(u,[(850,132),(850,241),(663,241)],701,232,'1 : 0..*')
 relation(u,[(413,289),(167,289),(167,399)],192,279,'1 : 0..*')
 relation(u,[(663,291),(880,291),(880,399)],720,282,'0..1 : 0..*')
-entity(u,'establecimientos',40,71,190,['code'])
+entity(u,'establecimientos',40,71,190,['codigo'])
 entity(u,'funcionarios',365,71,218,['nombre','unidad','codigo_roster'])
 entity(u,'roles',755,70,215,['codigo','nombre_rol','descripcion'])
-entity(u,'usuarios',413,210,250,['username','active'])
-entity(u,'sesiones',48,399,225,['token_hash','expires_at'])
-entity(u,'registros_auditoria',755,399,260,['entity_type / entity_id','action'])
+entity(u,'usuarios',413,210,250,['nombre_usuario','activo'])
+entity(u,'sesiones',48,399,225,['hash_token','fecha_expiracion'])
+entity(u,'registros_auditoria',755,399,260,['tipo_entidad / id_entidad','accion'])
 u.svg(SRC/'MER-Usuarios.svg')
 v=Diagram(1100,620)
 relation(v,[(230,145),(425,145)],274,136,'1 : 0..*')
@@ -282,20 +282,20 @@ relation(v,[(1000,98),(1080,98),(1080,554),(532,554),(532,409)],680,544,'estable
 entity(v,'marcas_vehiculo',35,68,220,['nombre'])
 entity(v,'modelos_vehiculo',425,68,250,['nombre'])
 entity(v,'tipos_vehiculo',425,320,250,['nombre'])
-entity(v,'establecimientos',821,25,211,['code'])
-entity(v,'vehiculos',792,225,272,['codigo_movil','license_plate','current_odometer_km'])
+entity(v,'establecimientos',821,25,211,['codigo'])
+entity(v,'vehiculos',792,225,272,['codigo_movil','patente','odometro_actual'])
 v.svg(SRC/'MER-Flota.svg')
 diagram_pdf('02-Pulso-Modelo-Entidad-Relacion.pdf','Modelo entidad-relación',[
  ('1 / Viaje, asignaciones y trazabilidad',d,[
-  'Padre : hijos. La pertenencia de tramos y revisiones al viaje se protege mediante FK compuesta con establishment_id.',
+  'Padre : hijos. La pertenencia de tramos y revisiones al viaje se protege mediante FK compuesta con id_establecimiento.',
   'Usuarios → viajes representa chofer asignado y autor. Usuarios → tramos representa participación efectiva.',
   'Los tramos son la fuente de verdad de chofer, vehículo y kilómetros; la cabecera guarda la asignación planificada y las lecturas globales.',
   'Cada revisión puede tener un usuario autor (0..1); cada usuario puede generar varias revisiones (0..*).',
  ]),
  ('2 / Institución heredada del funcionario',u,[
-  'usuarios no almacena establishment_id. Se obtiene mediante id_funcionario, tanto al entrar como al restaurar la sesión.',
+  'usuarios no almacena id_establecimiento. Se obtiene mediante id_funcionario, tanto al entrar como al restaurar la sesión.',
   'El código de róster pertenece al funcionario y es único por establecimiento; un traslado que lo duplique es rechazado por MySQL.',
-  'registros_auditoria lleva establishment_id obligatorio (FK). entity_id es una referencia lógica polimórfica para auditoría general y admite identificadores históricos.',
+  'registros_auditoria lleva id_establecimiento obligatorio (FK). id_entidad es una referencia lógica polimórfica para auditoría general y admite identificadores históricos.',
  ]),
  ('3 / Catálogos propios por establecimiento',v,[
   'Marca y tipo son únicos por institución. Modelo es único por institución y marca.',
@@ -321,19 +321,20 @@ for name,meta in SCHEMA['tables'].items():
 dictionary += [PageBreak(),p('Restricciones y alcance','Heading1')]
 rules=[
  'El modelo contiene 14 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.',
- 'usuarios hereda establishment_id desde funcionarios. El traslado del funcionario cambia la institución efectiva de su cuenta y de sus sesiones vigentes. Las participaciones históricas permanecen vinculadas a la institución del viaje.',
- 'viajes almacena el propósito, destino, estado, fechas, centro de costos y asignación vigente. Antes de partir, driver_id y vehicle_id expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.',
+ 'usuarios hereda id_establecimiento desde funcionarios. El traslado del funcionario cambia la institución efectiva de su cuenta y de sus sesiones vigentes. Las participaciones históricas permanecen vinculadas a la institución del viaje.',
+ 'viajes almacena el propósito, destino, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.',
  'El relevo cierra el tramo vigente, actualiza el odómetro del vehículo saliente y abre otro tramo en el mismo viaje. La operación es transaccional y exige la versión vigente. El folio, la fecha inicial y el centro de costos del viaje se conservan.',
- 'viajes_tramos contiene id_viaje, id_chofer, id_vehiculo, fecha_inicio, fecha_fin, odometro_inicio y odometro_fin. Sus columnas generadas active_driver_id, active_vehicle_id y active_trip_id son STORED y UNIQUE y se activan cuando fecha_fin es NULL.',
- 'Fuente única de verdad (informe del 09-11, sección 3): viajes_tramos es la única fuente de los recursos efectivamente usados (chofer, vehículo, fecha_inicio y fecha_fin) y de los kilómetros recorridos. viajes.driver_id y vehicle_id registran la asignación planificada, necesaria antes de que exista un tramo; durante el viaje la aplicación los iguala al tramo vigente en la misma transacción del relevo, y los informes de participación se calculan desde los tramos. viajes.departure_odometer_km y arrival_odometer_km son la lectura global de salida y llegada que pidió la segunda revisión; no se restan para obtener distancia. vehiculos.current_odometer_km es estado derivado: la aplicación lo actualiza al cerrar cada tramo, en la misma transacción, y rechaza lecturas menores a la vigente.',
+ 'viajes_tramos contiene id_viaje, id_chofer, id_vehiculo, fecha_inicio, fecha_fin, odometro_inicio y odometro_fin. Sus columnas generadas id_chofer_activo, id_vehiculo_activo y id_viaje_activo son STORED y UNIQUE y se activan cuando fecha_fin es NULL.',
+ 'Fuente única de verdad (informe del 09-11, sección 3): viajes_tramos es la única fuente de los recursos efectivamente usados (chofer, vehículo, fecha_inicio y fecha_fin) y de los kilómetros recorridos. viajes.id_chofer y id_vehiculo registran la asignación planificada, necesaria antes de que exista un tramo; durante el viaje la aplicación los iguala al tramo vigente en la misma transacción del relevo, y los informes de participación se calculan desde los tramos. viajes.odometro_salida y odometro_llegada son la lectura global de salida y llegada que pidió la segunda revisión; no se restan para obtener distancia. vehiculos.odometro_actual es estado derivado: la aplicación lo actualiza al cerrar cada tramo, en la misma transacción, y rechaza lecturas menores a la vigente.',
  'Los kilómetros del viaje son la suma de odometro_fin menos odometro_inicio de sus tramos. Si falta una lectura, el total es desconocido. Las lecturas globales de cabecera son referencias al primer y último vehículo y no se restan para obtener distancia. Excepción: un viaje histórico sin tramos usó un solo vehículo, por lo que su distancia es la diferencia de esas lecturas.',
- 'Cada tramo, revisión y registro de auditoría contiene establishment_id. Las FK compuestas impiden vincular tramos y revisiones a un viaje de otra institución. Las consultas operativas y de auditoría incluyen el filtro institucional.',
+ 'Nomenclatura (informe del 09-11, sección 1): todas las tablas, columnas, índices y restricciones usan nombres en español. Las PK siguen el formato id_[tabla], las FK id_[tabla referida], las fechas fecha_* y las lecturas odometro_*. La migración SpanishColumns renombró las columnas sin alterar datos; los índices se nombran uq_ o ix_ seguidos de sus columnas.',
+ 'Cada tramo, revisión y registro de auditoría contiene id_establecimiento. Las FK compuestas impiden vincular tramos y revisiones a un viaje de otra institución. Las consultas operativas y de auditoría incluyen el filtro institucional.',
  'usuarios no guarda el código de róster: funcionarios.codigo_roster es único por establecimiento, de modo que la regla se mantiene también al trasladar a un funcionario.',
  'tipos_vehiculo, marcas_vehiculo y modelos_vehiculo son catálogos locales de cada establecimiento. Cada administrador registra los datos de su flota y la aplicación reutiliza los nombres existentes dentro de su institución.',
  'roles es un catálogo de definiciones mantenido por consola. Los permisos operativos implementados corresponden a Administración y Chofer. Los perfiles adicionales requieren definición funcional.',
  'revisiones_direccion conserva el texto, la secuencia, la fecha y el autor de cada corrección. La relación con el autor es opcional para preservar el legado.',
- 'registros_auditoria es una auditoría general: entity_id es VARCHAR porque referencia viajes, vehículos o usuarios según entity_type y conserva identificadores históricos (legacy:...). Por eso no tiene FK a la entidad auditada. La integridad institucional se asegura con establishment_id NOT NULL y FK a establecimientos, y las consultas filtran por él.',
- 'folios_viajes_anteriores conserva los folios de la versión de viajes enlazados y permite consultar el viaje consolidado y su auditoría. Los registros de auditoría originales mantienen su entity_id.',
+ 'registros_auditoria es una auditoría general: id_entidad es VARCHAR porque referencia viajes, vehículos o usuarios según tipo_entidad y conserva identificadores históricos (legacy:...). Por eso no tiene FK a la entidad auditada. La integridad institucional se asegura con id_establecimiento NOT NULL y FK a establecimientos, y las consultas filtran por él.',
+ 'folios_viajes_anteriores conserva los folios de la versión de viajes enlazados y permite consultar el viaje consolidado y su auditoría. Los registros de auditoría originales mantienen su id_entidad.',
  'La migración agrupa cadenas anteriores en un solo viaje, conserva cada recorrido como tramo y clona los catálogos usados por cada institución. Debe ejecutarse con la aplicación detenida y un respaldo restaurable. MySQL DDL no se revierte como una transacción ordinaria.',
  'Las cancelaciones operativas solo se admiten antes del inicio. Las excepciones LEGACY conservan registros históricos sin habilitar nuevas cancelaciones de viajes en curso.',
 ]
@@ -359,7 +360,7 @@ CASES=[
  ('CU-06','Asignar o reasignar recursos',['Administración'],'PENDING, ASSIGNED o IN_PROGRESS.','Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el tramo actual e iniciar otro dentro del mismo viaje en la misma transacción.','Sin cambios: rechazo. Recurso ocupado o lectura inválida: rollback. No modifica la identidad del vehículo.'),
  ('CU-07','Corregir dirección',['Administración'],'Servicio existente de la institución y versión vigente.','Guardar corrección y revisión de dirección; el chofer ve aviso y puede marcar Entendido.','El reconocimiento del aviso se conserva localmente en el navegador; no es un acuse centralizado de lectura.'),
  ('CU-08','Asignar centro de costos',['Administración'],'Servicio existente, centro activo de la institución.','Cambiar centro o dejar Indefinido; registrar cambio auditado.','No se aceptan centros ajenos ni inactivos. El centro puede asignarse después del inicio o del cierre.'),
- ('CU-09','Cancelar antes del inicio',['Administración'],'PENDING o ASSIGNED, started_at nulo.','Registrar motivo y pasar a CANCELLED con fecha.','IN_PROGRESS y COMPLETED: rechazo. No hay cierre de cancelación, km cancelados ni creación automática de retorno.'),
+ ('CU-09','Cancelar antes del inicio',['Administración'],'PENDING o ASSIGNED, fecha_inicio nulo.','Registrar motivo y pasar a CANCELLED con fecha.','IN_PROGRESS y COMPLETED: rechazo. No hay cierre de cancelación, km cancelados ni creación automática de retorno.'),
  ('CU-10','Registrar vehículo',['Administración'],'Datos de identificación revisados.','Registrar rol, patente, tipo, modelo, año y kilometraje inicial.','Identificadores duplicados o valores inválidos: rechazo. Tras crear, los datos identificativos quedan fijos.'),
  ('CU-11','Ajustar kilometraje',['Administración'],'Vehículo de su institución sin viaje activo y updatedAt vigente.','Ingresar nueva lectura entera y motivo; guardar con auditoría.','No permite cambiar rol, patente, modelo, tipo, año ni activación. El ajuste administrativo puede corregir inconsistencias del odómetro.'),
  ('CU-12','Consultar centros y exportar',['Administración'],'Período válido de hasta 365 días de diferencia.','Consultar bitácora o resumen por centro; exportar Excel local o PDF del servidor.','Bitácora incluye solo completados por fecha de finalización. Resumen cuenta cancelados por separado y no suma sus km. Fechas en zona institucional.'),
@@ -423,21 +424,21 @@ REQS=[
  ('DOC-02','Must','Modelo entidad-relación.','Entregado','Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
  ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y dieciséis casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
  ('DOC-04','Must','Copia de requerimientos levantados; MoSCoW deseable.','Entregado para revisión','Matriz derivada del correo TI y acuerdos del usuario; debe ser validada por la contraparte funcional.','04-Pulso-Requerimientos-MoSCoW.pdf'),
- ('RF-01','Must','Crear servicio con destino, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o destino no se guarda. Indefinido es cost_center_id NULL y se asigna después.','ServiceEngine::create; CostCenterField'),
+ ('RF-01','Must','Crear servicio con destino, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o destino no se guarda. Indefinido es id_centro_costo NULL y se asigna después.','ServiceEngine::create; CostCenterField'),
  ('RF-02','Must','Solo un servicio simultáneo por chofer y vehículo.','Verificado local','Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.','viajes_tramos; ServiceEngine; prueba concurrente'),
  ('RF-03','Must','Iniciar y finalizar desde el chofer asignado.','Verificado local','Inicio toma lectura del vehículo; cierre exige odómetro válido y registra fechas. Administración no suplanta al chofer.','ServiceEngine start / complete'),
- ('RF-04','Must','Cancelación solo administrativa y previa al inicio.','Verificado local','PENDING / ASSIGNED sin started_at. IN_PROGRESS no se cancela.','ServiceEngine cancel; prueba de rechazo sin efectos'),
+ ('RF-04','Must','Cancelación solo administrativa y previa al inicio.','Verificado local','PENDING / ASSIGNED sin fecha_inicio. IN_PROGRESS no se cancela.','ServiceEngine cancel; prueba de rechazo sin efectos'),
  ('RF-05','Must','Permitir reasignación de chofer o vehículo.','Verificado local','En ruta exige lectura del móvil saliente, cierra su tramo y abre otro en el mismo viaje con la lectura del entrante.','ServiceEngine assignment'),
  ('RF-06','Must','Corregir dirección con historial y aviso al chofer.','Implementado','Aviso visible al actualizar datos; Entendido lo oculta en ese navegador. No es confirmación central en servidor.','revisiones_direccion; AddressChangeAlerts'),
  ('RF-07','Must','Vehículo con identidad fija; solo ajustar kilometraje.','Verificado local','Alta permitida; PATCH rechaza rol, patente, tipo, modelo, año y active. Motivo y versión obligatorios para km.','VehicleRepository; VehicleCard; pruebas API'),
- ('RF-08','Must','Exportar bitácora solo con completados del período.','Verificado local','Se usa ended_at y zona del establecimiento; excluye pendientes, activos y cancelados.','ReportRepository::daily; pruebas exportación'),
+ ('RF-08','Must','Exportar bitácora solo con completados del período.','Verificado local','Se usa fecha_fin y zona del establecimiento; excluye pendientes, activos y cancelados.','ReportRepository::daily; pruebas exportación'),
  ('RF-09','Must','Totales por centro con viajes y km.','Verificado local','Completados y cancelados separados; km solo completados con lecturas completas. Mostrar centros con actividad e incluir restantes opcionalmente.','ReportRepository::summary; CostCenterReport'),
  ('RF-10','Must','Historial de servicios por chofer y vehículo.','Implementado','Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.','OperationsDashboard; ServiceRepository'),
  ('RF-11','Must','Administración crea cuentas de chofer y de administración.','Verificado local','Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.','AccountRepository; AccountsPanel; pruebas API'),
- ('MER-01','Must','PK enteras autoincrementables con nomenclatura institucional.','Implementado','Las claves numéricas se conservan. La nueva migración consolida las cadenas anteriores y conserva sus alias.','ConsolidateTrips; diccionario físico'),
+ ('MER-01','Must','PK enteras autoincrementables y nomenclatura institucional en español.','Verificado local','PK id_[tabla] enteras y autoincrementables. Todas las tablas, columnas, índices y restricciones están en español; una prueba de dominio falla si reaparece un nombre en inglés.','ConsolidateTrips; SpanishColumns; pulso:test-domain; diccionario físico'),
  ('MER-02','Must','Una entidad de viaje con lecturas de salida y llegada.','Verificado local','Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.','viajes; ServiceEngine; pruebas de relevo'),
  ('MER-03','Must','Catálogos de roles, funcionarios y flota.','Implementado','roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.','schema-viajes.sql; pulso:roles; alta de vehículo'),
- ('MER-05','Must','Institución heredada, catálogos locales y aislamiento de revisiones.','Verificado local','usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan establishment_id. Los catálogos tienen unicidad y FK institucionales.','DomainTrips; TestDomain; AuthRepository'),
+ ('MER-05','Must','Institución heredada, catálogos locales y aislamiento de revisiones.','Verificado local','usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan id_establecimiento. Los catálogos tienen unicidad y FK institucionales.','DomainTrips; TestDomain; AuthRepository'),
  ('MER-04','Must','MER alineado con nombres, claves y cardinalidades físicas.','Entregado','Incluye relación opcional del usuario autor con cada revisión de dirección.','MER y diccionario físico'),
  ('FUT-02','Could','Pasajeros, solicitante formal y respaldo de la salida.','Por definir','Sujeto a requerimientos de Movilización. Jefatura, Despacho y Solicitante son definiciones de catálogo; faltan permisos y flujo aprobados.','Informe de revisión MER del 09-11-2026'),
  ('RNF-01','Must','Aislamiento, control de acceso y sesiones.','Verificado local','Roles ADMIN / DRIVER, Argon2id, cookie HttpOnly, token hash, bloqueo 5 fallos / 15 min. HTTPS y despliegue se verifican con TI.','AuthRepository; AuthFilter; AuthController'),
@@ -511,10 +512,10 @@ for text in [
 audit += [p('Respuesta a las observaciones de TI / 22-11-2026','Heading1'), table([
  ['Observación','Resolución','Evidencia'],
  ['PK y nomenclatura','PK enteras AUTO_INCREMENT y nombres id_[entidad]. Tablas operativas en español. Se conservan algunos nombres técnicos de columnas.','SQL, diccionario y migración.'],
- ['Diagrama y atributos','Destinos y actividades coinciden con las columnas físicas. Revisiones y tramos llevan establishment_id con FK institucional compuesta.','MER, vistas 1 a 3.'],
+ ['Diagrama y atributos','Destinos y actividades coinciden con las columnas físicas. Revisiones y tramos llevan id_establecimiento con FK institucional compuesta.','MER, vistas 1 a 3.'],
  ['Viajes y kilometraje','El viaje permanece abierto durante el relevo. Sus tramos registran los recursos y odómetros. El recorrido suma las diferencias por tramo.','ServiceEngine, viajes y pruebas de relevo.'],
  ['Personal y roles','Institución heredada del funcionario, catálogo de roles y entidad funcionarios. Mantenedor por consola. Las nuevas definiciones no otorgan permisos por sí solas.','roles, funcionarios, pulso:roles.'],
- ['Flota','codigo_movil y catálogos con establishment_id. Unicidad y FK compuestas por institución. Las marcas históricas desconocidas permanecen identificadas como tales.','MER de flota y alta del vehículo.'],
+ ['Flota','codigo_movil y catálogos con id_establecimiento. Unicidad y FK compuestas por institución. Las marcas históricas desconocidas permanecen identificadas como tales.','MER de flota y alta del vehículo.'],
  ['Pasajeros y respaldo','Pendiente de confirmación funcional.','MoSCoW FUT-02.'],
  ],[133,248,134]), p('Actualización de instalaciones existentes','Heading2'),
  p('Antes del cambio, detenga el servicio y verifique un respaldo restaurable. Ejecute php spark migrate. La migración conserva las cabeceras raíz, convierte sus recorridos en tramos y registra alias de los folios anteriores. Los catálogos se copian por institución. MySQL DDL requiere restauración del respaldo si falla una actualización parcial. La reversión requiere restaurar el respaldo.')]
@@ -526,7 +527,7 @@ markdown('AUDITORIA-cumplimiento-2026-11-22.md','Corroboración de lineamientos 
  ('Validación','Suite local PHP/MySQL y sesión, build y lint correctos. No hay pruebas de carga regional ni homologación real Clave Única.'),
  ('Arquitectura','Controllers REST + Models/repositorios + Libraries de dominio; vista React compilada servida por FrontendController. Sin Node en ejecución productiva.'),
  ('Salidas externas','No hay scripts CSS o fuentes de CDN en ejecución. Maps es enlace voluntario; Clave Única usa HTTPS al proveedor cuando esté habilitado.'),
- ('Límites','Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origin=LEGACY preserva registros históricos sin permitir nuevas cancelaciones en ruta.')])
+ ('Límites','Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origen=LEGACY preserva registros históricos sin permitir nuevas cancelaciones en ruta.')])
 markdown('BPMN-procesos.md','Procesos BPMN',[(pid+' / '+title,'Ver BPMN-'+pid+'.svg y Pulso-procesos.bpmn.\n\n'+('El relevo cierra el tramo actual y abre otro dentro del mismo viaje. Un viaje iniciado se finaliza con sus lecturas.' if pid=='Ejecutar' else 'Modelo descriptivo del comportamiento actual, no ejecutable.')) for pid,title,*_ in PROCESSES])
 
 # Sustituir borradores antiguos por sus versiones actuales; conservar auditoría histórica con advertencia.

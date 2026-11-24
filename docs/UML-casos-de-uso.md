@@ -86,7 +86,7 @@ Excepciones: No se aceptan centros ajenos ni inactivos. El centro puede asignars
 
 Actores: Administración
 
-Precondición: PENDING o ASSIGNED, started_at nulo.
+Precondición: PENDING o ASSIGNED, fecha_inicio nulo.
 
 Flujo: Registrar motivo y pasar a CANCELLED con fecha.
 

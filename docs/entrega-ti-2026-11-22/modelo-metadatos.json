@@ -12,7 +12,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -20,7 +20,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "code",
+          "COLUMN_NAME": "codigo",
           "COLUMN_TYPE": "varchar(30)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -28,7 +28,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "name",
+          "COLUMN_NAME": "nombre",
           "COLUMN_TYPE": "varchar(200)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -36,7 +36,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "active",
+          "COLUMN_NAME": "activo",
           "COLUMN_TYPE": "tinyint(1)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -44,7 +44,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -52,7 +52,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "updated_at",
+          "COLUMN_NAME": "fecha_actualizacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -62,12 +62,12 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         }
       ],
-      "ddl": "CREATE TABLE `centros_costos` (\n  `id_centro_costo` int unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_centro_costo`),\n  UNIQUE KEY `establishment_id_code` (`establishment_id`,`code`),\n  KEY `establishment_id` (`establishment_id`),\n  CONSTRAINT `centros_costos_ibfk_1` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT\n) ENGINE=InnoDB AUTO_INCREMENT=222 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `centros_costos` (\n  `id_centro_costo` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `codigo` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `nombre` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `activo` tinyint(1) NOT NULL DEFAULT '1',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `fecha_actualizacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_centro_costo`),\n  UNIQUE KEY `uq_id_establecimiento_codigo` (`id_establecimiento`,`codigo`),\n  KEY `ix_id_establecimiento` (`id_establecimiento`),\n  CONSTRAINT `centros_costos_ibfk_1` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT\n) ENGINE=InnoDB AUTO_INCREMENT=222 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "establecimientos": {
       "columns": [
@@ -80,7 +80,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "code",
+          "COLUMN_NAME": "codigo",
           "COLUMN_TYPE": "varchar(30)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "UNI",
@@ -88,7 +88,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "name",
+          "COLUMN_NAME": "nombre",
           "COLUMN_TYPE": "varchar(200)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -96,7 +96,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "timezone",
+          "COLUMN_NAME": "zona_horaria",
           "COLUMN_TYPE": "varchar(60)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -104,7 +104,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "active",
+          "COLUMN_NAME": "activo",
           "COLUMN_TYPE": "tinyint(1)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -112,7 +112,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -120,7 +120,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "updated_at",
+          "COLUMN_NAME": "fecha_actualizacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -129,7 +129,7 @@
         }
       ],
       "foreignKeys": [],
-      "ddl": "CREATE TABLE `establecimientos` (\n  `id_establecimiento` int unsigned NOT NULL AUTO_INCREMENT,\n  `code` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `timezone` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'America/Santiago',\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_establecimiento`),\n  UNIQUE KEY `code` (`code`)\n) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `establecimientos` (\n  `id_establecimiento` int unsigned NOT NULL AUTO_INCREMENT,\n  `codigo` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `nombre` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `zona_horaria` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'America/Santiago',\n  `activo` tinyint(1) NOT NULL DEFAULT '1',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `fecha_actualizacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_establecimiento`),\n  UNIQUE KEY `uq_codigo` (`codigo`)\n) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "folios_viajes_anteriores": {
       "columns": [
@@ -142,7 +142,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -160,9 +160,9 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "viajes",
-          "REFERENCED_COLUMN_NAME": "establishment_id"
+          "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
           "COLUMN_NAME": "id_viaje",
@@ -170,7 +170,7 @@
           "REFERENCED_COLUMN_NAME": "id_viaje"
         }
       ],
-      "ddl": "CREATE TABLE `folios_viajes_anteriores` (\n  `id_folio_anterior` int unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `id_viaje` int unsigned NOT NULL,\n  PRIMARY KEY (`id_folio_anterior`),\n  KEY `establishment_id` (`establishment_id`,`id_viaje`),\n  CONSTRAINT `folios_viajes_anteriores_ibfk_1` FOREIGN KEY (`establishment_id`, `id_viaje`) REFERENCES `viajes` (`establishment_id`, `id_viaje`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `folios_viajes_anteriores` (\n  `id_folio_anterior` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_viaje` int unsigned NOT NULL,\n  PRIMARY KEY (`id_folio_anterior`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  CONSTRAINT `folios_viajes_anteriores_ibfk_1` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "funcionarios": {
       "columns": [
@@ -183,7 +183,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -217,12 +217,12 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         }
       ],
-      "ddl": "CREATE TABLE `funcionarios` (\n  `id_funcionario` int unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `nombre` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `unidad` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `codigo_roster` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  PRIMARY KEY (`id_funcionario`),\n  UNIQUE KEY `establishment_id` (`establishment_id`,`id_funcionario`),\n  UNIQUE KEY `funcionario_establecimiento_roster` (`establishment_id`,`codigo_roster`),\n  CONSTRAINT `funcionarios_ibfk_1` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`)\n) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `funcionarios` (\n  `id_funcionario` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `nombre` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `unidad` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `codigo_roster` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  PRIMARY KEY (`id_funcionario`),\n  UNIQUE KEY `uq_id_establecimiento_id_funcionario` (`id_establecimiento`,`id_funcionario`),\n  UNIQUE KEY `uq_id_establecimiento_codigo_roster` (`id_establecimiento`,`codigo_roster`),\n  CONSTRAINT `funcionarios_ibfk_1` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`)\n) ENGINE=InnoDB AUTO_INCREMENT=128 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "marcas_vehiculo": {
       "columns": [
@@ -243,7 +243,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -253,12 +253,12 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         }
       ],
-      "ddl": "CREATE TABLE `marcas_vehiculo` (\n  `id_marca_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `nombre` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` int unsigned NOT NULL,\n  PRIMARY KEY (`id_marca_vehiculo`),\n  UNIQUE KEY `establishment_id` (`establishment_id`,`id_marca_vehiculo`),\n  UNIQUE KEY `establishment_id_2` (`establishment_id`,`nombre`),\n  CONSTRAINT `marcas_vehiculo_ibfk_1` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`)\n) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `marcas_vehiculo` (\n  `id_marca_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `nombre` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_establecimiento` int unsigned NOT NULL,\n  PRIMARY KEY (`id_marca_vehiculo`),\n  UNIQUE KEY `uq_id_establecimiento_id_marca_vehiculo` (`id_establecimiento`,`id_marca_vehiculo`),\n  UNIQUE KEY `uq_id_establecimiento_nombre` (`id_establecimiento`,`nombre`),\n  CONSTRAINT `marcas_vehiculo_ibfk_1` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`)\n) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "modelos_vehiculo": {
       "columns": [
@@ -287,7 +287,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -297,14 +297,14 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "marcas_vehiculo",
-          "REFERENCED_COLUMN_NAME": "establishment_id"
+          "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
           "COLUMN_NAME": "id_marca_vehiculo",
@@ -312,7 +312,7 @@
           "REFERENCED_COLUMN_NAME": "id_marca_vehiculo"
         }
       ],
-      "ddl": "CREATE TABLE `modelos_vehiculo` (\n  `id_modelo_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_marca_vehiculo` int unsigned NOT NULL,\n  `nombre` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` int unsigned NOT NULL,\n  PRIMARY KEY (`id_modelo_vehiculo`),\n  UNIQUE KEY `establishment_id` (`establishment_id`,`id_modelo_vehiculo`),\n  UNIQUE KEY `establishment_id_2` (`establishment_id`,`id_marca_vehiculo`,`nombre`),\n  CONSTRAINT `modelos_vehiculo_ibfk_1` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `modelos_vehiculo_ibfk_2` FOREIGN KEY (`establishment_id`, `id_marca_vehiculo`) REFERENCES `marcas_vehiculo` (`establishment_id`, `id_marca_vehiculo`)\n) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `modelos_vehiculo` (\n  `id_modelo_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_marca_vehiculo` int unsigned NOT NULL,\n  `nombre` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_establecimiento` int unsigned NOT NULL,\n  PRIMARY KEY (`id_modelo_vehiculo`),\n  UNIQUE KEY `uq_id_establecimiento_id_modelo_vehiculo` (`id_establecimiento`,`id_modelo_vehiculo`),\n  UNIQUE KEY `uq_id_establecimiento_id_marca_vehiculo_nombre` (`id_establecimiento`,`id_marca_vehiculo`,`nombre`),\n  CONSTRAINT `modelos_vehiculo_ibfk_1` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `modelos_vehiculo_ibfk_2` FOREIGN KEY (`id_establecimiento`, `id_marca_vehiculo`) REFERENCES `marcas_vehiculo` (`id_establecimiento`, `id_marca_vehiculo`)\n) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "registros_auditoria": {
       "columns": [
@@ -325,7 +325,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -333,7 +333,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "actor_user_id",
+          "COLUMN_NAME": "id_usuario_actor",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "MUL",
@@ -341,7 +341,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "entity_type",
+          "COLUMN_NAME": "tipo_entidad",
           "COLUMN_TYPE": "varchar(60)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -349,7 +349,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "entity_id",
+          "COLUMN_NAME": "id_entidad",
           "COLUMN_TYPE": "varchar(80)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -357,7 +357,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "action",
+          "COLUMN_NAME": "accion",
           "COLUMN_TYPE": "varchar(80)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -365,7 +365,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "before_data",
+          "COLUMN_NAME": "datos_anteriores",
           "COLUMN_TYPE": "json",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -373,7 +373,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "after_data",
+          "COLUMN_NAME": "datos_nuevos",
           "COLUMN_TYPE": "json",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -381,7 +381,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "ip_address",
+          "COLUMN_NAME": "direccion_ip",
           "COLUMN_TYPE": "varchar(64)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -389,7 +389,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -399,17 +399,17 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
-          "COLUMN_NAME": "actor_user_id",
+          "COLUMN_NAME": "id_usuario_actor",
           "REFERENCED_TABLE_NAME": "usuarios",
           "REFERENCED_COLUMN_NAME": "id_usuario"
         }
       ],
-      "ddl": "CREATE TABLE `registros_auditoria` (\n  `id_registro_auditoria` bigint unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `actor_user_id` int unsigned DEFAULT NULL,\n  `entity_type` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `entity_id` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `action` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `before_data` json DEFAULT NULL,\n  `after_data` json DEFAULT NULL,\n  `ip_address` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_registro_auditoria`),\n  KEY `entity_type_entity_id_created_at` (`entity_type`,`entity_id`,`created_at`),\n  KEY `actor_user_id_created_at` (`actor_user_id`,`created_at`),\n  KEY `auditoria_establecimiento_entidad` (`establishment_id`,`entity_type`,`entity_id`),\n  CONSTRAINT `fk_auditoria_establecimiento` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `registros_auditoria_ibfk_1` FOREIGN KEY (`actor_user_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL ON UPDATE SET NULL\n) ENGINE=InnoDB AUTO_INCREMENT=331 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `registros_auditoria` (\n  `id_registro_auditoria` bigint unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_usuario_actor` int unsigned DEFAULT NULL,\n  `tipo_entidad` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_entidad` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `accion` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `datos_anteriores` json DEFAULT NULL,\n  `datos_nuevos` json DEFAULT NULL,\n  `direccion_ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_registro_auditoria`),\n  KEY `ix_tipo_entidad_id_entidad_fecha_creacion` (`tipo_entidad`,`id_entidad`,`fecha_creacion`),\n  KEY `ix_id_usuario_actor_fecha_creacion` (`id_usuario_actor`,`fecha_creacion`),\n  KEY `ix_id_establecimiento_tipo_entidad_id_entidad` (`id_establecimiento`,`tipo_entidad`,`id_entidad`),\n  CONSTRAINT `fk_auditoria_establecimiento` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `registros_auditoria_ibfk_1` FOREIGN KEY (`id_usuario_actor`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL ON UPDATE SET NULL\n) ENGINE=InnoDB AUTO_INCREMENT=518 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "revisiones_direccion": {
       "columns": [
@@ -422,7 +422,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "service_id",
+          "COLUMN_NAME": "id_viaje",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -438,7 +438,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "address",
+          "COLUMN_NAME": "direccion",
           "COLUMN_TYPE": "varchar(350)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -446,7 +446,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "actor_user_id",
+          "COLUMN_NAME": "id_usuario_actor",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "MUL",
@@ -454,7 +454,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "source",
+          "COLUMN_NAME": "origen",
           "COLUMN_TYPE": "varchar(20)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -462,7 +462,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -470,7 +470,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -480,27 +480,27 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "actor_user_id",
+          "COLUMN_NAME": "id_usuario_actor",
           "REFERENCED_TABLE_NAME": "usuarios",
           "REFERENCED_COLUMN_NAME": "id_usuario"
         },
         {
-          "COLUMN_NAME": "service_id",
+          "COLUMN_NAME": "id_viaje",
           "REFERENCED_TABLE_NAME": "viajes",
           "REFERENCED_COLUMN_NAME": "id_viaje"
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "viajes",
-          "REFERENCED_COLUMN_NAME": "establishment_id"
+          "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
-          "COLUMN_NAME": "service_id",
+          "COLUMN_NAME": "id_viaje",
           "REFERENCED_TABLE_NAME": "viajes",
           "REFERENCED_COLUMN_NAME": "id_viaje"
         }
       ],
-      "ddl": "CREATE TABLE `revisiones_direccion` (\n  `id_revision_direccion` int unsigned NOT NULL AUTO_INCREMENT,\n  `service_id` int unsigned NOT NULL,\n  `revision` int NOT NULL,\n  `address` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `actor_user_id` int unsigned DEFAULT NULL,\n  `source` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',\n  `created_at` datetime(3) DEFAULT NULL,\n  `establishment_id` int unsigned NOT NULL,\n  PRIMARY KEY (`id_revision_direccion`),\n  UNIQUE KEY `service_id_revision` (`service_id`,`revision`),\n  KEY `service_id` (`service_id`),\n  KEY `actor_user_id` (`actor_user_id`),\n  KEY `establishment_id` (`establishment_id`,`service_id`),\n  CONSTRAINT `revisiones_direccion_ibfk_1` FOREIGN KEY (`actor_user_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `viajes` (`id_viaje`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_3` FOREIGN KEY (`establishment_id`, `service_id`) REFERENCES `viajes` (`establishment_id`, `id_viaje`)\n) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `revisiones_direccion` (\n  `id_revision_direccion` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_viaje` int unsigned NOT NULL,\n  `revision` int NOT NULL,\n  `direccion` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_usuario_actor` int unsigned DEFAULT NULL,\n  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `id_establecimiento` int unsigned NOT NULL,\n  PRIMARY KEY (`id_revision_direccion`),\n  UNIQUE KEY `uq_id_viaje_revision` (`id_viaje`,`revision`),\n  KEY `ix_id_viaje` (`id_viaje`),\n  KEY `ix_id_usuario_actor` (`id_usuario_actor`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  CONSTRAINT `revisiones_direccion_ibfk_1` FOREIGN KEY (`id_usuario_actor`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_2` FOREIGN KEY (`id_viaje`) REFERENCES `viajes` (`id_viaje`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_3` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`)\n) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "roles": {
       "columns": [
@@ -538,7 +538,7 @@
         }
       ],
       "foreignKeys": [],
-      "ddl": "CREATE TABLE `roles` (\n  `id_rol` int unsigned NOT NULL AUTO_INCREMENT,\n  `codigo` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `nombre_rol` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `descripcion` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,\n  PRIMARY KEY (`id_rol`),\n  UNIQUE KEY `codigo` (`codigo`)\n) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `roles` (\n  `id_rol` int unsigned NOT NULL AUTO_INCREMENT,\n  `codigo` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `nombre_rol` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `descripcion` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL,\n  PRIMARY KEY (`id_rol`),\n  UNIQUE KEY `uq_codigo` (`codigo`)\n) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "sesiones": {
       "columns": [
@@ -551,7 +551,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "user_id",
+          "COLUMN_NAME": "id_usuario",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -559,7 +559,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "token_hash",
+          "COLUMN_NAME": "hash_token",
           "COLUMN_TYPE": "char(64)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "UNI",
@@ -567,7 +567,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "expires_at",
+          "COLUMN_NAME": "fecha_expiracion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -575,7 +575,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "revoked_at",
+          "COLUMN_NAME": "fecha_revocacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -583,7 +583,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -591,7 +591,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "last_seen_at",
+          "COLUMN_NAME": "fecha_ultimo_uso",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -601,12 +601,12 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "user_id",
+          "COLUMN_NAME": "id_usuario",
           "REFERENCED_TABLE_NAME": "usuarios",
           "REFERENCED_COLUMN_NAME": "id_usuario"
         }
       ],
-      "ddl": "CREATE TABLE `sesiones` (\n  `id_sesion` int unsigned NOT NULL AUTO_INCREMENT,\n  `user_id` int unsigned NOT NULL,\n  `token_hash` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `expires_at` datetime(3) NOT NULL,\n  `revoked_at` datetime(3) DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  `last_seen_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_sesion`),\n  UNIQUE KEY `token_hash` (`token_hash`),\n  KEY `user_id_expires_at` (`user_id`,`expires_at`),\n  CONSTRAINT `sesiones_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE\n) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `sesiones` (\n  `id_sesion` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_usuario` int unsigned NOT NULL,\n  `hash_token` char(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `fecha_expiracion` datetime(3) NOT NULL,\n  `fecha_revocacion` datetime(3) DEFAULT NULL,\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `fecha_ultimo_uso` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_sesion`),\n  UNIQUE KEY `uq_hash_token` (`hash_token`),\n  KEY `ix_id_usuario_fecha_expiracion` (`id_usuario`,`fecha_expiracion`),\n  CONSTRAINT `sesiones_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE\n) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "tipos_vehiculo": {
       "columns": [
@@ -627,7 +627,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -637,12 +637,12 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         }
       ],
-      "ddl": "CREATE TABLE `tipos_vehiculo` (\n  `id_tipo_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `nombre` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `establishment_id` int unsigned NOT NULL,\n  PRIMARY KEY (`id_tipo_vehiculo`),\n  UNIQUE KEY `establishment_id` (`establishment_id`,`id_tipo_vehiculo`),\n  UNIQUE KEY `establishment_id_2` (`establishment_id`,`nombre`),\n  CONSTRAINT `tipos_vehiculo_ibfk_1` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`)\n) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `tipos_vehiculo` (\n  `id_tipo_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `nombre` varchar(60) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_establecimiento` int unsigned NOT NULL,\n  PRIMARY KEY (`id_tipo_vehiculo`),\n  UNIQUE KEY `uq_id_establecimiento_id_tipo_vehiculo` (`id_establecimiento`,`id_tipo_vehiculo`),\n  UNIQUE KEY `uq_id_establecimiento_nombre` (`id_establecimiento`,`nombre`),\n  CONSTRAINT `tipos_vehiculo_ibfk_1` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`)\n) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "usuarios": {
       "columns": [
@@ -655,7 +655,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "username",
+          "COLUMN_NAME": "nombre_usuario",
           "COLUMN_TYPE": "varchar(50)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "UNI",
@@ -663,7 +663,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "full_name",
+          "COLUMN_NAME": "nombre_completo",
           "COLUMN_TYPE": "varchar(120)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -671,7 +671,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "password_hash",
+          "COLUMN_NAME": "hash_contrasena",
           "COLUMN_TYPE": "varchar(255)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -695,7 +695,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "active",
+          "COLUMN_NAME": "activo",
           "COLUMN_TYPE": "tinyint(1)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -703,7 +703,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "failed_login_attempts",
+          "COLUMN_NAME": "intentos_fallidos",
           "COLUMN_TYPE": "int",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -711,7 +711,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "locked_until",
+          "COLUMN_NAME": "bloqueado_hasta",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -727,7 +727,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "clave_unica_sub",
+          "COLUMN_NAME": "sub_clave_unica",
           "COLUMN_TYPE": "varchar(100)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "UNI",
@@ -735,7 +735,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "auth_provider",
+          "COLUMN_NAME": "proveedor_autenticacion",
           "COLUMN_TYPE": "enum('local','clave_unica')",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -743,7 +743,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -751,7 +751,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "updated_at",
+          "COLUMN_NAME": "fecha_actualizacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -771,7 +771,7 @@
           "REFERENCED_COLUMN_NAME": "id_funcionario"
         }
       ],
-      "ddl": "CREATE TABLE `usuarios` (\n  `id_usuario` int unsigned NOT NULL AUTO_INCREMENT,\n  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `full_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_rol` int unsigned NOT NULL,\n  `id_funcionario` int unsigned NOT NULL,\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `failed_login_attempts` int NOT NULL DEFAULT '0',\n  `locked_until` datetime(3) DEFAULT NULL,\n  `rut` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `clave_unica_sub` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `auth_provider` enum('local','clave_unica') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_usuario`),\n  UNIQUE KEY `username` (`username`),\n  UNIQUE KEY `id_funcionario` (`id_funcionario`),\n  UNIQUE KEY `rut` (`rut`),\n  UNIQUE KEY `clave_unica_sub` (`clave_unica_sub`),\n  KEY `id_rol` (`id_rol`),\n  CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`),\n  CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`id_funcionario`) REFERENCES `funcionarios` (`id_funcionario`)\n) ENGINE=InnoDB AUTO_INCREMENT=211 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `usuarios` (\n  `id_usuario` int unsigned NOT NULL AUTO_INCREMENT,\n  `nombre_usuario` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `nombre_completo` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `hash_contrasena` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_rol` int unsigned NOT NULL,\n  `id_funcionario` int unsigned NOT NULL,\n  `activo` tinyint(1) NOT NULL DEFAULT '1',\n  `intentos_fallidos` int NOT NULL DEFAULT '0',\n  `bloqueado_hasta` datetime(3) DEFAULT NULL,\n  `rut` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `sub_clave_unica` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `proveedor_autenticacion` enum('local','clave_unica') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `fecha_actualizacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_usuario`),\n  UNIQUE KEY `uq_nombre_usuario` (`nombre_usuario`),\n  UNIQUE KEY `uq_id_funcionario` (`id_funcionario`),\n  UNIQUE KEY `uq_rut` (`rut`),\n  UNIQUE KEY `uq_sub_clave_unica` (`sub_clave_unica`),\n  KEY `ix_id_rol` (`id_rol`),\n  CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`),\n  CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`id_funcionario`) REFERENCES `funcionarios` (`id_funcionario`)\n) ENGINE=InnoDB AUTO_INCREMENT=226 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "vehiculos": {
       "columns": [
@@ -784,7 +784,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -800,7 +800,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "license_plate",
+          "COLUMN_NAME": "patente",
           "COLUMN_TYPE": "varchar(20)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "UNI",
@@ -808,7 +808,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "current_odometer_km",
+          "COLUMN_NAME": "odometro_actual",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -824,7 +824,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "year",
+          "COLUMN_NAME": "anio",
           "COLUMN_TYPE": "smallint unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -840,7 +840,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "active",
+          "COLUMN_NAME": "activo",
           "COLUMN_TYPE": "tinyint(1)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -848,7 +848,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -856,7 +856,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "updated_at",
+          "COLUMN_NAME": "fecha_actualizacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -866,14 +866,14 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "tipos_vehiculo",
-          "REFERENCED_COLUMN_NAME": "establishment_id"
+          "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
           "COLUMN_NAME": "id_tipo_vehiculo",
@@ -881,9 +881,9 @@
           "REFERENCED_COLUMN_NAME": "id_tipo_vehiculo"
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "modelos_vehiculo",
-          "REFERENCED_COLUMN_NAME": "establishment_id"
+          "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
           "COLUMN_NAME": "id_modelo_vehiculo",
@@ -891,7 +891,7 @@
           "REFERENCED_COLUMN_NAME": "id_modelo_vehiculo"
         }
       ],
-      "ddl": "CREATE TABLE `vehiculos` (\n  `id_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `codigo_movil` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `license_plate` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `current_odometer_km` int unsigned DEFAULT NULL,\n  `id_tipo_vehiculo` int unsigned DEFAULT NULL,\n  `year` smallint unsigned DEFAULT NULL,\n  `id_modelo_vehiculo` int unsigned DEFAULT NULL,\n  `active` tinyint(1) NOT NULL DEFAULT '1',\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_vehiculo`),\n  UNIQUE KEY `license_plate` (`license_plate`),\n  UNIQUE KEY `vehicle_tenant_role` (`establishment_id`,`codigo_movil`),\n  KEY `establishment_id` (`establishment_id`),\n  KEY `id_tipo_vehiculo` (`id_tipo_vehiculo`),\n  KEY `id_modelo_vehiculo` (`id_modelo_vehiculo`),\n  KEY `establishment_id_2` (`establishment_id`,`id_tipo_vehiculo`),\n  KEY `establishment_id_3` (`establishment_id`,`id_modelo_vehiculo`),\n  CONSTRAINT `vehiculos_ibfk_3` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `vehiculos_ibfk_4` FOREIGN KEY (`establishment_id`, `id_tipo_vehiculo`) REFERENCES `tipos_vehiculo` (`establishment_id`, `id_tipo_vehiculo`),\n  CONSTRAINT `vehiculos_ibfk_5` FOREIGN KEY (`establishment_id`, `id_modelo_vehiculo`) REFERENCES `modelos_vehiculo` (`establishment_id`, `id_modelo_vehiculo`),\n  CONSTRAINT `vehiculos_chk_1` CHECK (((`current_odometer_km` >= 0) or (`current_odometer_km` is null)))\n) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `vehiculos` (\n  `id_vehiculo` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `codigo_movil` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `patente` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `odometro_actual` int unsigned DEFAULT NULL,\n  `id_tipo_vehiculo` int unsigned DEFAULT NULL,\n  `anio` smallint unsigned DEFAULT NULL,\n  `id_modelo_vehiculo` int unsigned DEFAULT NULL,\n  `activo` tinyint(1) NOT NULL DEFAULT '1',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `fecha_actualizacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_vehiculo`),\n  UNIQUE KEY `uq_patente` (`patente`),\n  UNIQUE KEY `uq_id_establecimiento_codigo_movil` (`id_establecimiento`,`codigo_movil`),\n  KEY `ix_id_establecimiento` (`id_establecimiento`),\n  KEY `ix_id_tipo_vehiculo` (`id_tipo_vehiculo`),\n  KEY `ix_id_modelo_vehiculo` (`id_modelo_vehiculo`),\n  KEY `ix_id_establecimiento_id_tipo_vehiculo` (`id_establecimiento`,`id_tipo_vehiculo`),\n  KEY `ix_id_establecimiento_id_modelo_vehiculo` (`id_establecimiento`,`id_modelo_vehiculo`),\n  CONSTRAINT `vehiculos_ibfk_3` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `vehiculos_ibfk_4` FOREIGN KEY (`id_establecimiento`, `id_tipo_vehiculo`) REFERENCES `tipos_vehiculo` (`id_establecimiento`, `id_tipo_vehiculo`),\n  CONSTRAINT `vehiculos_ibfk_5` FOREIGN KEY (`id_establecimiento`, `id_modelo_vehiculo`) REFERENCES `modelos_vehiculo` (`id_establecimiento`, `id_modelo_vehiculo`),\n  CONSTRAINT `vehiculos_chk_1` CHECK (((`odometro_actual` >= 0) or (`odometro_actual` is null)))\n) ENGINE=InnoDB AUTO_INCREMENT=218 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "viajes": {
       "columns": [
@@ -904,7 +904,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -912,7 +912,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "cost_center_id",
+          "COLUMN_NAME": "id_centro_costo",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "MUL",
@@ -920,7 +920,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "driver_id",
+          "COLUMN_NAME": "id_chofer",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "MUL",
@@ -928,7 +928,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "vehicle_id",
+          "COLUMN_NAME": "id_vehiculo",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "MUL",
@@ -936,7 +936,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_by_user_id",
+          "COLUMN_NAME": "id_usuario_creador",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "MUL",
@@ -944,7 +944,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "origin",
+          "COLUMN_NAME": "origen",
           "COLUMN_TYPE": "varchar(20)",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "",
@@ -960,7 +960,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "cancelled_at",
+          "COLUMN_NAME": "fecha_cancelacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -968,7 +968,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "status",
+          "COLUMN_NAME": "estado",
           "COLUMN_TYPE": "enum('PENDING','ASSIGNED','IN_PROGRESS','COMPLETED','CANCELLED')",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -976,7 +976,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "started_at",
+          "COLUMN_NAME": "fecha_inicio",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -984,7 +984,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "ended_at",
+          "COLUMN_NAME": "fecha_fin",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -1008,7 +1008,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "departure_odometer_km",
+          "COLUMN_NAME": "odometro_salida",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -1016,7 +1016,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "arrival_odometer_km",
+          "COLUMN_NAME": "odometro_llegada",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -1024,7 +1024,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "void_reason",
+          "COLUMN_NAME": "motivo_cancelacion",
           "COLUMN_TYPE": "varchar(500)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -1032,7 +1032,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "created_at",
+          "COLUMN_NAME": "fecha_creacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -1040,7 +1040,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "updated_at",
+          "COLUMN_NAME": "fecha_actualizacion",
           "COLUMN_TYPE": "datetime(3)",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "",
@@ -1050,32 +1050,32 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "cost_center_id",
+          "COLUMN_NAME": "id_centro_costo",
           "REFERENCED_TABLE_NAME": "centros_costos",
           "REFERENCED_COLUMN_NAME": "id_centro_costo"
         },
         {
-          "COLUMN_NAME": "created_by_user_id",
+          "COLUMN_NAME": "id_usuario_creador",
           "REFERENCED_TABLE_NAME": "usuarios",
           "REFERENCED_COLUMN_NAME": "id_usuario"
         },
         {
-          "COLUMN_NAME": "driver_id",
+          "COLUMN_NAME": "id_chofer",
           "REFERENCED_TABLE_NAME": "usuarios",
           "REFERENCED_COLUMN_NAME": "id_usuario"
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
-          "COLUMN_NAME": "vehicle_id",
+          "COLUMN_NAME": "id_vehiculo",
           "REFERENCED_TABLE_NAME": "vehiculos",
           "REFERENCED_COLUMN_NAME": "id_vehiculo"
         }
       ],
-      "ddl": "CREATE TABLE `viajes` (\n  `id_viaje` int unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `cost_center_id` int unsigned DEFAULT NULL,\n  `driver_id` int unsigned DEFAULT NULL,\n  `vehicle_id` int unsigned DEFAULT NULL,\n  `created_by_user_id` int unsigned DEFAULT NULL,\n  `origin` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',\n  `version` int unsigned NOT NULL DEFAULT '0',\n  `cancelled_at` datetime(3) DEFAULT NULL,\n  `status` enum('PENDING','ASSIGNED','IN_PROGRESS','COMPLETED','CANCELLED') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',\n  `started_at` datetime(3) DEFAULT NULL,\n  `ended_at` datetime(3) DEFAULT NULL,\n  `destino` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `actividad` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `departure_odometer_km` int unsigned DEFAULT NULL,\n  `arrival_odometer_km` int unsigned DEFAULT NULL,\n  `void_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `created_at` datetime(3) DEFAULT NULL,\n  `updated_at` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_viaje`),\n  UNIQUE KEY `establishment_id_2` (`establishment_id`,`id_viaje`),\n  KEY `establishment_id` (`establishment_id`),\n  KEY `cost_center_id` (`cost_center_id`),\n  KEY `driver_id` (`driver_id`),\n  KEY `vehicle_id` (`vehicle_id`),\n  KEY `created_by_user_id` (`created_by_user_id`),\n  KEY `driver_id_started_at` (`driver_id`,`started_at`),\n  KEY `cost_center_id_status_ended_at` (`cost_center_id`,`status`,`ended_at`),\n  KEY `vehicle_id_started_at` (`vehicle_id`,`started_at`),\n  KEY `status_started_at` (`status`,`started_at`),\n  KEY `status_ended_at` (`status`,`ended_at`),\n  KEY `establishment_id_status` (`establishment_id`,`status`),\n  CONSTRAINT `viajes_ibfk_1` FOREIGN KEY (`cost_center_id`) REFERENCES `centros_costos` (`id_centro_costo`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_2` FOREIGN KEY (`created_by_user_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_3` FOREIGN KEY (`driver_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_4` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_5` FOREIGN KEY (`vehicle_id`) REFERENCES `vehiculos` (`id_vehiculo`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_chk_1` CHECK (((`ended_at` is null) or (`started_at` is null) or (`ended_at` >= `started_at`))),\n  CONSTRAINT `viajes_chk_2` CHECK (((`origin` = _utf8mb4'LEGACY') or ((`status` = _utf8mb4'PENDING') and (`driver_id` is null) and (`started_at` is null) and (`ended_at` is null)) or ((`status` = _utf8mb4'ASSIGNED') and (`driver_id` is not null) and (`started_at` is null) and (`ended_at` is null)) or ((`status` = _utf8mb4'IN_PROGRESS') and (`driver_id` is not null) and (`vehicle_id` is not null) and (`started_at` is not null) and (`ended_at` is null)) or ((`status` = _utf8mb4'COMPLETED') and (`driver_id` is not null) and (`vehicle_id` is not null) and (`started_at` is not null) and (`ended_at` is not null)) or ((`status` = _utf8mb4'CANCELLED') and (`started_at` is null) and (`cancelled_at` is not null) and (`departure_odometer_km` is null) and (`arrival_odometer_km` is null))))\n) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `viajes` (\n  `id_viaje` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_centro_costo` int unsigned DEFAULT NULL,\n  `id_chofer` int unsigned DEFAULT NULL,\n  `id_vehiculo` int unsigned DEFAULT NULL,\n  `id_usuario_creador` int unsigned DEFAULT NULL,\n  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',\n  `version` int unsigned NOT NULL DEFAULT '0',\n  `fecha_cancelacion` datetime(3) DEFAULT NULL,\n  `estado` enum('PENDING','ASSIGNED','IN_PROGRESS','COMPLETED','CANCELLED') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',\n  `fecha_inicio` datetime(3) DEFAULT NULL,\n  `fecha_fin` datetime(3) DEFAULT NULL,\n  `destino` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `actividad` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `odometro_salida` int unsigned DEFAULT NULL,\n  `odometro_llegada` int unsigned DEFAULT NULL,\n  `motivo_cancelacion` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `fecha_actualizacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_viaje`),\n  UNIQUE KEY `uq_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  KEY `ix_id_establecimiento` (`id_establecimiento`),\n  KEY `ix_id_centro_costo` (`id_centro_costo`),\n  KEY `ix_id_chofer` (`id_chofer`),\n  KEY `ix_id_vehiculo` (`id_vehiculo`),\n  KEY `ix_id_usuario_creador` (`id_usuario_creador`),\n  KEY `ix_id_chofer_fecha_inicio` (`id_chofer`,`fecha_inicio`),\n  KEY `ix_id_centro_costo_estado_fecha_fin` (`id_centro_costo`,`estado`,`fecha_fin`),\n  KEY `ix_id_vehiculo_fecha_inicio` (`id_vehiculo`,`fecha_inicio`),\n  KEY `ix_estado_fecha_inicio` (`estado`,`fecha_inicio`),\n  KEY `ix_estado_fecha_fin` (`estado`,`fecha_fin`),\n  KEY `ix_id_establecimiento_estado` (`id_establecimiento`,`estado`),\n  CONSTRAINT `viajes_ibfk_1` FOREIGN KEY (`id_centro_costo`) REFERENCES `centros_costos` (`id_centro_costo`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_2` FOREIGN KEY (`id_usuario_creador`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_3` FOREIGN KEY (`id_chofer`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_4` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_ibfk_5` FOREIGN KEY (`id_vehiculo`) REFERENCES `vehiculos` (`id_vehiculo`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `viajes_chk_1` CHECK (((`fecha_fin` is null) or (`fecha_inicio` is null) or (`fecha_fin` >= `fecha_inicio`))),\n  CONSTRAINT `viajes_chk_2` CHECK (((`origen` = _utf8mb4'LEGACY') or ((`estado` = _utf8mb4'PENDING') and (`id_chofer` is null) and (`fecha_inicio` is null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'ASSIGNED') and (`id_chofer` is not null) and (`fecha_inicio` is null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'IN_PROGRESS') and (`id_chofer` is not null) and (`id_vehiculo` is not null) and (`fecha_inicio` is not null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'COMPLETED') and (`id_chofer` is not null) and (`id_vehiculo` is not null) and (`fecha_inicio` is not null) and (`fecha_fin` is not null)) or ((`estado` = _utf8mb4'CANCELLED') and (`fecha_inicio` is null) and (`fecha_cancelacion` is not null) and (`odometro_salida` is null) and (`odometro_llegada` is null))))\n) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "viajes_tramos": {
       "columns": [
@@ -1088,7 +1088,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "NO",
           "COLUMN_KEY": "MUL",
@@ -1152,7 +1152,7 @@
           "GENERATION_EXPRESSION": ""
         },
         {
-          "COLUMN_NAME": "active_driver_id",
+          "COLUMN_NAME": "id_chofer_activo",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "UNI",
@@ -1160,7 +1160,7 @@
           "GENERATION_EXPRESSION": "if((`fecha_fin` is null),`id_chofer`,NULL)"
         },
         {
-          "COLUMN_NAME": "active_vehicle_id",
+          "COLUMN_NAME": "id_vehiculo_activo",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "UNI",
@@ -1168,7 +1168,7 @@
           "GENERATION_EXPRESSION": "if((`fecha_fin` is null),`id_vehiculo`,NULL)"
         },
         {
-          "COLUMN_NAME": "active_trip_id",
+          "COLUMN_NAME": "id_viaje_activo",
           "COLUMN_TYPE": "int unsigned",
           "IS_NULLABLE": "YES",
           "COLUMN_KEY": "UNI",
@@ -1178,7 +1178,7 @@
       ],
       "foreignKeys": [
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "establecimientos",
           "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
@@ -1193,9 +1193,9 @@
           "REFERENCED_COLUMN_NAME": "id_vehiculo"
         },
         {
-          "COLUMN_NAME": "establishment_id",
+          "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "viajes",
-          "REFERENCED_COLUMN_NAME": "establishment_id"
+          "REFERENCED_COLUMN_NAME": "id_establecimiento"
         },
         {
           "COLUMN_NAME": "id_viaje",
@@ -1203,7 +1203,7 @@
           "REFERENCED_COLUMN_NAME": "id_viaje"
         }
       ],
-      "ddl": "CREATE TABLE `viajes_tramos` (\n  `id_viaje_tramo` int unsigned NOT NULL AUTO_INCREMENT,\n  `establishment_id` int unsigned NOT NULL,\n  `id_viaje` int unsigned NOT NULL,\n  `id_chofer` int unsigned NOT NULL,\n  `id_vehiculo` int unsigned NOT NULL,\n  `fecha_inicio` datetime(3) NOT NULL,\n  `fecha_fin` datetime(3) DEFAULT NULL,\n  `odometro_inicio` int unsigned DEFAULT NULL,\n  `odometro_fin` int unsigned DEFAULT NULL,\n  `active_driver_id` int unsigned GENERATED ALWAYS AS (if((`fecha_fin` is null),`id_chofer`,NULL)) STORED,\n  `active_vehicle_id` int unsigned GENERATED ALWAYS AS (if((`fecha_fin` is null),`id_vehiculo`,NULL)) STORED,\n  `active_trip_id` int unsigned GENERATED ALWAYS AS (if((`fecha_fin` is null),`id_viaje`,NULL)) STORED,\n  PRIMARY KEY (`id_viaje_tramo`),\n  UNIQUE KEY `active_driver_id` (`active_driver_id`),\n  UNIQUE KEY `active_vehicle_id` (`active_vehicle_id`),\n  UNIQUE KEY `active_trip_id` (`active_trip_id`),\n  KEY `establishment_id` (`establishment_id`,`id_viaje`),\n  KEY `id_chofer` (`id_chofer`),\n  KEY `id_vehiculo` (`id_vehiculo`),\n  CONSTRAINT `viajes_tramos_ibfk_1` FOREIGN KEY (`establishment_id`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `viajes_tramos_ibfk_2` FOREIGN KEY (`id_chofer`) REFERENCES `usuarios` (`id_usuario`),\n  CONSTRAINT `viajes_tramos_ibfk_3` FOREIGN KEY (`id_vehiculo`) REFERENCES `vehiculos` (`id_vehiculo`),\n  CONSTRAINT `viajes_tramos_ibfk_4` FOREIGN KEY (`establishment_id`, `id_viaje`) REFERENCES `viajes` (`establishment_id`, `id_viaje`),\n  CONSTRAINT `viajes_tramos_chk_1` CHECK (((`fecha_fin` is null) or (`fecha_fin` >= `fecha_inicio`))),\n  CONSTRAINT `viajes_tramos_chk_2` CHECK (((`odometro_fin` is null) or (`odometro_inicio` is null) or (`odometro_fin` >= `odometro_inicio`)))\n) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `viajes_tramos` (\n  `id_viaje_tramo` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_viaje` int unsigned NOT NULL,\n  `id_chofer` int unsigned NOT NULL,\n  `id_vehiculo` int unsigned NOT NULL,\n  `fecha_inicio` datetime(3) NOT NULL,\n  `fecha_fin` datetime(3) DEFAULT NULL,\n  `odometro_inicio` int unsigned DEFAULT NULL,\n  `odometro_fin` int unsigned DEFAULT NULL,\n  `id_chofer_activo` int unsigned GENERATED ALWAYS AS (if((`fecha_fin` is null),`id_chofer`,NULL)) STORED,\n  `id_vehiculo_activo` int unsigned GENERATED ALWAYS AS (if((`fecha_fin` is null),`id_vehiculo`,NULL)) STORED,\n  `id_viaje_activo` int unsigned GENERATED ALWAYS AS (if((`fecha_fin` is null),`id_viaje`,NULL)) STORED,\n  PRIMARY KEY (`id_viaje_tramo`),\n  UNIQUE KEY `uq_id_chofer_activo` (`id_chofer_activo`),\n  UNIQUE KEY `uq_id_vehiculo_activo` (`id_vehiculo_activo`),\n  UNIQUE KEY `uq_id_viaje_activo` (`id_viaje_activo`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  KEY `ix_id_chofer` (`id_chofer`),\n  KEY `ix_id_vehiculo` (`id_vehiculo`),\n  CONSTRAINT `viajes_tramos_ibfk_1` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `viajes_tramos_ibfk_2` FOREIGN KEY (`id_chofer`) REFERENCES `usuarios` (`id_usuario`),\n  CONSTRAINT `viajes_tramos_ibfk_3` FOREIGN KEY (`id_vehiculo`) REFERENCES `vehiculos` (`id_vehiculo`),\n  CONSTRAINT `viajes_tramos_ibfk_4` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`),\n  CONSTRAINT `viajes_tramos_chk_1` CHECK (((`fecha_fin` is null) or (`fecha_fin` >= `fecha_inicio`))),\n  CONSTRAINT `viajes_tramos_chk_2` CHECK (((`odometro_fin` is null) or (`odometro_inicio` is null) or (`odometro_fin` >= `odometro_inicio`)))\n) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     }
   }
 }

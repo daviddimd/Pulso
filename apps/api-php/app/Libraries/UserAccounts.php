@@ -7,7 +7,7 @@ final class UserAccounts
 {
     public static function query(BaseConnection $db)
     {
-        return $db->table('usuarios u')->select('u.*, f.establishment_id, f.codigo_roster AS roster_code, r.codigo AS role')->join('funcionarios f', 'f.id_funcionario=u.id_funcionario')->join('roles r', 'r.id_rol=u.id_rol');
+        return $db->table('usuarios u')->select('u.*, f.id_establecimiento, f.codigo_roster, r.codigo AS role')->join('funcionarios f', 'f.id_funcionario=u.id_funcionario')->join('roles r', 'r.id_rol=u.id_rol');
     }
 
     /**
@@ -17,31 +17,31 @@ final class UserAccounts
     public static function resetPassword(BaseConnection $db, string $username, string $password): array
     {
         if (mb_strlen($password) < 12 || strlen($password) > 1024) throw new \DomainException('PASSWORD_TOO_SHORT', 400);
-        $user = self::query($db)->where('u.username', $username)->get()->getRowArray();
+        $user = self::query($db)->where('u.nombre_usuario', $username)->get()->getRowArray();
         if (!$user) throw new \DomainException('USER_NOT_FOUND', 404);
         $now = UnitOfWork::now();
         $db->transException(true)->transBegin();
         try {
-            $db->table('usuarios')->where('id_usuario', $user['id_usuario'])->update(['password_hash' => SecurityLib::hashPassword($password),
-                'failed_login_attempts' => 0, 'locked_until' => null, 'updated_at' => $now]);
-            $db->table('sesiones')->where('user_id', $user['id_usuario'])->where('revoked_at', null)->update(['revoked_at' => $now]);
-            AuditService::log((string)$user['establishment_id'], null, 'USER', (string)$user['id_usuario'], 'PASSWORD_RESET_CONSOLE');
+            $db->table('usuarios')->where('id_usuario', $user['id_usuario'])->update(['hash_contrasena' => SecurityLib::hashPassword($password),
+                'intentos_fallidos' => 0, 'bloqueado_hasta' => null, 'fecha_actualizacion' => $now]);
+            $db->table('sesiones')->where('id_usuario', $user['id_usuario'])->where('fecha_revocacion', null)->update(['fecha_revocacion' => $now]);
+            AuditService::log((string)$user['id_establecimiento'], null, 'USER', (string)$user['id_usuario'], 'PASSWORD_RESET_CONSOLE');
             $db->transCommit();
         } catch (\Throwable $e) {
             $db->transRollback();
             throw $e;
         }
-        return ['username' => $user['username'], 'role' => $user['role'], 'active' => (bool)$user['active']];
+        return ['username' => $user['nombre_usuario'], 'role' => $user['role'], 'active' => (bool)$user['activo']];
     }
 
     public static function create(BaseConnection $db, array $account, string $role): string
     {
         $roleRow = $db->table('roles')->where('codigo', $role)->get()->getRowArray();
         if (!$roleRow) throw new \RuntimeException('Rol institucional inexistente.');
-        $db->table('funcionarios')->insert(['establishment_id'=>$account['establishment_id'], 'nombre'=>$account['full_name'],
-            'codigo_roster'=>$account['roster_code'] ?? null]);
+        $db->table('funcionarios')->insert(['id_establecimiento'=>$account['id_establecimiento'], 'nombre'=>$account['nombre_completo'],
+            'codigo_roster'=>$account['codigo_roster'] ?? null]);
         $staffId = $db->insertID();
-        unset($account['establishment_id'], $account['roster_code']);
+        unset($account['id_establecimiento'], $account['codigo_roster']);
         $db->table('usuarios')->insert($account + ['id_funcionario'=>$staffId, 'id_rol'=>$roleRow['id_rol']]);
         return (string)$db->insertID();
     }
