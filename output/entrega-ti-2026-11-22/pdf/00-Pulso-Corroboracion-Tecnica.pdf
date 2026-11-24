@@ -44,7 +44,7 @@ endobj
 endobj
 5 0 obj
 <<
-/Length 7450
+/Length 7668
 >>
 stream
 q
@@ -94,7 +94,7 @@ q
 1 0 0 1 46 563.8898 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Rama hospital-v2, commit 7dc470861b5da68e705245b8ef7c63f7f1f32f98. Incluye los cambios solicitados por TI) Tj T* (sobre instituci\001n heredada, tramos, cat\004logos, r\001ster y aislamiento de la auditor\005a. Los archivos y sus hashes se) Tj T* (incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.) Tj T* ET
+BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Rama hospital-v2, revisi\001n de Git 1f86aca4585d11c0bda79cce6764b69102ee89f2. Incluye los cambios) Tj T* (solicitados por TI sobre instituci\001n heredada, tramos, cat\004logos, r\001ster y aislamiento de la auditor\005a. Los archivos) Tj T* (y sus hashes se incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.) Tj T* ET
 Q
 Q
 q
@@ -105,20 +105,20 @@ BT 1 0 0 1 0 5 Tm /F3+0 17 Tf 22 TL (Matriz de lineamientos) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 80.88976 cm
+1 0 0 1 46 58.88976 cm
 q
 .141176 .34902 .4 rg
-n 0 448 515 -25 re f*
+n 0 470 515 -25 re f*
 1 1 1 rg
-n 0 423 515 -47 re f*
+n 0 445 515 -47 re f*
 .933333 .956863 .956863 rg
-n 0 376 515 -47 re f*
+n 0 398 515 -58 re f*
 1 1 1 rg
-n 0 329 515 -47 re f*
+n 0 340 515 -47 re f*
 .933333 .956863 .956863 rg
-n 0 282 515 -47 re f*
+n 0 293 515 -47 re f*
 1 1 1 rg
-n 0 235 515 -36 re f*
+n 0 246 515 -47 re f*
 .933333 .956863 .956863 rg
 n 0 199 515 -47 re f*
 1 1 1 rg
@@ -130,21 +130,21 @@ n 0 36 515 -36 re f*
 1 1 1 rg
 BT /F1 10 Tf 12 TL ET
 q
-1 0 0 1 7 430 cm
+1 0 0 1 7 452 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Lineamiento) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 430 cm
+1 0 0 1 162 452 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Estado) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 430 cm
+1 0 0 1 267 452 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Evidencia / l\005mite) Tj T* ET
@@ -152,98 +152,98 @@ Q
 Q
 0 0 0 rg
 q
-1 0 0 1 7 394 cm
+1 0 0 1 7 416 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (CodeIgniter 4.x y PHP 8.4.x,) Tj T* (separaci\001n MVC.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 405 cm
+1 0 0 1 162 427 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 383 cm
+1 0 0 1 267 405 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (CI 4.7.5 / PHP 8.4.27; controladores, repositorios, dominio y vista) Tj T* (React. Fuente: composer.lock; app/Controllers; app/Models;) Tj T* (apps/web/src) Tj T* ET
+BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (CI 4.7.5 / PHP 8.4.27; controladores, repositorios, dominio y vista) Tj T* (React. Fuente: registro de versiones de Composer; controladores y) Tj T* (modelos del servidor; c\001digo de la interfaz) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 347 cm
+1 0 0 1 7 369 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Frontend HTML5, Bootstrap 5.x y) Tj T* (React; Ajax mediante JavaScript.) Tj T* ET
+BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Interfaz: HTML5, Bootstrap 5.x y React;) Tj T* (Ajax mediante JavaScript.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 358 cm
+1 0 0 1 162 380 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 336 cm
+1 0 0 1 267 347 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (React 19.2.8; Bootstrap utilities 5.3.8; fetch REST. No requiere) Tj T* (jQuery al usar React. Fuente: apps/web/package.json; src/main.tsx;) Tj T* (src/operations.ts) Tj T* ET
+BT 1 0 0 1 0 36 Tm /F2+0 8 Tf 11 TL (React 19.2.8; Bootstrap utilities 5.3.8; fetch REST. No requiere) Tj T* (jQuery al usar React. Fuente: manifiesto de dependencias de la) Tj T* (interfaz; punto de entrada de la interfaz; cliente de la API en la) Tj T* (interfaz) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 300 cm
+1 0 0 1 7 311 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Base de datos: MySQL 16.x, seg\006n) Tj T* (correo de TI.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 311 cm
+1 0 0 1 162 322 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Pendiente TI) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 289 cm
+1 0 0 1 267 300 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (Motor local MySQL 8.4.11. Confirmar producto y versi\001n exactos;) Tj T* (no asumir PostgreSQL ni MariaDB. Fuente: metadata de la base;) Tj T* (migraci\001n CreatePulsoTables) Tj T* ET
+BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (Motor local MySQL 8.4.11. Confirmar producto y versi\001n exactos;) Tj T* (no asumir PostgreSQL ni MariaDB. Fuente: metadatos de la base;) Tj T* (migraci\001n inicial) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 264 cm
+1 0 0 1 7 275 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (PDF con FPDF 1.9.x.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 264 cm
+1 0 0 1 162 275 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
 Q
 Q
 q
-1 0 0 1 267 242 cm
+1 0 0 1 267 253 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (FPDF 1.9.0; respuestas PDF verificadas en pruebas de API.) Tj T* (Fuente: PdfExporter.php; ExportsController.php;) Tj T* (CostCentersController.php) Tj T* ET
+BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (FPDF 1.9.0; respuestas PDF verificadas en pruebas de API.) Tj T* (Fuente: generador PDF; controlador de exportaciones; controlador) Tj T* (de centros de costos) Tj T* ET
 Q
 Q
 q
-1 0 0 1 7 217 cm
+1 0 0 1 7 228 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Excel con SheetJS / xlsx.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 162 217 cm
+1 0 0 1 162 228 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Verificado local) Tj T* ET
@@ -253,7 +253,7 @@ q
 1 0 0 1 267 206 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (SheetJS 0.20.3 compilado dentro del frontend; sin carga de scripts) Tj T* (remotos al exportar. Fuente: src/xlsx-export.ts; lockfile frontend) Tj T* ET
+BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (SheetJS 0.20.3 compilado dentro de la interfaz; sin carga de scripts) Tj T* (remotos al exportar. Fuente: m\001dulo de exportaci\001n a Excel;) Tj T* (registro de versiones de la interfaz) Tj T* ET
 Q
 Q
 q
@@ -274,7 +274,7 @@ q
 1 0 0 1 267 159 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (CSS, JS, fuentes y SVG locales. La URL npm de SheetJS se usa al) Tj T* (instalar/compilar, no por el navegador en producci\001n. Fuente:) Tj T* (main.tsx; index.html compilado; assets locales) Tj T* ET
+BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (CSS, JS, fuentes y SVG locales. La URL npm de SheetJS se usa al) Tj T* (instalar/compilar, no por el navegador en producci\001n. Fuente: punto) Tj T* (de entrada de la interfaz; p\004gina compilada; recursos locales) Tj T* ET
 Q
 Q
 q
@@ -295,7 +295,7 @@ q
 1 0 0 1 267 101 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 36 Tm /F2+0 8 Tf 11 TL (Consultas y mutaciones por instituci\001n; cat\004logos propios, zona) Tj T* (horaria y provisi\001n de la primera instituci\001n en /configurar y de las) Tj T* -0.072917 Tw (siguientes por consola. Fuente: AuthFilter; repositorios; UnitOfWork;) Tj T* 0 Tw (pruebas de aislamiento) Tj T* ET
+BT 1 0 0 1 0 36 Tm /F2+0 8 Tf 11 TL (Consultas y mutaciones por instituci\001n; cat\004logos propios, zona) Tj T* (horaria y provisi\001n de la primera instituci\001n en /configurar y de las) Tj T* (siguientes por consola. Fuente: filtro de sesi\001n; repositorios; unidad) Tj T* (transaccional; pruebas de aislamiento) Tj T* ET
 Q
 Q
 q
@@ -316,7 +316,7 @@ q
 1 0 0 1 267 43 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 36 Tm /F2+0 8 Tf 11 TL (Inicio OAuth, state de un solo uso, callback, consulta de identidad y) Tj T* (v\005nculo a RUN registrado. Falta validaci\001n con proveedor real.) Tj T* (Fuente: ClaveUnicaClient; AuthController; AuthRepository;) Tj T* (TestAuth) Tj T* ET
+BT 1 0 0 1 0 36 Tm /F2+0 8 Tf 11 TL (Inicio OAuth, state de un solo uso, callback, consulta de identidad y) Tj T* (v\005nculo a RUN registrado. Falta validaci\001n con proveedor real.) Tj T* (Fuente: cliente Clave\003nica; controlador de acceso; repositorio de) Tj T* (acceso; pruebas de acceso) Tj T* ET
 Q
 Q
 q
@@ -345,7 +345,7 @@ q
 1 j
 .141176 .34902 .4 RG
 .6 w
-n 0 423 m 515 423 l S
+n 0 445 m 515 445 l S
 Q
 Q
 Q
@@ -1011,7 +1011,7 @@ endobj
 endobj
 21 0 obj
 <<
-/Length 6240
+/Length 6280
 >>
 stream
 q
@@ -1137,7 +1137,7 @@ q
 1 0 0 1 46 534.8898 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 60 Tm /F2+0 10 Tf 14 TL (La capa Controller recibe REST y aplica autorizaci\001n; Models contiene repositorios y consultas; Libraries) Tj T* (concentra reglas de dominio, transacciones y exportadores. La vista es la SPA React compilada, servida por) Tj T* (FrontendController desde public/index.html. No hay plantillas PHP para cada pantalla operacional: la vista React) Tj T* (est\004 separada del backend. React est\004 expresamente incluido entre las tecnolog\005as permitidas; TI debe conocer) Tj T* (esta distribuci\001n al evaluar MVC.) Tj T* ET
+BT 1 0 0 1 0 60 Tm /F2+0 10 Tf 14 TL (La capa Controller recibe REST y aplica autorizaci\001n; Models contiene repositorios y consultas; Libraries) Tj T* (concentra reglas de dominio, transacciones y exportadores. La vista es la SPA React compilada, servida por) Tj T* (controlador de la interfaz desde public/index.html. No hay plantillas PHP para cada pantalla operacional: la vista) Tj T* (React est\004 separada del servidor. React est\004 expresamente incluido entre las tecnolog\005as permitidas; TI debe) Tj T* (conocer esta distribuci\001n al evaluar MVC.) Tj T* ET
 Q
 Q
 q
@@ -1151,7 +1151,7 @@ q
 1 0 0 1 46 443.8898 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 46 Tm /F2+0 10 Tf 14 TL (Bootstrap 5.3.8 \(utilidades\), React, fuentes Inter e iconos SVG forman parte del build local. SheetJS se obtiene) Tj T* (desde su distribuidor al instalar dependencias, y Vite lo empaqueta dentro de public/assets; no se referencia un) Tj T* (CDN en ejecuci\001n. Composer instala CI y FPDF en vendor. Node se usa para compilar/desarrollar; el despliegue) Tj T* (de la SPA compilada y PHP no necesita un servidor Node activo.) Tj T* ET
+BT 1 0 0 1 0 46 Tm /F2+0 10 Tf 14 TL (Bootstrap 5.3.8 \(utilidades\), React, fuentes Inter e iconos SVG forman parte de la compilaci\001n local. SheetJS se) Tj T* (obtiene desde su distribuidor al instalar dependencias, y Vite lo empaqueta dentro de la carpeta p\006blica de) Tj T* (recursos; no se referencia un CDN en ejecuci\001n. Composer instala CI y FPDF en vendor. Node se usa para) Tj T* (compilar/desarrollar; el despliegue de la SPA compilada y PHP no necesita un servidor Node activo.) Tj T* ET
 Q
 Q
 q
@@ -1441,7 +1441,7 @@ endobj
 endobj
 28 0 obj
 <<
-/Length 6531
+/Length 7176
 >>
 stream
 q
@@ -1513,12 +1513,12 @@ BT 1 0 0 1 0 5 Tm /F3+0 17 Tf 22 TL (Respuesta a las observaciones de TI / 22-11
 Q
 Q
 q
-1 0 0 1 46 138.8898 cm
+1 0 0 1 46 149.8898 cm
 q
 .141176 .34902 .4 rg
-n 0 285 515 -25 re f*
+n 0 274 515 -25 re f*
 1 1 1 rg
-n 0 260 515 -47 re f*
+n 0 249 515 -36 re f*
 .933333 .956863 .956863 rg
 n 0 213 515 -47 re f*
 1 1 1 rg
@@ -1532,21 +1532,21 @@ n 0 25 515 -25 re f*
 1 1 1 rg
 BT /F1 10 Tf 12 TL ET
 q
-1 0 0 1 7 267 cm
+1 0 0 1 7 256 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Observaci\001n) Tj T* ET
 Q
 Q
 q
-1 0 0 1 140 267 cm
+1 0 0 1 140 256 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Resoluci\001n) Tj T* ET
 Q
 Q
 q
-1 0 0 1 388 267 cm
+1 0 0 1 388 256 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Evidencia) Tj T* ET
@@ -1554,7 +1554,7 @@ Q
 Q
 0 0 0 rg
 q
-1 0 0 1 7 242 cm
+1 0 0 1 7 231 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (PK y nomenclatura) Tj T* ET
@@ -1564,11 +1564,11 @@ q
 1 0 0 1 140 220 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 25 Tm /F2+0 8 Tf 11 TL (PK enteras AUTO_INCREMENT y nombres id_[entidad]. Tablas) Tj T* (operativas en espa\011ol. Se conservan algunos nombres t\002cnicos) Tj T* (de columnas.) Tj T* ET
+BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (PK enteras autoincrementables y nombres id_[tabla]. Tablas,) Tj T* (columnas, \005ndices, restricciones y c\001digos de estado en espa\011ol.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 388 242 cm
+1 0 0 1 388 231 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (SQL, diccionario y migraci\001n.) Tj T* ET
@@ -1613,7 +1613,7 @@ q
 1 0 0 1 388 137 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (ServiceEngine, viajes y pruebas) Tj T* (de relevo.) Tj T* ET
+BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (motor de viajes, viajes y pruebas) Tj T* (de relevo.) Tj T* ET
 Q
 Q
 q
@@ -1684,8 +1684,22 @@ q
 1 j
 .141176 .34902 .4 RG
 .6 w
-n 0 260 m 515 260 l S
+n 0 249 m 515 249 l S
 Q
+Q
+Q
+q
+1 0 0 1 46 121.8898 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4 Tm /F3+0 12 Tf 16 TL (Actualizaci\001n de instalaciones existentes) Tj T* ET
+Q
+Q
+q
+1 0 0 1 46 59.88976 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 46 Tm /F2+0 10 Tf 14 TL (Antes del cambio, detenga el servicio y verifique un respaldo restaurable. Ejecute php spark migrate. La) Tj T* (migraci\001n conserva las cabeceras ra\005z, convierte sus recorridos en tramos y registra alias de los folios anteriores.) Tj T* (Los cat\004logos se copian por instituci\001n. MySQL DDL requiere restauraci\001n del respaldo si falla una actualizaci\001n) Tj T* (parcial. La reversi\001n requiere restaurar el respaldo.) Tj T* ET
 Q
 Q
  
@@ -1933,7 +1947,7 @@ endobj
 endobj
 35 0 obj
 <<
-/Length 2020
+/Length 1366
 >>
 stream
 q
@@ -1942,49 +1956,35 @@ q
 BT 1 0 0 1 38 817.8898 Tm /F2+0 8 Tf 9.6 TL (PULSO / Oficina de Movilizaci\001n / Revisi\001n t\002cnica) Tj T* ET
 BT 1 0 0 1 451.1232 23 Tm /F2+0 8 Tf 9.6 TL (22 de noviembre de 2026  |  4) Tj T* ET
 q
-1 0 0 1 46 771.8898 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 4 Tm /F3+0 12 Tf 16 TL (Actualizaci\001n de instalaciones existentes) Tj T* ET
-Q
-Q
-q
-1 0 0 1 46 709.8898 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 46 Tm /F2+0 10 Tf 14 TL (Antes del cambio, detenga el servicio y verifique un respaldo restaurable. Ejecute php spark migrate. La) Tj T* (migraci\001n conserva las cabeceras ra\005z, convierte sus recorridos en tramos y registra alias de los folios anteriores.) Tj T* (Los cat\004logos se copian por instituci\001n. MySQL DDL requiere restauraci\001n del respaldo si falla una actualizaci\001n) Tj T* (parcial. La reversi\001n requiere restaurar el respaldo.) Tj T* ET
-Q
-Q
-q
-1 0 0 1 46 680.8898 cm
+1 0 0 1 46 765.8898 cm
 q
 .098039 .235294 .27451 rg
 BT 1 0 0 1 0 5 Tm /F3+0 17 Tf 22 TL (Referencias t\004cnicas consultadas) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 663.8898 cm
+1 0 0 1 46 748.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Oracle MySQL: https://dev.mysql.com/doc/refman/8.4/en/mysql-releases.html) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 647.8898 cm
+1 0 0 1 46 732.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (CodeIgniter MVC: https://codeigniter.com/user_guide/concepts/mvc.html) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 631.8898 cm
+1 0 0 1 46 716.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (OMG BPMN 2.0.2: https://www.omg.org/spec/BPMN/2.0.2/About-BPMN) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 604.8898 cm
+1 0 0 1 46 689.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Los paquetes y versiones se corroboraron en los lockfiles y archivos instalados. No se sustituyen requisitos institucionales por) Tj T* (recomendaciones de fabricantes.) Tj T* ET
@@ -2219,41 +2219,41 @@ xref
 0000000231 00000 n 
 0000000280 00000 n 
 0000000553 00000 n 
-0000008055 00000 n 
-0000008162 00000 n 
-0000008269 00000 n 
-0000009401 00000 n 
-0000009643 00000 n 
-0000048391 00000 n 
-0000049164 00000 n 
-0000050255 00000 n 
-0000050498 00000 n 
-0000088224 00000 n 
-0000088969 00000 n 
-0000090121 00000 n 
-0000090376 00000 n 
-0000120338 00000 n 
-0000121105 00000 n 
-0000121381 00000 n 
-0000127674 00000 n 
-0000127782 00000 n 
-0000128873 00000 n 
-0000129116 00000 n 
-0000166842 00000 n 
-0000167587 00000 n 
-0000167863 00000 n 
-0000174447 00000 n 
-0000174555 00000 n 
-0000175646 00000 n 
-0000175889 00000 n 
-0000213615 00000 n 
-0000214360 00000 n 
-0000214636 00000 n 
-0000216709 00000 n 
-0000216817 00000 n 
-0000217908 00000 n 
-0000218151 00000 n 
-0000255877 00000 n 
+0000008273 00000 n 
+0000008380 00000 n 
+0000008487 00000 n 
+0000009619 00000 n 
+0000009861 00000 n 
+0000048609 00000 n 
+0000049382 00000 n 
+0000050473 00000 n 
+0000050716 00000 n 
+0000088442 00000 n 
+0000089187 00000 n 
+0000090339 00000 n 
+0000090594 00000 n 
+0000120556 00000 n 
+0000121323 00000 n 
+0000121599 00000 n 
+0000127932 00000 n 
+0000128040 00000 n 
+0000129131 00000 n 
+0000129374 00000 n 
+0000167100 00000 n 
+0000167845 00000 n 
+0000168121 00000 n 
+0000175350 00000 n 
+0000175458 00000 n 
+0000176549 00000 n 
+0000176792 00000 n 
+0000214518 00000 n 
+0000215263 00000 n 
+0000215539 00000 n 
+0000216958 00000 n 
+0000217066 00000 n 
+0000218157 00000 n 
+0000218400 00000 n 
+0000256126 00000 n 
 trailer
 <<
 /Size 41
@@ -2261,5 +2261,5 @@ trailer
 /Info 1 0 R
 >>
 startxref
-256622
+256871
 %%EOF

@@ -44,7 +44,7 @@ endobj
 endobj
 5 0 obj
 <<
-/Length 8753
+/Length 8790
 >>
 stream
 q
@@ -221,7 +221,7 @@ h
 B*
 .098039 .235294 .27451 rg
 BT 1 0 0 1 370.6189 449 Tm /F3+0 11 Tf 13.2 TL (Sistema: guardar) Tj T* ET
-BT 1 0 0 1 354.4331 435.25 Tm /F3+0 11 Tf 13.2 TL (PENDING / ASSIGNED) Tj T* ET
+BT 1 0 0 1 347.405 435.25 Tm /F3+0 11 Tf 13.2 TL (PENDIENTE / ASIGNADO) Tj T* ET
 .098039 .235294 .27451 rg
 BT 1 0 0 1 342 462 Tm /F2+0 8 Tf 9.6 TL (S) Tj T* ET
 1 1 1 rg
@@ -249,7 +249,7 @@ n
 h
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 555.5654 252 Tm /F3+0 11 Tf 13.2 TL (Admin: cancelar) Tj T* ET
+BT 1 0 0 1 535.0854 252 Tm /F3+0 11 Tf 13.2 TL (Administraci\001n: cancelar) Tj T* ET
 BT 1 0 0 1 568.405 238.25 Tm /F3+0 11 Tf 13.2 TL (con motivo) Tj T* ET
 .098039 .235294 .27451 rg
 BT 1 0 0 1 532 265 Tm /F2+0 8 Tf 9.6 TL (U) Tj T* ET
@@ -274,7 +274,7 @@ n
 751.6274 233 757 238.3726 757 245 c
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 714.9902 210 Tm /F3+0 10 Tf 12 TL (CANCELLED) Tj T* ET
+BT 1 0 0 1 713.8818 210 Tm /F3+0 10 Tf 12 TL (CANCELADO) Tj T* ET
 1 1 1 rg
 .141176 .34902 .4 RG
 n 715 465 m 740 440 l 715 415 l 690 440 l h
@@ -300,7 +300,7 @@ n
 h
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 895.8154 277 Tm /F3+0 11 Tf 13.2 TL (Admin: asignar) Tj T* ET
+BT 1 0 0 1 875.3354 277 Tm /F3+0 11 Tf 13.2 TL (Administraci\001n: asignar) Tj T* ET
 BT 1 0 0 1 892.1443 263.25 Tm /F3+0 11 Tf 13.2 TL (chofer / veh\002culo) Tj T* ET
 .098039 .235294 .27451 rg
 BT 1 0 0 1 862 290 Tm /F2+0 8 Tf 9.6 TL (U) Tj T* ET
@@ -374,11 +374,11 @@ n
 411.6274 93 417 98.37258 417 105 c
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 368.8794 70 Tm /F3+0 10 Tf 12 TL (IN_PROGRESS) Tj T* ET
+BT 1 0 0 1 377.2168 70 Tm /F3+0 10 Tf 12 TL (EN_CURSO) Tj T* ET
 BT 1 0 0 1 379.4312 57.5 Tm /F3+0 10 Tf 12 TL (Viaje activo) Tj T* ET
 Q
 BT 1 0 0 1 36 65 Tm /F3+0 9 Tf 10.8 TL (Notaci\001n BPMN 2.0: c\002rculo = evento; tarea U = usuario; tarea S = sistema; rombo con X = decisi\001n exclusiva.) Tj T* ET
-BT 1 0 0 1 36 51 Tm /F3+0 9 Tf 10.8 TL (Indefinido corresponde a centro de costos nulo. startNow ejecuta registro e inicio en la misma transacci\001n.) Tj T* ET
+BT 1 0 0 1 36 51 Tm /F3+0 9 Tf 10.8 TL (Indefinido corresponde a centro de costos nulo. opci\001n Iniciar ahora ejecuta registro e inicio en la misma transacci\001n.) Tj T* ET
 BT 1 0 0 1 1052.844 20 Tm /F3+0 8 Tf 9.6 TL (22 de noviembre de 2026 | 1) Tj T* ET
  
 
@@ -1010,7 +1010,7 @@ endobj
 endobj
 21 0 obj
 <<
-/Length 7632
+/Length 7641
 >>
 stream
 q
@@ -1129,7 +1129,7 @@ n
 58.28427 415 65 421.7157 65 430 c
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 13.87939 395 Tm /F3+0 10 Tf 12 TL (IN_PROGRESS) Tj T* ET
+BT 1 0 0 1 22.2168 395 Tm /F3+0 10 Tf 12 TL (EN_CURSO) Tj T* ET
 .933333 .956863 .956863 rg
 .141176 .34902 .4 RG
 1 w
@@ -1175,7 +1175,7 @@ n
 h
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 332.7847 247 Tm /F3+0 11 Tf 13.2 TL (Admin: elegir recursos) Tj T* ET
+BT 1 0 0 1 312.3047 247 Tm /F3+0 11 Tf 13.2 TL (Administraci\001n: elegir recursos) Tj T* ET
 BT 1 0 0 1 328.8154 233.25 Tm /F3+0 11 Tf 13.2 TL (y registrar km del relevo) Tj T* ET
 .098039 .235294 .27451 rg
 BT 1 0 0 1 302 260 Tm /F2+0 8 Tf 9.6 TL (U) Tj T* ET
@@ -1289,7 +1289,7 @@ n
 701.6274 91 707 96.37258 707 103 c
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 663.8843 68 Tm /F3+0 10 Tf 12 TL (COMPLETED) Tj T* ET
+BT 1 0 0 1 665.5518 68 Tm /F3+0 10 Tf 12 TL (FINALIZADO) Tj T* ET
 Q
 BT 1 0 0 1 36 65 Tm /F3+0 9 Tf 10.8 TL (Notaci\001n BPMN 2.0: c\002rculo = evento; tarea U = usuario; tarea S = sistema; rombo con X = decisi\001n exclusiva.) Tj T* ET
 BT 1 0 0 1 36 51 Tm /F3+0 9 Tf 10.8 TL (El relevo cierra el tramo saliente y abre otro dentro del mismo viaje con la lectura del veh\002culo entrante. Si falla una validaci\001n, se revierte la operaci\001n.) Tj T* ET
@@ -1540,7 +1540,7 @@ endobj
 endobj
 28 0 obj
 <<
-/Length 5580
+/Length 5592
 >>
 stream
 q
@@ -1646,7 +1646,7 @@ n
 h
 B*
 .098039 .235294 .27451 rg
-BT 1 0 0 1 150.2205 439 Tm /F3+0 11 Tf 13.2 TL (Admin: elegir per\002odo) Tj T* ET
+BT 1 0 0 1 129.7405 439 Tm /F3+0 11 Tf 13.2 TL (Administraci\001n: elegir per\002odo) Tj T* ET
 BT 1 0 0 1 162.7539 425.25 Tm /F3+0 11 Tf 13.2 TL (y tipo de reporte) Tj T* ET
 .098039 .235294 .27451 rg
 BT 1 0 0 1 122 452 Tm /F2+0 8 Tf 9.6 TL (U) Tj T* ET
@@ -1981,34 +1981,34 @@ xref
 0000000216 00000 n 
 0000000265 00000 n 
 0000000538 00000 n 
-0000009343 00000 n 
-0000009450 00000 n 
-0000009557 00000 n 
-0000010689 00000 n 
-0000010943 00000 n 
-0000040601 00000 n 
-0000041351 00000 n 
-0000042442 00000 n 
-0000042685 00000 n 
-0000080411 00000 n 
-0000081156 00000 n 
-0000082271 00000 n 
-0000082514 00000 n 
-0000121101 00000 n 
-0000121864 00000 n 
-0000122140 00000 n 
-0000129825 00000 n 
-0000129933 00000 n 
-0000131024 00000 n 
-0000131267 00000 n 
-0000168993 00000 n 
-0000169738 00000 n 
-0000170014 00000 n 
-0000175647 00000 n 
-0000175755 00000 n 
-0000176846 00000 n 
-0000177089 00000 n 
-0000214815 00000 n 
+0000009380 00000 n 
+0000009487 00000 n 
+0000009594 00000 n 
+0000010726 00000 n 
+0000010980 00000 n 
+0000040638 00000 n 
+0000041388 00000 n 
+0000042479 00000 n 
+0000042722 00000 n 
+0000080448 00000 n 
+0000081193 00000 n 
+0000082308 00000 n 
+0000082551 00000 n 
+0000121138 00000 n 
+0000121901 00000 n 
+0000122177 00000 n 
+0000129871 00000 n 
+0000129979 00000 n 
+0000131070 00000 n 
+0000131313 00000 n 
+0000169039 00000 n 
+0000169784 00000 n 
+0000170060 00000 n 
+0000175705 00000 n 
+0000175813 00000 n 
+0000176904 00000 n 
+0000177147 00000 n 
+0000214873 00000 n 
 trailer
 <<
 /Size 34
@@ -2016,5 +2016,5 @@ trailer
 /Info 1 0 R
 >>
 startxref
-215560
+215618
 %%EOF
