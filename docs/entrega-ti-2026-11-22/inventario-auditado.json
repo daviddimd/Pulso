@@ -1,7 +1,7 @@
 {
   "fecha": "2026-11-22",
-  "baseCommit": "236bd9a4cf53ba3e451010fb1cd2ce48438aaa99",
-  "incluyeCambiosLocales": true,
+  "baseCommit": "e8b04aa312497996474f70781f0e80c99174f91d",
+  "incluyeCambiosLocales": false,
   "sha256": {
     "apps/api-php/app/Database/schema-viajes.sql": "f1b5d6a13c464377e4d343bebfbd090c513678d01bc55809584cc79e7d868b1b",
     "apps/api-php/composer.lock": "4683af05cda1fed11c0ab44cad207958a0b88e21a71114e0a9562c97245e1345",
@@ -75,7 +75,7 @@
     "apps/api-php/app/Database/Migrations/2026-11-10-000002_ConsolidateTrips.php": "c9cb9e9c0011be0fcb9e27beb858201fe88aa8fb52d6992438ae68948808c92a",
     "apps/api-php/app/Database/Migrations/2026-11-22-000003_DomainTrips.php": "c5caea9fb3d486d219131f2b43cae48a1b6403a11ab6b1325d64c2a87124069a",
     "apps/api-php/app/Database/Migrations/2026-11-22-000004_AuditEstablishment.php": "98c17880ac787e794c014fba50746a28387ef1fda3faa54abcff58d286eb42e5",
-    "apps/api-php/app/Database/Migrations/2026-11-24-000005_SpanishColumns.php": "64bf0932e7a41e85bf294dc779e04d86ad05a1b09fdea4c47154a4fcb9596bf8",
+    "apps/api-php/app/Database/Migrations/2026-11-24-000005_SpanishColumns.php": "90ca5da0c713470ff3186b869f9a00fb3688bafb12e713dd9679c041d622b95c",
     "apps/api-php/app/Database/Seeds/PulsoSeeder.php": "1bebc62bc88e3cb61bc593b4281aa135ff340b03c3ddcefa97d182194020d4c6",
     "apps/api-php/app/Filters/AdminFilter.php": "ec9a48a8af8e3516c7d04dbcf13b8df7632e1c04a856f09368f1e57b24d60bdd",
     "apps/api-php/app/Filters/AuthFilter.php": "86d832c2f2c7a56c501560228cf8bb07a532060bd18c3df2b8596aaa39dc8784",
