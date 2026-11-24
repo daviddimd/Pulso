@@ -14,7 +14,10 @@ final class SetupController extends BaseApiController
     public function create()
     {
         return $this->attempt(function () {
-            $result = (new SetupRepository())->complete($this->getRequestBody(), $this->getClientIp());
+            $result = (new SetupRepository())->complete(
+                $this->getRequestBody(),
+                $this->getClientIp(),
+            );
             return $this->jsonResponse(['username' => $result['username']], 201);
         });
     }

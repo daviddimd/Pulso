@@ -1,196 +1,862 @@
-import { spawn, spawnSync } from 'node:child_process';
-import { strict as assert } from 'node:assert';
-import { setTimeout as sleep } from 'node:timers/promises';
-import { php, apiDir } from './runtime.mjs';
-import { ensureLocalDatabase } from './local-db.mjs';
+import { spawn, spawnSync } from "node:child_process";
+import { strict as assert } from "node:assert";
+import { setTimeout as sleep } from "node:timers/promises";
+import { php, apiDir } from "./runtime.mjs";
+import { ensureLocalDatabase } from "./local-db.mjs";
 await ensureLocalDatabase();
-const env = {...process.env, CI_ENVIRONMENT:'development', PULSO_INTEGRATION:'1', 'database.default.database':'pulso_test', 'app.baseURL':'http://localhost:8081/', CORS_ORIGIN:'http://localhost:5177',
-  CLAVE_UNICA_CLIENT_ID:'test-client', CLAVE_UNICA_CLIENT_SECRET:'test-secret', CLAVE_UNICA_REDIRECT_URI:'https://pulso.example/api/auth/clave-unica/callback'};
-for (const args of [['migrate'],['pulso:prueba-configuracion'],['pulso:prueba-datos'],['pulso:prueba-acceso'],['pulso:prueba-dominio']]) {
-  const p=spawnSync(php,['spark',...args],{cwd:apiDir,env,encoding:'utf8'});
-  if(p.status || /Exception|Error\]/.test(p.stdout+p.stderr)) throw Error(p.stdout+p.stderr);
-  if(['pulso:prueba-configuracion','pulso:prueba-acceso','pulso:prueba-dominio'].includes(args[0])) process.stdout.write(p.stdout);
+const env = {
+  ...process.env,
+  CI_ENVIRONMENT: "development",
+  PULSO_INTEGRATION: "1",
+  "database.default.database": "pulso_test",
+  "app.baseURL": "http://localhost:8081/",
+  CORS_ORIGIN: "http://localhost:5177",
+  CLAVE_UNICA_CLIENT_ID: "test-client",
+  CLAVE_UNICA_CLIENT_SECRET: "test-secret",
+  CLAVE_UNICA_REDIRECT_URI: "https://pulso.example/api/auth/clave-unica/callback",
+};
+for (const args of [
+  ["migrate"],
+  ["pulso:prueba-configuracion"],
+  ["pulso:prueba-datos"],
+  ["pulso:prueba-acceso"],
+  ["pulso:prueba-dominio"],
+]) {
+  const p = spawnSync(php, ["spark", ...args], { cwd: apiDir, env, encoding: "utf8" });
+  if (p.status || /Exception|Error\]/.test(p.stdout + p.stderr)) throw Error(p.stdout + p.stderr);
+  if (
+    ["pulso:prueba-configuracion", "pulso:prueba-acceso", "pulso:prueba-dominio"].includes(args[0])
+  )
+    process.stdout.write(p.stdout);
 }
-const servers=[8081,8082].map(port=>spawn(php,['-S',`localhost:${port}`,'-t','public','public/router.php'],{cwd:apiDir,env,stdio:['ignore','ignore','pipe']}));
-let stderr=''; servers.forEach(p=>p.stderr.on('data',d=>stderr+=d));
-const base='http://localhost:8081';
-let checks=0;
-function check(value,message){assert.ok(value,message);checks++;}
-async function request(path,{cookie='',body,method,port=8081,origin}={}) {
-  const response=await fetch(`http://localhost:${port}`+path,{method:method||(body===undefined?'GET':'POST'),headers:{...(cookie?{cookie}:{}),...(body===undefined?{}:{'Content-Type':'application/json'}),...(origin?{Origin:origin}:{})},body:body===undefined?undefined:JSON.stringify(body)});
-  const raw=await response.text(); let data; try {data=JSON.parse(raw);} catch {data=raw;}
-  return {status:response.status,data,cookies:response.headers.getSetCookie(),headers:response.headers};
+const servers = [8081, 8082].map((port) =>
+  spawn(php, ["-S", `localhost:${port}`, "-t", "public", "public/router.php"], {
+    cwd: apiDir,
+    env,
+    stdio: ["ignore", "ignore", "pipe"],
+  }),
+);
+let stderr = "";
+servers.forEach((p) => p.stderr.on("data", (d) => (stderr += d)));
+const base = "http://localhost:8081";
+let checks = 0;
+function check(value, message) {
+  assert.ok(value, message);
+  checks++;
 }
-async function login(name){const r=await request('/api/auth/login',{body:{username:name,password:'test-password'}});assert.equal(r.status,200,JSON.stringify(r.data));return r.cookies.map(c=>c.split(';')[0]).join('; ');}
-async function cmd(id,command,version,body,cookie,port=8081){return request(`/api/services/${id}/${command}`,{body:{version,...body},cookie,port});}
-try {
-  for(let n=0;n<60;n++){try {if((await fetch(base+'/api/health')).ok) break;}catch{} await sleep(150);}
-  check((await request('/api/services')).status===401,'Sin sesión: 401');
-  check((await request('/api/auth/me')).status===401,'Identidad protegida exige sesión');
-  const anonymous=await request('/api/auth/session');
-  check(anonymous.status===200&&anonymous.data.user===null&&Object.keys(anonymous.data).length===1,'Consulta inicial sin sesión no produce 401 ni expone datos');
-  check(anonymous.headers.get('cache-control')?.split(',').some(value=>value.trim()==='no-store'),'Identidad de sesión no almacenable en caché');
-  const invalidSession=await request('/api/auth/session',{cookie:'pulso_session=invalid'});
-  check(invalidSession.status===200&&invalidSession.data.user===null,'Cookie inválida no restaura identidad');
-  const options=await request('/api/auth/options');
-  check(options.data.claveUnicaEnabled===true && Object.keys(options.data).length===1,'Opciones públicas sin credenciales');
-  const oauth=await request('/api/auth/clave-unica');
-  check(oauth.status===200,'Inicio de ClaveÚnica disponible');
-  const authorization=new URL(oauth.data.url);
-  check(authorization.origin==='https://accounts.claveunica.gob.cl' && authorization.searchParams.get('scope')==='openid run name','Proveedor y permisos oficiales');
-  const oauthCookie=oauth.cookies.map(c=>c.split(';')[0]).join('; ');
-  check((await request('/api/auth/clave-unica/callback?code=test-code&state=invalid',{cookie:oauthCookie})).status===400,'Estado OAuth incorrecto rechazado');
-  check((await request('/api/auth/clave-unica/callback?code=test-code&state='+encodeURIComponent(authorization.searchParams.get('state')),{cookie:oauthCookie})).status===400,'Estado OAuth consumido no reutilizable');
-  const admin=await login('a-admin'), driver=await login('a-driver1'), driver2=await login('a-driver2'), other=await login('b-admin');
-  check((await request('/api/auth/me',{cookie:admin})).data.user.role==='ADMIN','Contrato usuario');
-  const restored=await request('/api/auth/session',{cookie:admin});
-  check(restored.status===200&&restored.data.user.id==='101'&&restored.data.user.establishmentId==='1','Consulta inicial restaura solo una sesión válida');
-  check(!('password_hash' in restored.data.user)&&!('token_hash' in restored.data.user),'Restauración sin hashes ni credenciales');
-  check((await request('/api/auth/me',{cookie:other})).data.user.establishmentTimezone==='Pacific/Easter','Zona horaria de cada institución');
-  check((await request('/api/admin/drivers',{cookie:driver})).status===403,'Chofer no consulta administración');
-  const driverProfilePath='/api/admin/drivers/102';
-  check((await request(driverProfilePath)).status===401,'Ficha del chofer exige sesión');
-  check((await request(driverProfilePath,{cookie:driver})).status===403,'Ficha administrativa solo para administración');
-  check((await request(driverProfilePath,{cookie:other})).status===404,'Ficha del chofer aislada por institución');
-  check((await request('/api/admin/drivers/101',{cookie:admin})).status===404,'No confundir administrador con chofer');
-  check((await request('/api/admin/drivers/missing',{cookie:admin})).status===404,'Ficha inexistente responde sin datos');
-  const driverProfile=await request(driverProfilePath,{cookie:admin});
-  check(driverProfile.status===200&&driverProfile.data.driver.fullName==='a driver1'&&driverProfile.data.driver.username==='a-driver1'&&driverProfile.data.driver.establishmentName==='Establecimiento a'&&driverProfile.data.driver.active===true,'Datos de identificación del chofer');
-  check(!JSON.stringify(driverProfile.data).includes('password')&&!JSON.stringify(driverProfile.data).includes('rut')&&!JSON.stringify(driverProfile.data).includes('clave_unica'),'Ficha sin credenciales ni identificadores de autenticación');
-  const retiredProfile=await request('/api/admin/drivers/105',{cookie:admin});
-  check(retiredProfile.status===200&&retiredProfile.data.driver.active===false,'Ficha histórica de chofer inactivo consultable por administración');
-  check((await request('/api/exports/daily?from=2026-01-01&to=2026-12-31',{cookie:driver})).status===403,'Chofer no exporta');
-  check((await request('/api/vehicles',{cookie:admin})).data.vehicles.length===2,'Catálogo aislado');
-  check((await request('/api/admin/drivers',{cookie:admin})).data.drivers.length===3,'Choferes y disponibilidad');
-  check((await request('/api/cost-centers',{cookie:admin})).data.costCenters.length===1,'Centros aislados');
-  const input={serviceAddress:'2 Norte 1757, Talca',actionPerformed:'Traslado de personal',vehicleId:'111',costCenterId:'121',startNow:true};
-  let r=await request('/api/services',{cookie:driver,body:input});
-  assert.equal(r.status,201,JSON.stringify(r.data)); let trip=r.data.entry; const originalId=trip.id; let id=originalId;
-  check(trip.status==='IN_PROGRESS'&&trip.legs[0].departureOdometerKm===1000,'Inicio automático');
-  check((await request(driverProfilePath,{cookie:admin})).data.driver.inService===true,'Ficha refleja chofer en servicio');
-  const bad=await request('/api/services',{cookie:driver2,body:input}); check(bad.status===409,'Vehículo no simultáneo');
-  check((await request('/api/services/mine',{cookie:driver2})).data.total===0,'Inicio fallido revierte creación');
-  r=await cmd(id,'cancel',trip.version,{reason:'No corresponde'},admin);
-  check(r.status===400&&r.data.error==='CANCEL_ONLY_BEFORE_START','No cancelar iniciado');
-  const stillRunning=(await request('/api/services/'+id,{cookie:admin})).data.entry;
-  check(stillRunning.status==='IN_PROGRESS'&&stillRunning.version===trip.version&&stillRunning.legs[0].endedAt===null,'Cancelación rechazada conserva el viaje en curso');
-  const busyVehicle=(await request('/api/vehicles',{cookie:admin})).data.vehicles.find(v=>v.id==='111');
-  check((await request('/api/vehicles/'+busyVehicle.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:busyVehicle.updatedAt,currentOdometerKm:1005,reason:'Lectura contrastada'}})).status===409,'No ajustar odómetro durante un viaje');
-  check((await cmd(id,'complete',trip.version,{odometerKm:999},driver)).data.error==='ODOMETER_BELOW_CURRENT','Km no retroceden');
-  check((await cmd(id,'complete',trip.version,{odometerKm:1001.5},driver)).status===400,'Km enteros');
-  check((await cmd(id,'address',trip.version,{serviceAddress:'Otra calle'},other)).status===404,'No editar otro establecimiento');
-  check((await request(`/api/services/${id}`,{cookie:other})).status===404,'No leer otro establecimiento');
-  check((await request(`/api/services/${id}/audit`,{cookie:other})).status===404,'No leer auditoría ajena');
-  check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,driverId:'202'}})).status===400,'No asignar chofer ajeno');
-  check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,costCenterId:'221'}})).status===400,'No asignar centro ajeno');
-  const badHandover=await cmd(id,'assignment',trip.version,{driverId:'103',vehicleId:'112',odometerKm:999},admin);
-  check(badHandover.status===400 && (await request('/api/services/'+id,{cookie:admin})).data.entry.version===trip.version,'Un relevo inválido conserva el viaje abierto');
-  r=await cmd(id,'assignment',trip.version,{driverId:'103',vehicleId:'112',odometerKm:1012},admin);
-  assert.equal(r.status,200,JSON.stringify(r.data));
-  trip=r.data.entry;
-  check(trip.id===originalId&&trip.status==='IN_PROGRESS'&&trip.legs.length===2,'El relevo mantiene el viaje y crea un tramo');
-  check(trip.legs[0].arrivalOdometerKm===1012&&trip.legs[1].departureOdometerKm===50000,'Cada vehículo conserva sus lecturas');
-  check((await cmd(id,'complete',trip.version,{odometerKm:50008},driver)).status===403,'Antiguo chofer no finaliza');
-  check((await request('/api/services?vehicleId=111',{cookie:admin})).data.total===1,'Historial incluye vehículo previo');
-  const formerDriverTrips=await request('/api/services?driverId=102',{cookie:admin});
-  check(formerDriverTrips.data.total===1&&formerDriverTrips.data.entries[0].id===originalId,'Historial del chofer muestra el viaje que cerró');
-  r=await cmd(id,'address',trip.version,{serviceAddress:'1 Sur 1010, Talca'},admin); trip=r.data.entry;
-  check(trip.addressRevisions[0].address==='1 Sur 1010, Talca'&&trip.addressRevisions[0].actor.fullName==='a admin','Alerta dirección más reciente');
-  check((await cmd(id,'address',0,{serviceAddress:'Vieja versión'},admin)).status===409,'Rechazo de versión antigua');
-  const outcomes=await Promise.all([cmd(id,'complete',trip.version,{odometerKm:50008},driver2,8081),cmd(id,'complete',trip.version,{odometerKm:50009},driver2,8082)]);
-  check(outcomes.filter(x=>x.status===200).length===1&&outcomes.filter(x=>x.status===409).length===1,'Finalización simultánea: un solo ganador');
-  trip=outcomes.find(x=>x.status===200).data.entry;
-  check([20,21].includes(trip.distanceKm),'La distancia suma los tramos de vehículos diferentes');
-  const day=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-  const period=`from=${day}&to=${day}`;
-  r=await request('/api/cost-centers/summary?'+period,{cookie:admin}); assert.equal(r.status,200,JSON.stringify(r.data));
-  check(r.data.rows[0].completedKm===trip.distanceKm&&r.data.rows[0].completedTrips===1,'Resumen suma distancia, no odómetros');
-  r=await request('/api/exports/daily?'+period,{cookie:admin}); check(r.data.services.length===1&&r.data.legs.length===2&&r.data.services.some(s=>s.id===id&&s.distanceKm===trip.distanceKm),'Contrato Excel completo');
-  check(r.data.timezone==='America/Santiago','Excel recibe la zona horaria del establecimiento');
-  const foreignReport=await request('/api/exports/daily?'+period,{cookie:other});
-  check(foreignReport.data.services.length===0 && foreignReport.data.timezone==='Pacific/Easter','Reporte aislado y zona horaria propia');
-  r=await request('/api/exports/daily-pdf?'+period,{cookie:admin}); check(r.status===200&&r.data.startsWith('%PDF-'),'PDF real con FPDF');
-  r=await request('/api/cost-centers/export-pdf?'+period,{cookie:admin}); check(r.status===200&&r.data.startsWith('%PDF-'),'PDF centros');
-  check((await request('/api/cost-centers/summary?from=2026-02-30&to=2026-03-10',{cookie:admin})).status===400,'Fechas inválidas');
-  r=await request('/api/services',{cookie:driver,body:{...input,startNow:false,costCenterId:null}}); let pending=r.data.entry;
-  check(pending.status==='ASSIGNED'&&pending.costCenter===null,'Guardar con centro indefinido');
-  check((await request('/api/services/mine?status=COMPLETED',{cookie:driver})).data.upcoming.length===1,'Pendientes independientes del filtro');
-  r=await cmd(pending.id,'cancel',pending.version,{reason:'No se requiere traslado'},admin);check(r.data.entry.status==='CANCELLED','Cancelar antes de salir');
-  check((await request('/api/exports/daily?'+period,{cookie:admin})).data.services.length===1,'Excel excluye cancelados');
-  check((await request('/api/services/mine',{cookie:driver})).data.active.length===0,'Viaje finalizado libera al chofer');
-  r=await request('/api/vehicles',{cookie:admin}); const v=r.data.vehicles.find(v=>v.id==='111');
-  const historyPath='/api/vehicles/'+v.id+'/odometer-history';
-  check((await request(historyPath)).status===401,'Historial de kilometraje exige sesión');
-  check((await request(historyPath,{cookie:driver})).status===403,'Chofer no consulta correcciones administrativas');
-  check((await request(historyPath,{cookie:other})).status===404,'Correcciones de otro establecimiento inaccesibles');
-  check((await request('/api/vehicles/missing/odometer-history',{cookie:admin})).status===404,'Vehículo inexistente no expone auditoría');
-  const initialHistory=await request(historyPath,{cookie:admin});
-  check(initialHistory.status===200&&initialHistory.data.total===0&&initialHistory.data.corrections.length===0,'Viajes no aparecen como correcciones administrativas');
-  const oldHistory=await request('/api/vehicles/112/odometer-history',{cookie:admin});
-  check(oldHistory.status===200&&oldHistory.data.total===1&&oldHistory.data.corrections[0].reason==='Lectura histórica contrastada','Recupera correcciones anteriores y excluye cambios de rol');
-  check((await request('/api/vehicles/'+v.id,{cookie:other,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,roleCode:'XXX'}})).status===404,'Vehículo ajeno no editable');
-  check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,licensePlate:'CHANGED'}})).status===400,'Patente inmutable');
-  for (const [field,value] of Object.entries({roleCode:'OTRO',model:'Otro modelo',year:2025,vehicleType:'Otro tipo',active:false})) {
-    const rejected=await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,currentOdometerKm:1015,reason:'Intento de cambio', [field]:value}});
-    check(rejected.status===400&&rejected.data.error==='IMMUTABLE_VEHICLE_DATA','Solo kilometraje editable: '+field);
+async function request(path, { cookie = "", body, method, port = 8081, origin } = {}) {
+  const response = await fetch(`http://localhost:${port}` + path, {
+    method: method || (body === undefined ? "GET" : "POST"),
+    headers: {
+      ...(cookie ? { cookie } : {}),
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...(origin ? { Origin: origin } : {}),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const raw = await response.text();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    data = raw;
   }
-  check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt}})).status===400,'No aceptar edición sin kilometraje');
-  r=await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,currentOdometerKm:1015,reason:'Corrección contrastada'}}); check(r.status===200&&r.data.vehicle.currentOdometerKm===1015,'Ajuste administrativo');
-  const history=await request(historyPath,{cookie:admin});
-  check(history.status===200&&history.data.total===1&&history.data.corrections[0].previousOdometerKm===v.currentOdometerKm&&history.data.corrections[0].newOdometerKm===1015,'Corrección conserva lectura anterior y nueva');
-  check(history.data.corrections[0].reason==='Corrección contrastada'&&history.data.corrections[0].actor.fullName==='a admin'&&Number.isFinite(Date.parse(history.data.corrections[0].createdAt)),'Corrección consultable con motivo, autor y fecha UTC');
-  check(!JSON.stringify(history.data).includes('password_hash')&&!JSON.stringify(history.data).includes('before_data'),'Historial devuelve solo datos de la corrección');
-  const emptyPage=await request(historyPath+'?page=2',{cookie:admin});
-  check(emptyPage.data.page===2&&emptyPage.data.total===1&&emptyPage.data.corrections.length===0,'Paginación estable de correcciones');
-  check(r.data.vehicle.roleCode===v.roleCode&&r.data.vehicle.licensePlate===v.licensePlate&&r.data.vehicle.model===v.model&&r.data.vehicle.year===v.year&&r.data.vehicle.vehicleType===v.vehicleType&&r.data.vehicle.active===v.active,'Ajuste de kilometraje conserva datos del vehículo');
-  check((await request('/api/vehicles/'+v.id,{cookie:admin,method:'PATCH',body:{expectedUpdatedAt:v.updatedAt,roleCode:'OLD'}})).status===409,'Versión vehículo protegida');
-  const beforeDriverChange=await request('/api/services',{cookie:driver,body:input});
-  assert.equal(beforeDriverChange.status,201,JSON.stringify(beforeDriverChange.data));
-  const outgoing=beforeDriverChange.data.entry;
-  const driverChange=await cmd(outgoing.id,'assignment',outgoing.version,{driverId:'103',odometerKm:1020},admin);
-  assert.equal(driverChange.status,200,JSON.stringify(driverChange.data));
-  const incoming=driverChange.data.entry;
-  check(incoming.id===outgoing.id&&incoming.legs[0].arrivalOdometerKm===1020&&incoming.legs[1].departureOdometerKm===1020,'Al cambiar solo de chofer, el siguiente viaje sale con la lectura de cierre');
-  check((await cmd(outgoing.id,'assignment',outgoing.version,{driverId:'103',odometerKm:1020},admin)).status===409,'Reintentar el mismo relevo no crea otro viaje');
-  check((await cmd(incoming.id,'complete',incoming.version,{odometerKm:1021},driver2)).status===200,'El chofer entrante finaliza su propio viaje');
-  check((await request('/api/services',{cookie:admin,origin:'https://untrusted.example'})).status===403,'Origen externo rechazado');
-  // Cuentas creadas por administración
-  r=await request('/api/admin/accounts',{cookie:admin}); check(r.status===200&&r.data.accounts.some(a=>a.username==='a-driver1'&&a.role==='DRIVER')&&!r.data.accounts.some(a=>a.username.startsWith('b-')),'Cuentas de la propia institución');
-  check((await request('/api/admin/accounts',{cookie:driver})).status===403,'Un chofer no administra cuentas');
-  const newDriver={fullName:'Chofer Nuevo',username:'a-nuevo',role:'DRIVER',rosterCode:'MOV-NUEVO',password:'clave-inicial-segura'};
-  check((await request('/api/admin/accounts',{cookie:admin,body:{...newDriver,password:'corta'}})).data.error==='PASSWORD_TOO_SHORT','Contraseña inicial corta rechazada');
-  check((await request('/api/admin/accounts',{cookie:admin,body:{...newDriver,role:'SUPERADMIN'}})).data.error==='INVALID_ACCOUNT_DATA','Solo roles operativos');
-  r=await request('/api/admin/accounts',{cookie:admin,body:newDriver}); assert.equal(r.status,201,JSON.stringify(r.data));
-  check(r.data.account.role==='DRIVER'&&r.data.account.rosterCode==='MOV-NUEVO'&&r.data.account.active,'Crear cuenta de chofer');
-  check((await request('/api/admin/accounts',{cookie:admin,body:newDriver})).data.error==='USERNAME_EXISTS','Usuario duplicado rechazado');
-  check((await request('/api/admin/accounts',{cookie:admin,body:{...newDriver,username:'a-nuevo2'}})).data.error==='ROSTER_CODE_EXISTS','Róster duplicado en la institución rechazado');
-  check((await request('/api/admin/accounts',{cookie:other,body:{...newDriver,username:'b-nuevo'}})).status===201,'El mismo róster es válido en otra institución');
-  check((await request('/api/admin/drivers',{cookie:admin})).data.drivers.some(d=>d.fullName==='Chofer Nuevo'),'El chofer creado queda disponible para asignar');
-  check(!(await request('/api/admin/drivers',{cookie:other})).data.drivers.some(d=>d.fullName==='Chofer Nuevo'&&d.id===r.data.account.id),'Chofer aislado por institución');
-  r=await request('/api/auth/login',{body:{username:'a-nuevo',password:'clave-inicial-segura'}}); check(r.status===200&&r.data.user.role==='DRIVER','La cuenta creada puede ingresar');
-  r=await request('/api/admin/accounts',{cookie:admin,body:{fullName:'Jefatura Nueva',username:'a-jefatura',role:'ADMIN',password:'clave-inicial-segura'}}); check(r.status===201&&r.data.account.role==='ADMIN'&&r.data.account.rosterCode===null,'Crear cuenta de administración sin róster');
-  r=await request('/api/setup'); check(r.status===200&&r.data.required===false&&r.data.codeFile===undefined,'Configuración cerrada en una instalación existente');
-  r=await request('/api/setup',{body:{setupCode:'x',establishmentCode:'X',establishmentName:'X',timezone:'America/Santiago',username:'intruso',password:'una-clave-larga-segura'}});
-  check(r.status===409&&r.data.error==='SETUP_COMPLETED','No se puede reconfigurar una instalación existente');
-  check((await request('/api/services',{cookie:admin,body:{...input,vehicleId:['invalid']}})).status===400,'Identificadores malformados rechazados');
-  check((await request(`/api/services/${id}/address`,{cookie:admin,body:{serviceAddress:'Dirección sin versión'}})).status===400,'Versión obligatoria');
-  check((await request('/api/services',{cookie:admin,body:{...input,startNow:false,serviceAddress:'x'.repeat(351)}})).status===400,'Longitud máxima validada');
-  check((await request('/api/cost-centers/summary?from=2020-01-01&to=2026-12-31',{cookie:admin})).status===400,'Máximo 366 días');
-  check((await request('/api/vehicles',{cookie:driver,body:{roleCode:'7-99',licensePlate:'TEST'}})).status===403,'Alta de vehículo solo administrativa');
-  r=await request('/api/vehicles',{cookie:admin,body:{roleCode:'7-99',licensePlate:'A-NEW99',model:'Nuevo móvil',make:'Marca de prueba',vehicleType:'Minibús',year:2025,currentOdometerKm:0}});
-  check(r.status===201&&r.data.vehicle.model==='Nuevo móvil'&&r.data.vehicle.make==='Marca de prueba'&&r.data.vehicle.vehicleType==='Minibús','Alta de vehículo con catálogos normalizados');
-  const race=await Promise.all([request('/api/services',{cookie:driver,body:{...input,vehicleId:r.data.vehicle.id},port:8081}),request('/api/services',{cookie:driver2,body:{...input,vehicleId:r.data.vehicle.id},port:8082})]);
-  check(race.filter(x=>x.status===201).length===1&&race.filter(x=>x.status===409).length===1,'Inicio simultáneo sobre un vehículo: un solo ganador');
-  for(let n=0;n<31;n++) { const p=await request('/api/services',{cookie:other,body:{serviceAddress:'1 Norte 1990, Talca',actionPerformed:'Servicio pendiente '+n,costCenterId:null}});assert.equal(p.status,201); }
-  const first=await request('/api/services?page=1',{cookie:other}), second=await request('/api/services?page=2',{cookie:other});
-  check(first.data.entries.length===30&&second.data.entries.length===1&&first.data.total===31,'Paginación compatible con el panel');
-  check(!first.data.entries.some(x=>second.data.entries.some(y=>x.id===y.id)),'Páginas sin registros repetidos');
-  await request('/api/auth/logout',{cookie:driver,body:{}});
-  check((await request('/api/auth/me',{cookie:driver})).status===401,'Logout invalida sesión');
-  const revoked=await request('/api/auth/session',{cookie:driver});
-  check(revoked.status===200&&revoked.data.user===null,'Sesión revocada no se restaura');
-  for(let n=0;n<5;n++) check((await request('/api/auth/login',{body:{username:'a-driver3',password:'wrong-password'}})).status===401,'Intento fallido registrado');
-  check((await request('/api/auth/login',{body:{username:'a-driver3',password:'test-password'}})).status===423,'Bloqueo de intentos persiste tras respuesta de error');
+  return {
+    status: response.status,
+    data,
+    cookies: response.headers.getSetCookie(),
+    headers: response.headers,
+  };
+}
+async function login(name) {
+  const r = await request("/api/auth/login", {
+    body: { username: name, password: "test-password" },
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  return r.cookies.map((c) => c.split(";")[0]).join("; ");
+}
+async function cmd(id, command, version, body, cookie, port = 8081) {
+  return request(`/api/services/${id}/${command}`, { body: { version, ...body }, cookie, port });
+}
+try {
+  for (let n = 0; n < 60; n++) {
+    try {
+      if ((await fetch(base + "/api/health")).ok) break;
+    } catch {}
+    await sleep(150);
+  }
+  check((await request("/api/services")).status === 401, "Sin sesión: 401");
+  check((await request("/api/auth/me")).status === 401, "Identidad protegida exige sesión");
+  const anonymous = await request("/api/auth/session");
+  check(
+    anonymous.status === 200 &&
+      anonymous.data.user === null &&
+      Object.keys(anonymous.data).length === 1,
+    "Consulta inicial sin sesión no produce 401 ni expone datos",
+  );
+  check(
+    anonymous.headers
+      .get("cache-control")
+      ?.split(",")
+      .some((value) => value.trim() === "no-store"),
+    "Identidad de sesión no almacenable en caché",
+  );
+  const invalidSession = await request("/api/auth/session", { cookie: "pulso_session=invalid" });
+  check(
+    invalidSession.status === 200 && invalidSession.data.user === null,
+    "Cookie inválida no restaura identidad",
+  );
+  const options = await request("/api/auth/options");
+  check(
+    options.data.claveUnicaEnabled === true && Object.keys(options.data).length === 1,
+    "Opciones públicas sin credenciales",
+  );
+  const oauth = await request("/api/auth/clave-unica");
+  check(oauth.status === 200, "Inicio de ClaveÚnica disponible");
+  const authorization = new URL(oauth.data.url);
+  check(
+    authorization.origin === "https://accounts.claveunica.gob.cl" &&
+      authorization.searchParams.get("scope") === "openid run name",
+    "Proveedor y permisos oficiales",
+  );
+  const oauthCookie = oauth.cookies.map((c) => c.split(";")[0]).join("; ");
+  check(
+    (
+      await request("/api/auth/clave-unica/callback?code=test-code&state=invalid", {
+        cookie: oauthCookie,
+      })
+    ).status === 400,
+    "Estado OAuth incorrecto rechazado",
+  );
+  check(
+    (
+      await request(
+        "/api/auth/clave-unica/callback?code=test-code&state=" +
+          encodeURIComponent(authorization.searchParams.get("state")),
+        { cookie: oauthCookie },
+      )
+    ).status === 400,
+    "Estado OAuth consumido no reutilizable",
+  );
+  const admin = await login("a-admin"),
+    driver = await login("a-driver1"),
+    driver2 = await login("a-driver2"),
+    other = await login("b-admin");
+  check(
+    (await request("/api/auth/me", { cookie: admin })).data.user.role === "ADMIN",
+    "Contrato usuario",
+  );
+  const restored = await request("/api/auth/session", { cookie: admin });
+  check(
+    restored.status === 200 &&
+      restored.data.user.id === "101" &&
+      restored.data.user.establishmentId === "1",
+    "Consulta inicial restaura solo una sesión válida",
+  );
+  check(
+    !("password_hash" in restored.data.user) && !("token_hash" in restored.data.user),
+    "Restauración sin hashes ni credenciales",
+  );
+  check(
+    (await request("/api/auth/me", { cookie: other })).data.user.establishmentTimezone ===
+      "Pacific/Easter",
+    "Zona horaria de cada institución",
+  );
+  check(
+    (await request("/api/admin/drivers", { cookie: driver })).status === 403,
+    "Chofer no consulta administración",
+  );
+  const driverProfilePath = "/api/admin/drivers/102";
+  check((await request(driverProfilePath)).status === 401, "Ficha del chofer exige sesión");
+  check(
+    (await request(driverProfilePath, { cookie: driver })).status === 403,
+    "Ficha administrativa solo para administración",
+  );
+  check(
+    (await request(driverProfilePath, { cookie: other })).status === 404,
+    "Ficha del chofer aislada por institución",
+  );
+  check(
+    (await request("/api/admin/drivers/101", { cookie: admin })).status === 404,
+    "No confundir administrador con chofer",
+  );
+  check(
+    (await request("/api/admin/drivers/missing", { cookie: admin })).status === 404,
+    "Ficha inexistente responde sin datos",
+  );
+  const driverProfile = await request(driverProfilePath, { cookie: admin });
+  check(
+    driverProfile.status === 200 &&
+      driverProfile.data.driver.fullName === "a driver1" &&
+      driverProfile.data.driver.username === "a-driver1" &&
+      driverProfile.data.driver.establishmentName === "Establecimiento a" &&
+      driverProfile.data.driver.active === true,
+    "Datos de identificación del chofer",
+  );
+  check(
+    !JSON.stringify(driverProfile.data).includes("password") &&
+      !JSON.stringify(driverProfile.data).includes("rut") &&
+      !JSON.stringify(driverProfile.data).includes("clave_unica"),
+    "Ficha sin credenciales ni identificadores de autenticación",
+  );
+  const retiredProfile = await request("/api/admin/drivers/105", { cookie: admin });
+  check(
+    retiredProfile.status === 200 && retiredProfile.data.driver.active === false,
+    "Ficha histórica de chofer inactivo consultable por administración",
+  );
+  check(
+    (await request("/api/exports/daily?from=2026-01-01&to=2026-12-31", { cookie: driver }))
+      .status === 403,
+    "Chofer no exporta",
+  );
+  check(
+    (await request("/api/vehicles", { cookie: admin })).data.vehicles.length === 2,
+    "Catálogo aislado",
+  );
+  check(
+    (await request("/api/admin/drivers", { cookie: admin })).data.drivers.length === 3,
+    "Choferes y disponibilidad",
+  );
+  check(
+    (await request("/api/cost-centers", { cookie: admin })).data.costCenters.length === 1,
+    "Centros aislados",
+  );
+  const input = {
+    serviceAddress: "2 Norte 1757, Talca",
+    actionPerformed: "Traslado de personal",
+    vehicleId: "111",
+    costCenterId: "121",
+    startNow: true,
+  };
+  let r = await request("/api/services", { cookie: driver, body: input });
+  assert.equal(r.status, 201, JSON.stringify(r.data));
+  let trip = r.data.entry;
+  const originalId = trip.id;
+  let id = originalId;
+  check(
+    trip.status === "IN_PROGRESS" && trip.legs[0].departureOdometerKm === 1000,
+    "Inicio automático",
+  );
+  check(
+    (await request(driverProfilePath, { cookie: admin })).data.driver.inService === true,
+    "Ficha refleja chofer en servicio",
+  );
+  const bad = await request("/api/services", { cookie: driver2, body: input });
+  check(bad.status === 409, "Vehículo no simultáneo");
+  check(
+    (await request("/api/services/mine", { cookie: driver2 })).data.total === 0,
+    "Inicio fallido revierte creación",
+  );
+  r = await cmd(id, "cancel", trip.version, { reason: "No corresponde" }, admin);
+  check(r.status === 400 && r.data.error === "CANCEL_ONLY_BEFORE_START", "No cancelar iniciado");
+  const stillRunning = (await request("/api/services/" + id, { cookie: admin })).data.entry;
+  check(
+    stillRunning.status === "IN_PROGRESS" &&
+      stillRunning.version === trip.version &&
+      stillRunning.legs[0].endedAt === null,
+    "Cancelación rechazada conserva el viaje en curso",
+  );
+  const busyVehicle = (await request("/api/vehicles", { cookie: admin })).data.vehicles.find(
+    (v) => v.id === "111",
+  );
+  check(
+    (
+      await request("/api/vehicles/" + busyVehicle.id, {
+        cookie: admin,
+        method: "PATCH",
+        body: {
+          expectedUpdatedAt: busyVehicle.updatedAt,
+          currentOdometerKm: 1005,
+          reason: "Lectura contrastada",
+        },
+      })
+    ).status === 409,
+    "No ajustar odómetro durante un viaje",
+  );
+  check(
+    (await cmd(id, "complete", trip.version, { odometerKm: 999 }, driver)).data.error ===
+      "ODOMETER_BELOW_CURRENT",
+    "Km no retroceden",
+  );
+  check(
+    (await cmd(id, "complete", trip.version, { odometerKm: 1001.5 }, driver)).status === 400,
+    "Km enteros",
+  );
+  check(
+    (await cmd(id, "address", trip.version, { serviceAddress: "Otra calle" }, other)).status ===
+      404,
+    "No editar otro establecimiento",
+  );
+  check(
+    (await request(`/api/services/${id}`, { cookie: other })).status === 404,
+    "No leer otro establecimiento",
+  );
+  check(
+    (await request(`/api/services/${id}/audit`, { cookie: other })).status === 404,
+    "No leer auditoría ajena",
+  );
+  check(
+    (
+      await request("/api/services", {
+        cookie: admin,
+        body: { ...input, startNow: false, driverId: "202" },
+      })
+    ).status === 400,
+    "No asignar chofer ajeno",
+  );
+  check(
+    (
+      await request("/api/services", {
+        cookie: admin,
+        body: { ...input, startNow: false, costCenterId: "221" },
+      })
+    ).status === 400,
+    "No asignar centro ajeno",
+  );
+  const badHandover = await cmd(
+    id,
+    "assignment",
+    trip.version,
+    { driverId: "103", vehicleId: "112", odometerKm: 999 },
+    admin,
+  );
+  check(
+    badHandover.status === 400 &&
+      (await request("/api/services/" + id, { cookie: admin })).data.entry.version === trip.version,
+    "Un relevo inválido conserva el viaje abierto",
+  );
+  r = await cmd(
+    id,
+    "assignment",
+    trip.version,
+    { driverId: "103", vehicleId: "112", odometerKm: 1012 },
+    admin,
+  );
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  trip = r.data.entry;
+  check(
+    trip.id === originalId && trip.status === "IN_PROGRESS" && trip.legs.length === 2,
+    "El relevo mantiene el viaje y crea un tramo",
+  );
+  check(
+    trip.legs[0].arrivalOdometerKm === 1012 && trip.legs[1].departureOdometerKm === 50000,
+    "Cada vehículo conserva sus lecturas",
+  );
+  check(
+    (await cmd(id, "complete", trip.version, { odometerKm: 50008 }, driver)).status === 403,
+    "Antiguo chofer no finaliza",
+  );
+  check(
+    (await request("/api/services?vehicleId=111", { cookie: admin })).data.total === 1,
+    "Historial incluye vehículo previo",
+  );
+  const formerDriverTrips = await request("/api/services?driverId=102", { cookie: admin });
+  check(
+    formerDriverTrips.data.total === 1 && formerDriverTrips.data.entries[0].id === originalId,
+    "Historial del chofer muestra el viaje que cerró",
+  );
+  r = await cmd(id, "address", trip.version, { serviceAddress: "1 Sur 1010, Talca" }, admin);
+  trip = r.data.entry;
+  check(
+    trip.addressRevisions[0].address === "1 Sur 1010, Talca" &&
+      trip.addressRevisions[0].actor.fullName === "a admin",
+    "Alerta dirección más reciente",
+  );
+  check(
+    (await cmd(id, "address", 0, { serviceAddress: "Vieja versión" }, admin)).status === 409,
+    "Rechazo de versión antigua",
+  );
+  const outcomes = await Promise.all([
+    cmd(id, "complete", trip.version, { odometerKm: 50008 }, driver2, 8081),
+    cmd(id, "complete", trip.version, { odometerKm: 50009 }, driver2, 8082),
+  ]);
+  check(
+    outcomes.filter((x) => x.status === 200).length === 1 &&
+      outcomes.filter((x) => x.status === 409).length === 1,
+    "Finalización simultánea: un solo ganador",
+  );
+  trip = outcomes.find((x) => x.status === 200).data.entry;
+  check([20, 21].includes(trip.distanceKm), "La distancia suma los tramos de vehículos diferentes");
+  const day = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const period = `from=${day}&to=${day}`;
+  r = await request("/api/cost-centers/summary?" + period, { cookie: admin });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  check(
+    r.data.rows[0].completedKm === trip.distanceKm && r.data.rows[0].completedTrips === 1,
+    "Resumen suma distancia, no odómetros",
+  );
+  r = await request("/api/exports/daily?" + period, { cookie: admin });
+  check(
+    r.data.services.length === 1 &&
+      r.data.legs.length === 2 &&
+      r.data.services.some((s) => s.id === id && s.distanceKm === trip.distanceKm),
+    "Contrato Excel completo",
+  );
+  check(r.data.timezone === "America/Santiago", "Excel recibe la zona horaria del establecimiento");
+  const foreignReport = await request("/api/exports/daily?" + period, { cookie: other });
+  check(
+    foreignReport.data.services.length === 0 && foreignReport.data.timezone === "Pacific/Easter",
+    "Reporte aislado y zona horaria propia",
+  );
+  r = await request("/api/exports/daily-pdf?" + period, { cookie: admin });
+  check(r.status === 200 && r.data.startsWith("%PDF-"), "PDF real con FPDF");
+  r = await request("/api/cost-centers/export-pdf?" + period, { cookie: admin });
+  check(r.status === 200 && r.data.startsWith("%PDF-"), "PDF centros");
+  check(
+    (await request("/api/cost-centers/summary?from=2026-02-30&to=2026-03-10", { cookie: admin }))
+      .status === 400,
+    "Fechas inválidas",
+  );
+  r = await request("/api/services", {
+    cookie: driver,
+    body: { ...input, startNow: false, costCenterId: null },
+  });
+  let pending = r.data.entry;
+  check(
+    pending.status === "ASSIGNED" && pending.costCenter === null,
+    "Guardar con centro indefinido",
+  );
+  check(
+    (await request("/api/services/mine?status=COMPLETED", { cookie: driver })).data.upcoming
+      .length === 1,
+    "Pendientes independientes del filtro",
+  );
+  r = await cmd(
+    pending.id,
+    "cancel",
+    pending.version,
+    { reason: "No se requiere traslado" },
+    admin,
+  );
+  check(r.data.entry.status === "CANCELLED", "Cancelar antes de salir");
+  check(
+    (await request("/api/exports/daily?" + period, { cookie: admin })).data.services.length === 1,
+    "Excel excluye cancelados",
+  );
+  check(
+    (await request("/api/services/mine", { cookie: driver })).data.active.length === 0,
+    "Viaje finalizado libera al chofer",
+  );
+  r = await request("/api/vehicles", { cookie: admin });
+  const v = r.data.vehicles.find((v) => v.id === "111");
+  const historyPath = "/api/vehicles/" + v.id + "/odometer-history";
+  check((await request(historyPath)).status === 401, "Historial de kilometraje exige sesión");
+  check(
+    (await request(historyPath, { cookie: driver })).status === 403,
+    "Chofer no consulta correcciones administrativas",
+  );
+  check(
+    (await request(historyPath, { cookie: other })).status === 404,
+    "Correcciones de otro establecimiento inaccesibles",
+  );
+  check(
+    (await request("/api/vehicles/missing/odometer-history", { cookie: admin })).status === 404,
+    "Vehículo inexistente no expone auditoría",
+  );
+  const initialHistory = await request(historyPath, { cookie: admin });
+  check(
+    initialHistory.status === 200 &&
+      initialHistory.data.total === 0 &&
+      initialHistory.data.corrections.length === 0,
+    "Viajes no aparecen como correcciones administrativas",
+  );
+  const oldHistory = await request("/api/vehicles/112/odometer-history", { cookie: admin });
+  check(
+    oldHistory.status === 200 &&
+      oldHistory.data.total === 1 &&
+      oldHistory.data.corrections[0].reason === "Lectura histórica contrastada",
+    "Recupera correcciones anteriores y excluye cambios de rol",
+  );
+  check(
+    (
+      await request("/api/vehicles/" + v.id, {
+        cookie: other,
+        method: "PATCH",
+        body: { expectedUpdatedAt: v.updatedAt, roleCode: "XXX" },
+      })
+    ).status === 404,
+    "Vehículo ajeno no editable",
+  );
+  check(
+    (
+      await request("/api/vehicles/" + v.id, {
+        cookie: admin,
+        method: "PATCH",
+        body: { expectedUpdatedAt: v.updatedAt, licensePlate: "CHANGED" },
+      })
+    ).status === 400,
+    "Patente inmutable",
+  );
+  for (const [field, value] of Object.entries({
+    roleCode: "OTRO",
+    model: "Otro modelo",
+    year: 2025,
+    vehicleType: "Otro tipo",
+    active: false,
+  })) {
+    const rejected = await request("/api/vehicles/" + v.id, {
+      cookie: admin,
+      method: "PATCH",
+      body: {
+        expectedUpdatedAt: v.updatedAt,
+        currentOdometerKm: 1015,
+        reason: "Intento de cambio",
+        [field]: value,
+      },
+    });
+    check(
+      rejected.status === 400 && rejected.data.error === "IMMUTABLE_VEHICLE_DATA",
+      "Solo kilometraje editable: " + field,
+    );
+  }
+  check(
+    (
+      await request("/api/vehicles/" + v.id, {
+        cookie: admin,
+        method: "PATCH",
+        body: { expectedUpdatedAt: v.updatedAt },
+      })
+    ).status === 400,
+    "No aceptar edición sin kilometraje",
+  );
+  r = await request("/api/vehicles/" + v.id, {
+    cookie: admin,
+    method: "PATCH",
+    body: {
+      expectedUpdatedAt: v.updatedAt,
+      currentOdometerKm: 1015,
+      reason: "Corrección contrastada",
+    },
+  });
+  check(r.status === 200 && r.data.vehicle.currentOdometerKm === 1015, "Ajuste administrativo");
+  const history = await request(historyPath, { cookie: admin });
+  check(
+    history.status === 200 &&
+      history.data.total === 1 &&
+      history.data.corrections[0].previousOdometerKm === v.currentOdometerKm &&
+      history.data.corrections[0].newOdometerKm === 1015,
+    "Corrección conserva lectura anterior y nueva",
+  );
+  check(
+    history.data.corrections[0].reason === "Corrección contrastada" &&
+      history.data.corrections[0].actor.fullName === "a admin" &&
+      Number.isFinite(Date.parse(history.data.corrections[0].createdAt)),
+    "Corrección consultable con motivo, autor y fecha UTC",
+  );
+  check(
+    !JSON.stringify(history.data).includes("password_hash") &&
+      !JSON.stringify(history.data).includes("before_data"),
+    "Historial devuelve solo datos de la corrección",
+  );
+  const emptyPage = await request(historyPath + "?page=2", { cookie: admin });
+  check(
+    emptyPage.data.page === 2 &&
+      emptyPage.data.total === 1 &&
+      emptyPage.data.corrections.length === 0,
+    "Paginación estable de correcciones",
+  );
+  check(
+    r.data.vehicle.roleCode === v.roleCode &&
+      r.data.vehicle.licensePlate === v.licensePlate &&
+      r.data.vehicle.model === v.model &&
+      r.data.vehicle.year === v.year &&
+      r.data.vehicle.vehicleType === v.vehicleType &&
+      r.data.vehicle.active === v.active,
+    "Ajuste de kilometraje conserva datos del vehículo",
+  );
+  check(
+    (
+      await request("/api/vehicles/" + v.id, {
+        cookie: admin,
+        method: "PATCH",
+        body: { expectedUpdatedAt: v.updatedAt, roleCode: "OLD" },
+      })
+    ).status === 409,
+    "Versión vehículo protegida",
+  );
+  const beforeDriverChange = await request("/api/services", { cookie: driver, body: input });
+  assert.equal(beforeDriverChange.status, 201, JSON.stringify(beforeDriverChange.data));
+  const outgoing = beforeDriverChange.data.entry;
+  const driverChange = await cmd(
+    outgoing.id,
+    "assignment",
+    outgoing.version,
+    { driverId: "103", odometerKm: 1020 },
+    admin,
+  );
+  assert.equal(driverChange.status, 200, JSON.stringify(driverChange.data));
+  const incoming = driverChange.data.entry;
+  check(
+    incoming.id === outgoing.id &&
+      incoming.legs[0].arrivalOdometerKm === 1020 &&
+      incoming.legs[1].departureOdometerKm === 1020,
+    "Al cambiar solo de chofer, el siguiente viaje sale con la lectura de cierre",
+  );
+  check(
+    (
+      await cmd(
+        outgoing.id,
+        "assignment",
+        outgoing.version,
+        { driverId: "103", odometerKm: 1020 },
+        admin,
+      )
+    ).status === 409,
+    "Reintentar el mismo relevo no crea otro viaje",
+  );
+  check(
+    (await cmd(incoming.id, "complete", incoming.version, { odometerKm: 1021 }, driver2)).status ===
+      200,
+    "El chofer entrante finaliza su propio viaje",
+  );
+  check(
+    (await request("/api/services", { cookie: admin, origin: "https://untrusted.example" }))
+      .status === 403,
+    "Origen externo rechazado",
+  );
+  r = await request("/api/admin/accounts", { cookie: admin });
+  check(
+    r.status === 200 &&
+      r.data.accounts.some((a) => a.username === "a-driver1" && a.role === "DRIVER") &&
+      !r.data.accounts.some((a) => a.username.startsWith("b-")),
+    "Cuentas de la propia institución",
+  );
+  check(
+    (await request("/api/admin/accounts", { cookie: driver })).status === 403,
+    "Un chofer no administra cuentas",
+  );
+  const newDriver = {
+    fullName: "Chofer Nuevo",
+    username: "a-nuevo",
+    role: "DRIVER",
+    rosterCode: "MOV-NUEVO",
+    password: "clave-inicial-segura",
+  };
+  check(
+    (
+      await request("/api/admin/accounts", {
+        cookie: admin,
+        body: { ...newDriver, password: "corta" },
+      })
+    ).data.error === "PASSWORD_TOO_SHORT",
+    "Contraseña inicial corta rechazada",
+  );
+  check(
+    (
+      await request("/api/admin/accounts", {
+        cookie: admin,
+        body: { ...newDriver, role: "SUPERADMIN" },
+      })
+    ).data.error === "INVALID_ACCOUNT_DATA",
+    "Solo roles operativos",
+  );
+  r = await request("/api/admin/accounts", { cookie: admin, body: newDriver });
+  assert.equal(r.status, 201, JSON.stringify(r.data));
+  check(
+    r.data.account.role === "DRIVER" &&
+      r.data.account.rosterCode === "MOV-NUEVO" &&
+      r.data.account.active,
+    "Crear cuenta de chofer",
+  );
+  check(
+    (await request("/api/admin/accounts", { cookie: admin, body: newDriver })).data.error ===
+      "USERNAME_EXISTS",
+    "Usuario duplicado rechazado",
+  );
+  check(
+    (
+      await request("/api/admin/accounts", {
+        cookie: admin,
+        body: { ...newDriver, username: "a-nuevo2" },
+      })
+    ).data.error === "ROSTER_CODE_EXISTS",
+    "Róster duplicado en la institución rechazado",
+  );
+  check(
+    (
+      await request("/api/admin/accounts", {
+        cookie: other,
+        body: { ...newDriver, username: "b-nuevo" },
+      })
+    ).status === 201,
+    "El mismo róster es válido en otra institución",
+  );
+  check(
+    (await request("/api/admin/drivers", { cookie: admin })).data.drivers.some(
+      (d) => d.fullName === "Chofer Nuevo",
+    ),
+    "El chofer creado queda disponible para asignar",
+  );
+  check(
+    !(await request("/api/admin/drivers", { cookie: other })).data.drivers.some(
+      (d) => d.fullName === "Chofer Nuevo" && d.id === r.data.account.id,
+    ),
+    "Chofer aislado por institución",
+  );
+  r = await request("/api/auth/login", {
+    body: { username: "a-nuevo", password: "clave-inicial-segura" },
+  });
+  check(r.status === 200 && r.data.user.role === "DRIVER", "La cuenta creada puede ingresar");
+  r = await request("/api/admin/accounts", {
+    cookie: admin,
+    body: {
+      fullName: "Jefatura Nueva",
+      username: "a-jefatura",
+      role: "ADMIN",
+      password: "clave-inicial-segura",
+    },
+  });
+  check(
+    r.status === 201 && r.data.account.role === "ADMIN" && r.data.account.rosterCode === null,
+    "Crear cuenta de administración sin róster",
+  );
+  r = await request("/api/setup");
+  check(
+    r.status === 200 && r.data.required === false && r.data.codeFile === undefined,
+    "Configuración cerrada en una instalación existente",
+  );
+  r = await request("/api/setup", {
+    body: {
+      setupCode: "x",
+      establishmentCode: "X",
+      establishmentName: "X",
+      timezone: "America/Santiago",
+      username: "intruso",
+      password: "una-clave-larga-segura",
+    },
+  });
+  check(
+    r.status === 409 && r.data.error === "SETUP_COMPLETED",
+    "No se puede reconfigurar una instalación existente",
+  );
+  check(
+    (await request("/api/services", { cookie: admin, body: { ...input, vehicleId: ["invalid"] } }))
+      .status === 400,
+    "Identificadores malformados rechazados",
+  );
+  check(
+    (
+      await request(`/api/services/${id}/address`, {
+        cookie: admin,
+        body: { serviceAddress: "Dirección sin versión" },
+      })
+    ).status === 400,
+    "Versión obligatoria",
+  );
+  check(
+    (
+      await request("/api/services", {
+        cookie: admin,
+        body: { ...input, startNow: false, serviceAddress: "x".repeat(351) },
+      })
+    ).status === 400,
+    "Longitud máxima validada",
+  );
+  check(
+    (await request("/api/cost-centers/summary?from=2020-01-01&to=2026-12-31", { cookie: admin }))
+      .status === 400,
+    "Máximo 366 días",
+  );
+  check(
+    (
+      await request("/api/vehicles", {
+        cookie: driver,
+        body: { roleCode: "7-99", licensePlate: "TEST" },
+      })
+    ).status === 403,
+    "Alta de vehículo solo administrativa",
+  );
+  r = await request("/api/vehicles", {
+    cookie: admin,
+    body: {
+      roleCode: "7-99",
+      licensePlate: "A-NEW99",
+      model: "Nuevo móvil",
+      make: "Marca de prueba",
+      vehicleType: "Minibús",
+      year: 2025,
+      currentOdometerKm: 0,
+    },
+  });
+  check(
+    r.status === 201 &&
+      r.data.vehicle.model === "Nuevo móvil" &&
+      r.data.vehicle.make === "Marca de prueba" &&
+      r.data.vehicle.vehicleType === "Minibús",
+    "Alta de vehículo con catálogos normalizados",
+  );
+  const race = await Promise.all([
+    request("/api/services", {
+      cookie: driver,
+      body: { ...input, vehicleId: r.data.vehicle.id },
+      port: 8081,
+    }),
+    request("/api/services", {
+      cookie: driver2,
+      body: { ...input, vehicleId: r.data.vehicle.id },
+      port: 8082,
+    }),
+  ]);
+  check(
+    race.filter((x) => x.status === 201).length === 1 &&
+      race.filter((x) => x.status === 409).length === 1,
+    "Inicio simultáneo sobre un vehículo: un solo ganador",
+  );
+  for (let n = 0; n < 31; n++) {
+    const p = await request("/api/services", {
+      cookie: other,
+      body: {
+        serviceAddress: "1 Norte 1990, Talca",
+        actionPerformed: "Servicio pendiente " + n,
+        costCenterId: null,
+      },
+    });
+    assert.equal(p.status, 201);
+  }
+  const first = await request("/api/services?page=1", { cookie: other }),
+    second = await request("/api/services?page=2", { cookie: other });
+  check(
+    first.data.entries.length === 30 && second.data.entries.length === 1 && first.data.total === 31,
+    "Paginación compatible con el panel",
+  );
+  check(
+    !first.data.entries.some((x) => second.data.entries.some((y) => x.id === y.id)),
+    "Páginas sin registros repetidos",
+  );
+  await request("/api/auth/logout", { cookie: driver, body: {} });
+  check(
+    (await request("/api/auth/me", { cookie: driver })).status === 401,
+    "Logout invalida sesión",
+  );
+  const revoked = await request("/api/auth/session", { cookie: driver });
+  check(revoked.status === 200 && revoked.data.user === null, "Sesión revocada no se restaura");
+  for (let n = 0; n < 5; n++)
+    check(
+      (
+        await request("/api/auth/login", {
+          body: { username: "a-driver3", password: "wrong-password" },
+        })
+      ).status === 401,
+      "Intento fallido registrado",
+    );
+  check(
+    (
+      await request("/api/auth/login", {
+        body: { username: "a-driver3", password: "test-password" },
+      })
+    ).status === 423,
+    "Bloqueo de intentos persiste tras respuesta de error",
+  );
   console.log(`PHP/MySQL: ${checks} verificaciones de integración correctas.`);
-} catch(e) { console.error(e); console.error(stderr.slice(-1800)); process.exitCode=1; }
-finally {servers.forEach(s=>s.kill());}
+} catch (e) {
+  console.error(e);
+  console.error(stderr.slice(-1800));
+  process.exitCode = 1;
+} finally {
+  servers.forEach((s) => s.kill());
+}

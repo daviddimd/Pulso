@@ -17,11 +17,14 @@ class HealthController extends BaseApiController
         }
 
         $status = $dbOk ? 200 : 503;
-        return $this->jsonResponse([
-            'status'    => $dbOk ? 'ok' : 'degraded',
-            'database'  => $dbOk ? 'connected' : 'error',
-            'timestamp' => date('c'),
-            'system'    => 'Pulso API (CodeIgniter 4)',
-        ], $status);
+        return $this->jsonResponse(
+            [
+                'status' => $dbOk ? 'ok' : 'degraded',
+                'database' => $dbOk ? 'connected' : 'error',
+                'timestamp' => date('c'),
+                'system' => 'Pulso API (CodeIgniter 4)',
+            ],
+            $status,
+        );
     }
 }

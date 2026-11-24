@@ -1,0 +1,7 @@
+apps/api-php/app/Config/
+apps/api-php/app/Views/
+apps/api-php/vendor/
+apps/api-php/public/
+apps/api-php/writable/
+apps/web/node_modules/
+apps/web/dist/

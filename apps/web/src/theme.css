@@ -2,7 +2,7 @@
   color-scheme: light;
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   color-scheme: dark;
   --color-bg: #101c21;
   --color-surface: #192b31;

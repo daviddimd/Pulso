@@ -8,7 +8,9 @@
     "build": "node scripts/build.mjs",
     "php": "node scripts/php.mjs",
     "test": "node --test scripts/test-session.mjs && node scripts/test-api.mjs",
-    "lint": "npm --prefix apps/web run lint"
+    "lint": "npm --prefix apps/web run lint",
+    "format": "prettier --write \"apps/api-php/app/**/*.php\" \"apps/web/src/**/*.{ts,tsx,css}\" \"scripts/*.mjs\" docs/exportar_esquema.php",
+    "format:check": "prettier --check \"apps/api-php/app/**/*.php\" \"apps/web/src/**/*.{ts,tsx,css}\" \"scripts/*.mjs\" docs/exportar_esquema.php"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +18,9 @@
   "type": "commonjs",
   "engines": {
     "node": ">=24.22.1 <25"
+  },
+  "devDependencies": {
+    "@prettier/plugin-php": "0.26.0",
+    "prettier": "3.10.1"
   }
 }

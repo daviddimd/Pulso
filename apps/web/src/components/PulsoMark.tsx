@@ -4,18 +4,10 @@ type PulsoMarkProps = {
   size?: "small" | "medium" | "large";
 };
 
-export function PulsoMark({
-  size = "medium",
-}: PulsoMarkProps) {
+export function PulsoMark({ size = "medium" }: PulsoMarkProps) {
   return (
-    <span
-      className={`pulso-mark pulso-mark--${size}`}
-      aria-hidden="true"
-    >
-      <svg
-        viewBox="0 0 48 48"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+    <span className={`pulso-mark pulso-mark--${size}`} aria-hidden="true">
+      <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <polyline
           points="
             5,25

@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Inter Variable', Inter, 'Segoe UI', sans-serif;
+  font-family: "Inter Variable", Inter, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -29,8 +29,8 @@
   --radius-large: 16px;
   --shadow-soft: 0 2px 3px #112c3404, 0 8px 28px #112c3406;
   --shadow-popover: 0 0 0 1px #112c340a, 0 8px 32px #112c341c;
-  --ease-out: cubic-bezier(.23, 1, .32, 1);
-  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   color: var(--color-text);
   background: var(--color-bg);
 }
@@ -48,7 +48,8 @@ html {
   overscroll-behavior-y: none;
 }
 
-body, #root {
+body,
+#root {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
@@ -62,7 +63,10 @@ body {
   line-height: 1.5;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -71,7 +75,9 @@ button {
   cursor: pointer;
 }
 
-button, [role='button'], summary {
+button,
+[role="button"],
+summary {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
@@ -79,7 +85,7 @@ button, [role='button'], summary {
 
 button:disabled {
   cursor: not-allowed;
-  opacity: .48;
+  opacity: 0.48;
 }
 
 a {
@@ -87,43 +93,57 @@ a {
   text-underline-offset: 4px;
 }
 
-button, a {
+button,
+a {
   -webkit-tap-highlight-color: transparent;
 }
 
-button:focus-visible, a:focus-visible, summary:focus-visible {
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 4px;
 }
 
 button {
-  transition: transform 120ms var(--ease-out), background-color 120ms ease, color 120ms ease;
+  transition:
+    transform 120ms var(--ease-out),
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 button:active:not(:disabled) {
-  transform: scale(.98);
+  transform: scale(0.98);
 }
 
 button:focus-visible {
   transition: none;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   min-width: 0;
   font-size: 16px;
   accent-color: var(--color-primary);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--color-text-muted);
-  opacity: .9;
+  opacity: 0.9;
 }
 
-h1, h2, h3, p {
+h1,
+h2,
+h3,
+p {
   overflow-wrap: anywhere;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   text-wrap: balance;
 }
 
@@ -144,14 +164,16 @@ button .ui-icon {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation: none !important;
     scroll-behavior: auto !important;
     transition: none !important;
   }
 }
 
-@media(prefers-reduced-motion:reduce) {
+@media (prefers-reduced-motion: reduce) {
   button:active:not(:disabled) {
     transform: none;
   }

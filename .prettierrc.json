@@ -1,0 +1,10 @@
+{
+  "printWidth": 100,
+  "plugins": ["@prettier/plugin-php"],
+  "overrides": [
+    {
+      "files": "*.php",
+      "options": { "singleQuote": true, "phpVersion": "8.3", "tabWidth": 4 }
+    }
+  ]
+}

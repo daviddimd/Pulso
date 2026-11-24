@@ -10,9 +10,7 @@ import "./theme.css";
 
 initializeTheme();
 
-createRoot(
-  document.getElementById("root")!,
-).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>,

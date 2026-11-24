@@ -37,9 +37,6 @@ class RateLimitFilter implements FilterInterface
             $remaining = self::MAX_REQUESTS - $current - 1;
         }
 
-        // Pass headers downstream via response somehow, but in before() we can't easily set response headers
-        // We will store them in the request to be applied in after() if needed, but for simplicity
-        // setting them dynamically in CI4 usually requires an after() filter.
         $request->setHeader('X-RateLimit-Remaining-Internal', (string) $remaining);
     }
 

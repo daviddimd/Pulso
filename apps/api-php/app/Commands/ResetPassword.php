@@ -14,20 +14,34 @@ final class ResetPassword extends BaseCommand
 
     public function run(array $params)
     {
-        if (count($params) !== 1) { CLI::error($this->usage); return EXIT_ERROR; }
-        // An environment variable keeps the password out of the command history.
+        if (count($params) !== 1) {
+            CLI::error($this->usage);
+            return EXIT_ERROR;
+        }
+
         $password = getenv('PULSO_NEW_PASSWORD') ?: '';
         try {
             $user = UserAccounts::resetPassword(Database::connect(), $params[0], $password);
-            CLI::write("Contraseña restablecida para {$user['username']} ({$user['role']}). Sus sesiones abiertas se cerraron.", 'green');
-            if (!$user['active']) CLI::write('La cuenta está desactivada; no podrá ingresar hasta reactivarla.', 'yellow');
+            CLI::write(
+                "Contraseña restablecida para {$user['username']} ({$user['role']}). " .
+                    'Sus sesiones abiertas se cerraron.',
+                'green',
+            );
+            if (!$user['active']) {
+                CLI::write(
+                    'La cuenta está desactivada; no podrá ingresar hasta reactivarla.',
+                    'yellow',
+                );
+            }
             return EXIT_SUCCESS;
         } catch (\DomainException $e) {
-            CLI::error(match ($e->getMessage()) {
-                'PASSWORD_TOO_SHORT' => 'Define PULSO_NEW_PASSWORD con al menos 12 caracteres.',
-                'USER_NOT_FOUND' => 'No existe una cuenta con ese usuario.',
-                default => 'No se pudo restablecer la contraseña.',
-            });
+            CLI::error(
+                match ($e->getMessage()) {
+                    'PASSWORD_TOO_SHORT' => 'Define PULSO_NEW_PASSWORD con al menos 12 caracteres.',
+                    'USER_NOT_FOUND' => 'No existe una cuenta con ese usuario.',
+                    default => 'No se pudo restablecer la contraseña.',
+                },
+            );
             return EXIT_ERROR;
         } finally {
             putenv('PULSO_NEW_PASSWORD');
