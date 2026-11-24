@@ -161,3 +161,13 @@ Precondición: Acceso autorizado a consola del servidor.
 Flujo: Ejecutar pulso:clave con el usuario; la contraseña nueva se entrega por variable de entorno. Desbloquea la cuenta y cierra sus sesiones.
 
 Excepciones: Contraseña de menos de 12 caracteres o usuario inexistente: rechazo. Las contraseñas no se recuperan; solo se reemplazan. Queda registrado en la auditoría.
+
+## CU-17 Agregar parada durante el viaje
+
+Actores: Administración
+
+Precondición: Viaje pendiente, asignado o en curso de la institución y versión vigente.
+
+Flujo: Ingresar la dirección y la tarea de la parada; se agrega al final de la ruta con quién la registró y cuándo, se guarda la nueva ruta como revisión y el chofer recibe el aviso.
+
+Excepciones: Viaje finalizado o cancelado, más de 10 paradas o datos incompletos: rechazo. El chofer no agrega paradas; las solicita a administración.

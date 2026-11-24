@@ -205,9 +205,14 @@ CREATE TABLE `viajes_destinos` (
   `id_viaje` int unsigned NOT NULL,
   `orden` smallint unsigned NOT NULL,
   `direccion` varchar(350) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `actividad` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_usuario_registro` int unsigned DEFAULT NULL,
+  `fecha_registro` datetime(3) DEFAULT NULL,
   PRIMARY KEY (`id_viaje_destino`),
   UNIQUE KEY `uq_id_viaje_orden` (`id_viaje`,`orden`),
   KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),
+  KEY `fk_destino_usuario_registro` (`id_usuario_registro`),
+  CONSTRAINT `fk_destino_usuario_registro` FOREIGN KEY (`id_usuario_registro`) REFERENCES `usuarios` (`id_usuario`),
   CONSTRAINT `fk_destino_viaje` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`) ON DELETE CASCADE,
   CONSTRAINT `viajes_destinos_chk_1` CHECK ((`orden` >= 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

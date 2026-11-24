@@ -94,7 +94,7 @@ q
 1 0 0 1 46 563.8898 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Rama hospital-v2, revisi\001n de Git a85d609adfe431bc4870fe546b57814ec1592e1d. Incluye los cambios) Tj T* (solicitados por TI sobre instituci\001n heredada, tramos, cat\004logos, r\001ster y aislamiento de la auditor\005a. Los archivos) Tj T* (y sus hashes se incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.) Tj T* ET
+BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Rama hospital-v2, revisi\001n de Git 62769f64e29c48fb8deab65c1a99cd0a00c88342. Incluye los cambios) Tj T* (solicitados por TI sobre instituci\001n heredada, tramos, cat\004logos, r\001ster y aislamiento de la auditor\005a. Los archivos) Tj T* (y sus hashes se incluyen en inventario-auditado.json. No se publica ni cambia la base productiva.) Tj T* ET
 Q
 Q
 q
@@ -1011,7 +1011,7 @@ endobj
 endobj
 21 0 obj
 <<
-/Length 6279
+/Length 6277
 >>
 stream
 q
@@ -1093,7 +1093,7 @@ q
 1 0 0 1 267 54 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Actores, frontera del sistema y diecis\002is casos con flujos y) Tj T* (excepciones. Fuente: 03-Pulso-Casos-de-Uso-UML.pdf) Tj T* ET
+BT 1 0 0 1 0 14 Tm /F2+0 8 Tf 11 TL (Actores, frontera del sistema y diecisiete casos con flujos y) Tj T* (excepciones. Fuente: 03-Pulso-Casos-de-Uso-UML.pdf) Tj T* ET
 Q
 Q
 q
@@ -2235,25 +2235,25 @@ xref
 0000120556 00000 n 
 0000121323 00000 n 
 0000121599 00000 n 
-0000127931 00000 n 
-0000128039 00000 n 
-0000129130 00000 n 
-0000129373 00000 n 
-0000167099 00000 n 
-0000167844 00000 n 
-0000168120 00000 n 
-0000175349 00000 n 
-0000175457 00000 n 
-0000176548 00000 n 
-0000176791 00000 n 
-0000214517 00000 n 
-0000215262 00000 n 
-0000215538 00000 n 
-0000216957 00000 n 
-0000217065 00000 n 
-0000218156 00000 n 
-0000218399 00000 n 
-0000256125 00000 n 
+0000127929 00000 n 
+0000128037 00000 n 
+0000129128 00000 n 
+0000129371 00000 n 
+0000167097 00000 n 
+0000167842 00000 n 
+0000168118 00000 n 
+0000175347 00000 n 
+0000175455 00000 n 
+0000176546 00000 n 
+0000176789 00000 n 
+0000214515 00000 n 
+0000215260 00000 n 
+0000215536 00000 n 
+0000216955 00000 n 
+0000217063 00000 n 
+0000218154 00000 n 
+0000218397 00000 n 
+0000256123 00000 n 
 trailer
 <<
 /Size 41
@@ -2261,5 +2261,5 @@ trailer
 /Info 1 0 R
 >>
 startxref
-256870
+256868
 %%EOF

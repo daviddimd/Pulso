@@ -60,7 +60,7 @@ Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
 DOC-03: Casos de uso UML.
 Estado: Entregado
-Actores, frontera del sistema y dieciséis casos con flujos y excepciones.
+Actores, frontera del sistema y diecisiete casos con flujos y excepciones.
 Evidencia: 03-Pulso-Casos-de-Uso-UML.pdf
 
 DOC-04: Copia de requerimientos levantados; MoSCoW deseable.

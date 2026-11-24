@@ -14,7 +14,7 @@ usuarios hereda id_establecimiento desde funcionarios. El traslado del funcionar
 
 viajes almacena el propósito, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.
 
-viajes_destinos guarda las direcciones del viaje en orden de recorrido (orden 1, 2, 3…), con hasta 10 paradas, orden único por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. La ruta completa se muestra unida en el orden de sus paradas, y cada corrección guarda la ruta anterior en revisiones_direccion.
+viajes_destinos guarda las direcciones del viaje en orden de recorrido (orden 1, 2, 3…), con hasta 10 paradas, orden único por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. Durante el viaje, administración puede agregar una parada al final de la ruta con su propia actividad; id_usuario_registro y fecha_registro indican quién la agregó y cuándo, y el chofer recibe el aviso. La ruta completa se muestra unida en el orden de sus paradas, y cada corrección guarda la ruta anterior en revisiones_direccion.
 
 El relevo cierra el tramo vigente, actualiza el odómetro del vehículo saliente y abre otro tramo en el mismo viaje. La operación es transaccional y exige la versión vigente. El folio, la fecha inicial y el centro de costos del viaje se conservan.
 

@@ -88,18 +88,18 @@
       <bpmn:incoming>Ejecutar_f4</bpmn:incoming>
       <bpmn:outgoing>Ejecutar_f1</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Ejecutar_relevoQ" name="¿Se necesita reasignación?">
+    <bpmn:exclusiveGateway id="Ejecutar_relevoQ" name="¿Relevo o parada adicional?">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Ejecutar_f1</bpmn:incoming>
       <bpmn:outgoing>Ejecutar_f2</bpmn:outgoing>
       <bpmn:outgoing>Ejecutar_f5</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Ejecutar_reasignar" name="Administración: elegir recursos y registrar km del relevo">
+    <bpmn:userTask id="Ejecutar_reasignar" name="Administración: registrar relevo o parada con su tarea">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Ejecutar_f2</bpmn:incoming>
       <bpmn:outgoing>Ejecutar_f3</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:serviceTask id="Ejecutar_reabrir" name="Sistema: cerrar tramo y abrir el siguiente">
+    <bpmn:serviceTask id="Ejecutar_reabrir" name="Sistema: cambiar tramo o agregar parada y avisar">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Ejecutar_f3</bpmn:incoming>
       <bpmn:outgoing>Ejecutar_f4</bpmn:outgoing>

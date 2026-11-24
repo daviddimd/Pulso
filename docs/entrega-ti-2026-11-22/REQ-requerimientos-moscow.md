@@ -94,7 +94,7 @@ Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
 Estado: Entregado
 
-Criterio: Actores, frontera del sistema y dieciséis casos con flujos y excepciones.
+Criterio: Actores, frontera del sistema y diecisiete casos con flujos y excepciones.
 
 Evidencia: 03-Pulso-Casos-de-Uso-UML.pdf
 
@@ -198,7 +198,7 @@ Evidencia: repositorio de cuentas; sección Cuentas; pruebas API
 
 Estado: Verificado local
 
-Criterio: Hasta 10 paradas por viaje en viajes_destinos, ordenadas y únicas por viaje. Administración puede agregar, quitar o corregir paradas; cada cambio queda como revisión de la ruta y el chofer recibe el aviso. El enlace a Maps abre la ruta completa.
+Criterio: Hasta 10 paradas por viaje en viajes_destinos, ordenadas y únicas por viaje. Con el viaje pendiente, asignado o en curso, administración puede agregar una parada con su propia tarea, registrando quién y cuándo. También puede agregar, quitar o corregir paradas; cada cambio queda como revisión de la ruta y el chofer recibe el aviso. El enlace a Maps abre la ruta completa.
 
 Evidencia: motor de viajes; campo de destinos; pruebas API
 

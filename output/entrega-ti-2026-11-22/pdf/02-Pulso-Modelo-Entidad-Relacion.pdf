@@ -44,7 +44,7 @@ endobj
 endobj
 5 0 obj
 <<
-/Length 12657
+/Length 12877
 >>
 stream
 q
@@ -496,15 +496,15 @@ BT 1 0 0 1 811 227 Tm /F3+0 11 Tf 13.2 TL (alias de folio previo) Tj T* ET
 .141176 .34902 .4 RG
 1 w
 n
-350 39 m
-623 39 l
-623 39 623 39 623 39 c
+350 7 m
+623 7 l
+623 7 623 7 623 7 c
 623 160 l
 623 160 623 160 623 160 c
 350 160 l
 350 160 350 160 350 160 c
-350 39 l
-350 39 350 39 350 39 c
+350 7 l
+350 7 350 7 350 7 c
 h
 B*
 .933333 .956863 .956863 rg
@@ -527,13 +527,17 @@ BT 1 0 0 1 360 142 Tm /F2+0 13 Tf 15.6 TL (viajes_destinos) Tj T* ET
 .098039 .235294 .27451 rg
 BT 1 0 0 1 360 115 Tm /F2+0 11 Tf 13.2 TL (PK  id_viaje_destino) Tj T* ET
 .098039 .235294 .27451 rg
-BT 1 0 0 1 360 99 Tm /F3+0 11 Tf 13.2 TL (FK  id_establecimiento) Tj T* ET
+BT 1 0 0 1 360 99 Tm /F3+0 11 Tf 13.2 TL (FK  id_usuario_registro) Tj T* ET
 .098039 .235294 .27451 rg
-BT 1 0 0 1 360 83 Tm /F3+0 11 Tf 13.2 TL (FK  id_viaje) Tj T* ET
+BT 1 0 0 1 360 83 Tm /F3+0 11 Tf 13.2 TL (FK  id_establecimiento) Tj T* ET
 .098039 .235294 .27451 rg
-BT 1 0 0 1 360 67 Tm /F3+0 11 Tf 13.2 TL (orden \(\001nico por viaje\)) Tj T* ET
+BT 1 0 0 1 360 67 Tm /F3+0 11 Tf 13.2 TL (FK  id_viaje) Tj T* ET
 .098039 .235294 .27451 rg
-BT 1 0 0 1 360 51 Tm /F3+0 11 Tf 13.2 TL (direccion) Tj T* ET
+BT 1 0 0 1 360 51 Tm /F3+0 11 Tf 13.2 TL (orden \(\001nico por viaje\)) Tj T* ET
+.098039 .235294 .27451 rg
+BT 1 0 0 1 360 35 Tm /F3+0 11 Tf 13.2 TL (direccion / actividad) Tj T* ET
+.098039 .235294 .27451 rg
+BT 1 0 0 1 360 19 Tm /F3+0 11 Tf 13.2 TL (id_usuario_registro / fecha_registro) Tj T* ET
 Q
 BT 1 0 0 1 36 65 Tm /F3+0 9 Tf 10.8 TL (Padre : hijos. La pertenencia de tramos y revisiones al viaje se protege mediante FK compuesta con id_establecimiento.) Tj T* ET
 BT 1 0 0 1 36 51 Tm /F3+0 9 Tf 10.8 TL (Usuarios \002 viajes representa chofer asignado y autor. Usuarios \002 tramos representa participaci\003n efectiva.) Tj T* ET
@@ -7261,7 +7265,7 @@ endobj
 endobj
 86 0 obj
 <<
-/Length 10540
+/Length 7957
 >>
 stream
 q
@@ -7820,203 +7824,6 @@ Q
 q
 1 0 0 1 46 258.8898 cm
 Q
-q
-1 0 0 1 46 230.8898 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 4 Tm /F3+0 12 Tf 16 TL (viajes_destinos) Tj T* ET
-Q
-Q
-q
-1 0 0 1 46 74.88976 cm
-q
-.141176 .34902 .4 rg
-n 0 150 515 -25 re f*
-1 1 1 rg
-n 0 125 515 -25 re f*
-.933333 .956863 .956863 rg
-n 0 100 515 -25 re f*
-1 1 1 rg
-n 0 75 515 -25 re f*
-.933333 .956863 .956863 rg
-n 0 50 515 -25 re f*
-1 1 1 rg
-n 0 25 515 -25 re f*
-1 1 1 rg
-BT /F1 10 Tf 12 TL ET
-q
-1 0 0 1 7 132 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Columna) Tj T* ET
-Q
-Q
-q
-1 0 0 1 152 132 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Tipo) Tj T* ET
-Q
-Q
-q
-1 0 0 1 287 132 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Nulo) Tj T* ET
-Q
-Q
-q
-1 0 0 1 322 132 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Clave / referencia) Tj T* ET
-Q
-Q
-0 0 0 rg
-q
-1 0 0 1 7 107 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_viaje_destino) Tj T* ET
-Q
-Q
-q
-1 0 0 1 152 107 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
-Q
-Q
-q
-1 0 0 1 287 107 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
-Q
-Q
-q
-1 0 0 1 322 107 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (PK autoincremental) Tj T* ET
-Q
-Q
-q
-1 0 0 1 7 82 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_establecimiento) Tj T* ET
-Q
-Q
-q
-1 0 0 1 152 82 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
-Q
-Q
-q
-1 0 0 1 287 82 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
-Q
-Q
-q
-1 0 0 1 322 82 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (\004ndice FK viajes.id_establecimiento) Tj T* ET
-Q
-Q
-q
-1 0 0 1 7 57 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_viaje) Tj T* ET
-Q
-Q
-q
-1 0 0 1 152 57 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
-Q
-Q
-q
-1 0 0 1 287 57 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
-Q
-Q
-q
-1 0 0 1 322 57 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (\004ndice FK viajes.id_viaje) Tj T* ET
-Q
-Q
-q
-1 0 0 1 7 32 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (orden) Tj T* ET
-Q
-Q
-q
-1 0 0 1 152 32 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (smallint unsigned) Tj T* ET
-Q
-Q
-q
-1 0 0 1 287 32 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
-Q
-Q
-q
-1 0 0 1 322 43 cm
-Q
-q
-1 0 0 1 7 7 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (direccion) Tj T* ET
-Q
-Q
-q
-1 0 0 1 152 7 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (varchar\(350\)) Tj T* ET
-Q
-Q
-q
-1 0 0 1 287 7 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
-Q
-Q
-q
-1 0 0 1 322 18 cm
-Q
-q
-1 J
-1 j
-.141176 .34902 .4 RG
-.6 w
-n 0 125 m 515 125 l S
-Q
-Q
-Q
-q
-1 0 0 1 46 64.88976 cm
-Q
  
 
 Q
@@ -8262,7 +8069,7 @@ endobj
 endobj
 93 0 obj
 <<
-/Length 5970
+/Length 9680
 >>
 stream
 q
@@ -8274,11 +8081,290 @@ q
 1 0 0 1 46 771.8898 cm
 q
 0 0 0 rg
+BT 1 0 0 1 0 4 Tm /F3+0 12 Tf 16 TL (viajes_destinos) Tj T* ET
+Q
+Q
+q
+1 0 0 1 46 540.8898 cm
+q
+.141176 .34902 .4 rg
+n 0 225 515 -25 re f*
+1 1 1 rg
+n 0 200 515 -25 re f*
+.933333 .956863 .956863 rg
+n 0 175 515 -25 re f*
+1 1 1 rg
+n 0 150 515 -25 re f*
+.933333 .956863 .956863 rg
+n 0 125 515 -25 re f*
+1 1 1 rg
+n 0 100 515 -25 re f*
+.933333 .956863 .956863 rg
+n 0 75 515 -25 re f*
+1 1 1 rg
+n 0 50 515 -25 re f*
+.933333 .956863 .956863 rg
+n 0 25 515 -25 re f*
+1 1 1 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 7 207 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Columna) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 207 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Tipo) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 207 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Nulo) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 207 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (Clave / referencia) Tj T* ET
+Q
+Q
+0 0 0 rg
+q
+1 0 0 1 7 182 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_viaje_destino) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 182 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 182 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 182 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (PK autoincremental) Tj T* ET
+Q
+Q
+q
+1 0 0 1 7 157 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_establecimiento) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 157 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 157 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 157 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (\004ndice FK viajes.id_establecimiento) Tj T* ET
+Q
+Q
+q
+1 0 0 1 7 132 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_viaje) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 132 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 132 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 132 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (\004ndice FK viajes.id_viaje) Tj T* ET
+Q
+Q
+q
+1 0 0 1 7 107 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (orden) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 107 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (smallint unsigned) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 107 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 118 cm
+Q
+q
+1 0 0 1 7 82 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (direccion) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 82 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (varchar\(350\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 82 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (No) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 93 cm
+Q
+q
+1 0 0 1 7 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (actividad) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (varchar\(250\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 57 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (S\003) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 68 cm
+Q
+q
+1 0 0 1 7 32 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (id_usuario_registro) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 32 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (int unsigned) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 32 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (S\003) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 32 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (\004ndice FK usuarios.id_usuario) Tj T* ET
+Q
+Q
+q
+1 0 0 1 7 7 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (fecha_registro) Tj T* ET
+Q
+Q
+q
+1 0 0 1 152 7 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (datetime\(3\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 287 7 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 3 Tm /F2+0 8 Tf 11 TL (S\003) Tj T* ET
+Q
+Q
+q
+1 0 0 1 322 18 cm
+Q
+q
+1 J
+1 j
+.141176 .34902 .4 RG
+.6 w
+n 0 200 m 515 200 l S
+Q
+Q
+Q
+q
+1 0 0 1 46 530.8898 cm
+Q
+q
+1 0 0 1 46 502.8898 cm
+q
+0 0 0 rg
 BT 1 0 0 1 0 4 Tm /F3+0 12 Tf 16 TL (viajes_tramos) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 429.8898 cm
+1 0 0 1 46 160.8898 cm
 q
 .141176 .34902 .4 rg
 n 0 336 515 -25 re f*
@@ -8667,7 +8753,7 @@ Q
 Q
 Q
 q
-1 0 0 1 46 419.8898 cm
+1 0 0 1 46 150.8898 cm
 Q
  
 
@@ -8914,7 +9000,7 @@ endobj
 endobj
 100 0 obj
 <<
-/Length 6189
+/Length 6430
 >>
 stream
 q
@@ -8951,70 +9037,70 @@ BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (viajes almacena el prop\001sito, estado, f
 Q
 Q
 q
-1 0 0 1 46 570.8898 cm
+1 0 0 1 46 556.8898 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 46 Tm /F2+0 10 Tf 14 TL (viajes_destinos guarda las direcciones del viaje en orden de recorrido \(orden 1, 2, 3\006\), con hasta 10 paradas,) Tj T* (orden \007nico por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. La ruta) Tj T* (completa se muestra unida en el orden de sus paradas, y cada correcci\001n guarda la ruta anterior en) Tj T* (revisiones_direccion.) Tj T* ET
+BT 1 0 0 1 0 60 Tm /F2+0 10 Tf 14 TL (viajes_destinos guarda las direcciones del viaje en orden de recorrido \(orden 1, 2, 3\006\), con hasta 10 paradas,) Tj T* (orden \007nico por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. Durante el) Tj T* (viaje, administraci\001n puede agregar una parada al final de la ruta con su propia actividad; id_usuario_registro y) Tj T* -0.077395 Tw (fecha_registro indican qui\002n la agreg\001 y cu\010ndo, y el chofer recibe el aviso. La ruta completa se muestra unida en) Tj T* 0 Tw (el orden de sus paradas, y cada correcci\001n guarda la ruta anterior en revisiones_direccion.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 521.8898 cm
+1 0 0 1 46 507.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (El relevo cierra el tramo vigente, actualiza el od\001metro del veh\003culo saliente y abre otro tramo en el mismo viaje.) Tj T* (La operaci\001n es transaccional y exige la versi\001n vigente. El folio, la fecha inicial y el centro de costos del viaje se) Tj T* (conservan.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 472.8898 cm
+1 0 0 1 46 458.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (viajes_tramos contiene id_viaje, id_chofer, id_vehiculo, fecha_inicio, fecha_fin, odometro_inicio y odometro_fin.) Tj T* (Sus columnas generadas id_chofer_activo, id_vehiculo_activo y id_viaje_activo son generadas y almacenadas,) Tj T* (tienen \003ndice \007nico y se activan cuando fecha_fin est\010 vac\003a.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 353.8898 cm
+1 0 0 1 46 339.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 102 Tm /F2+0 10 Tf 14 TL (Fuente \007nica de verdad \(informe del 09-11, secci\001n 3\): viajes_tramos es la \007nica fuente de los recursos) Tj T* (efectivamente usados \(chofer, veh\003culo, fecha_inicio y fecha_fin\) y de los kil\001metros recorridos. viajes.id_chofer y) Tj T* (id_vehiculo registran la asignaci\001n planificada, necesaria antes de que exista un tramo; durante el viaje la) Tj T* (aplicaci\001n los iguala al tramo vigente en la misma transacci\001n del relevo, y los informes de participaci\001n se) Tj T* (calculan desde los tramos. viajes.odometro_salida y odometro_llegada son la lectura global de salida y llegada) Tj T* (que pidi\001 la segunda revisi\001n; no se restan para obtener distancia. vehiculos.odometro_actual es estado) Tj T* -0.078168 Tw (derivado: la aplicaci\001n lo actualiza al cerrar cada tramo, en la misma transacci\001n, y rechaza lecturas menores a la) Tj T* 0 Tw (vigente.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 290.8898 cm
+1 0 0 1 46 276.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 46 Tm /F2+0 10 Tf 14 TL (Los kil\001metros del viaje son la suma de odometro_fin menos odometro_inicio de sus tramos. Si falta una lectura,) Tj T* (el total es desconocido. Las lecturas globales de cabecera son referencias al primer y \007ltimo veh\003culo y no se) Tj T* (restan para obtener distancia. Excepci\001n: un viaje hist\001rico sin tramos us\001 un solo veh\003culo, por lo que su) Tj T* (distancia es la diferencia de esas lecturas.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 227.8898 cm
+1 0 0 1 46 213.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 46 Tm -0.094127 Tw /F2+0 10 Tf 14 TL (Nomenclatura \(informe del 09-11, secci\001n 1\): todas las tablas, columnas, \003ndices y restricciones usan nombres en) Tj T* 0 Tw (espa\011ol. Las PK siguen el formato id_[tabla], las FK id_[tabla referida], las fechas fecha_* y las lecturas) Tj T* (odometro_*. La migraci\001n migraci\001n de nomenclatura en espa\011ol renombr\001 las columnas sin alterar datos; los) Tj T* (\003ndices se nombran uq_ o ix_ seguidos de sus columnas.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 178.8898 cm
+1 0 0 1 46 164.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 32 Tm /F2+0 10 Tf 14 TL (Cada tramo, revisi\001n y registro de auditor\003a contiene id_establecimiento. Las FK compuestas impiden vincular) Tj T* (tramos y revisiones a un viaje de otra instituci\001n. Las consultas operativas y de auditor\003a incluyen el filtro) Tj T* (institucional.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 143.8898 cm
+1 0 0 1 46 129.8898 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 18 Tm /F2+0 10 Tf 14 TL (usuarios no guarda el c\001digo de r\001ster: funcionarios.codigo_roster es \007nico por establecimiento, de modo que la) Tj T* (regla se mantiene tambi\002n al trasladar a un funcionario.) Tj T* ET
 Q
 Q
 q
-1 0 0 1 46 108.8898 cm
+1 0 0 1 46 94.88976 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 18 Tm /F2+0 10 Tf 14 TL (tipos_vehiculo, marcas_vehiculo y modelos_vehiculo son cat\010logos locales de cada establecimiento. Cada) Tj T* -0.083915 Tw (administrador registra los datos de su flota y la aplicaci\001n reutiliza los nombres existentes dentro de su instituci\001n.) Tj T* 0 Tw ET
 Q
 Q
 q
-1 0 0 1 46 73.88976 cm
+1 0 0 1 46 59.88976 cm
 q
 0 0 0 rg
 BT 1 0 0 1 0 18 Tm /F2+0 10 Tf 14 TL (roles es un cat\010logo de definiciones mantenido por consola. Los permisos operativos implementados) Tj T* (corresponden a Administraci\001n y Chofer. Los perfiles adicionales requieren definici\001n funcional.) Tj T* ET
@@ -9537,113 +9623,113 @@ xref
 0000000301 00000 n 
 0000000350 00000 n 
 0000000623 00000 n 
-0000013333 00000 n 
-0000013440 00000 n 
-0000013547 00000 n 
-0000014684 00000 n 
-0000014938 00000 n 
-0000044716 00000 n 
-0000045472 00000 n 
-0000046563 00000 n 
-0000046806 00000 n 
-0000084532 00000 n 
-0000085277 00000 n 
-0000086388 00000 n 
-0000086631 00000 n 
-0000124799 00000 n 
-0000125563 00000 n 
-0000125839 00000 n 
-0000133183 00000 n 
-0000133291 00000 n 
-0000134382 00000 n 
-0000134625 00000 n 
-0000172351 00000 n 
-0000173096 00000 n 
-0000173372 00000 n 
-0000179888 00000 n 
-0000179996 00000 n 
-0000181087 00000 n 
-0000181330 00000 n 
-0000219056 00000 n 
-0000219801 00000 n 
-0000220079 00000 n 
-0000227662 00000 n 
-0000227770 00000 n 
-0000227878 00000 n 
-0000229007 00000 n 
-0000229250 00000 n 
-0000267841 00000 n 
-0000268614 00000 n 
-0000269705 00000 n 
-0000269948 00000 n 
-0000307674 00000 n 
-0000308419 00000 n 
-0000309553 00000 n 
-0000309808 00000 n 
-0000339466 00000 n 
-0000340216 00000 n 
-0000340494 00000 n 
-0000349637 00000 n 
-0000349745 00000 n 
-0000350836 00000 n 
-0000351079 00000 n 
-0000388805 00000 n 
-0000389550 00000 n 
-0000389828 00000 n 
-0000398472 00000 n 
-0000398580 00000 n 
-0000399671 00000 n 
-0000399914 00000 n 
-0000437640 00000 n 
-0000438385 00000 n 
-0000438663 00000 n 
-0000446405 00000 n 
-0000446513 00000 n 
-0000447604 00000 n 
-0000447847 00000 n 
-0000485573 00000 n 
-0000486318 00000 n 
-0000486596 00000 n 
-0000493015 00000 n 
-0000493123 00000 n 
-0000494214 00000 n 
-0000494457 00000 n 
-0000532183 00000 n 
-0000532928 00000 n 
-0000533206 00000 n 
-0000538681 00000 n 
-0000538789 00000 n 
-0000539880 00000 n 
-0000540123 00000 n 
-0000577849 00000 n 
-0000578594 00000 n 
-0000578872 00000 n 
-0000589466 00000 n 
-0000589574 00000 n 
-0000590665 00000 n 
-0000590908 00000 n 
-0000628634 00000 n 
-0000629379 00000 n 
-0000629657 00000 n 
-0000635680 00000 n 
-0000635788 00000 n 
-0000636879 00000 n 
-0000637122 00000 n 
-0000674848 00000 n 
-0000675593 00000 n 
-0000675874 00000 n 
-0000682117 00000 n 
-0000682226 00000 n 
-0000683320 00000 n 
-0000683565 00000 n 
-0000721292 00000 n 
-0000722038 00000 n 
-0000722320 00000 n 
-0000724618 00000 n 
-0000724727 00000 n 
-0000725821 00000 n 
-0000726066 00000 n 
-0000763793 00000 n 
+0000013553 00000 n 
+0000013660 00000 n 
+0000013767 00000 n 
+0000014904 00000 n 
+0000015158 00000 n 
+0000044936 00000 n 
+0000045692 00000 n 
+0000046783 00000 n 
+0000047026 00000 n 
+0000084752 00000 n 
+0000085497 00000 n 
+0000086608 00000 n 
+0000086851 00000 n 
+0000125019 00000 n 
+0000125783 00000 n 
+0000126059 00000 n 
+0000133403 00000 n 
+0000133511 00000 n 
+0000134602 00000 n 
+0000134845 00000 n 
+0000172571 00000 n 
+0000173316 00000 n 
+0000173592 00000 n 
+0000180108 00000 n 
+0000180216 00000 n 
+0000181307 00000 n 
+0000181550 00000 n 
+0000219276 00000 n 
+0000220021 00000 n 
+0000220299 00000 n 
+0000227882 00000 n 
+0000227990 00000 n 
+0000228098 00000 n 
+0000229227 00000 n 
+0000229470 00000 n 
+0000268061 00000 n 
+0000268834 00000 n 
+0000269925 00000 n 
+0000270168 00000 n 
+0000307894 00000 n 
+0000308639 00000 n 
+0000309773 00000 n 
+0000310028 00000 n 
+0000339686 00000 n 
+0000340436 00000 n 
+0000340714 00000 n 
+0000349857 00000 n 
+0000349965 00000 n 
+0000351056 00000 n 
+0000351299 00000 n 
+0000389025 00000 n 
+0000389770 00000 n 
+0000390048 00000 n 
+0000398692 00000 n 
+0000398800 00000 n 
+0000399891 00000 n 
+0000400134 00000 n 
+0000437860 00000 n 
+0000438605 00000 n 
+0000438883 00000 n 
+0000446625 00000 n 
+0000446733 00000 n 
+0000447824 00000 n 
+0000448067 00000 n 
+0000485793 00000 n 
+0000486538 00000 n 
+0000486816 00000 n 
+0000493235 00000 n 
+0000493343 00000 n 
+0000494434 00000 n 
+0000494677 00000 n 
+0000532403 00000 n 
+0000533148 00000 n 
+0000533426 00000 n 
+0000538901 00000 n 
+0000539009 00000 n 
+0000540100 00000 n 
+0000540343 00000 n 
+0000578069 00000 n 
+0000578814 00000 n 
+0000579092 00000 n 
+0000587102 00000 n 
+0000587210 00000 n 
+0000588301 00000 n 
+0000588544 00000 n 
+0000626270 00000 n 
+0000627015 00000 n 
+0000627293 00000 n 
+0000637026 00000 n 
+0000637134 00000 n 
+0000638225 00000 n 
+0000638468 00000 n 
+0000676194 00000 n 
+0000676939 00000 n 
+0000677220 00000 n 
+0000683704 00000 n 
+0000683813 00000 n 
+0000684907 00000 n 
+0000685152 00000 n 
+0000722879 00000 n 
+0000723625 00000 n 
+0000723907 00000 n 
+0000726205 00000 n 
+0000726314 00000 n 
+0000727408 00000 n 
+0000727653 00000 n 
+0000765380 00000 n 
 trailer
 <<
 /Size 113
@@ -9651,5 +9737,5 @@ trailer
 /Info 1 0 R
 >>
 startxref
-764539
+766126
 %%EOF

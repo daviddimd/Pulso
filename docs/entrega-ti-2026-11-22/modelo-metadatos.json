@@ -409,7 +409,7 @@
           "REFERENCED_COLUMN_NAME": "id_usuario"
         }
       ],
-      "ddl": "CREATE TABLE `registros_auditoria` (\n  `id_registro_auditoria` bigint unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_usuario_actor` int unsigned DEFAULT NULL,\n  `tipo_entidad` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_entidad` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `accion` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `datos_anteriores` json DEFAULT NULL,\n  `datos_nuevos` json DEFAULT NULL,\n  `direccion_ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_registro_auditoria`),\n  KEY `ix_tipo_entidad_id_entidad_fecha_creacion` (`tipo_entidad`,`id_entidad`,`fecha_creacion`),\n  KEY `ix_id_usuario_actor_fecha_creacion` (`id_usuario_actor`,`fecha_creacion`),\n  KEY `ix_id_establecimiento_tipo_entidad_id_entidad` (`id_establecimiento`,`tipo_entidad`,`id_entidad`),\n  CONSTRAINT `fk_auditoria_establecimiento` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `registros_auditoria_ibfk_1` FOREIGN KEY (`id_usuario_actor`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL ON UPDATE SET NULL\n) ENGINE=InnoDB AUTO_INCREMENT=194 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `registros_auditoria` (\n  `id_registro_auditoria` bigint unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_usuario_actor` int unsigned DEFAULT NULL,\n  `tipo_entidad` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_entidad` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `accion` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,\n  `datos_anteriores` json DEFAULT NULL,\n  `datos_nuevos` json DEFAULT NULL,\n  `direccion_ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_registro_auditoria`),\n  KEY `ix_tipo_entidad_id_entidad_fecha_creacion` (`tipo_entidad`,`id_entidad`,`fecha_creacion`),\n  KEY `ix_id_usuario_actor_fecha_creacion` (`id_usuario_actor`,`fecha_creacion`),\n  KEY `ix_id_establecimiento_tipo_entidad_id_entidad` (`id_establecimiento`,`tipo_entidad`,`id_entidad`),\n  CONSTRAINT `fk_auditoria_establecimiento` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`),\n  CONSTRAINT `registros_auditoria_ibfk_1` FOREIGN KEY (`id_usuario_actor`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL ON UPDATE SET NULL\n) ENGINE=InnoDB AUTO_INCREMENT=196 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "revisiones_direccion": {
       "columns": [
@@ -500,7 +500,7 @@
           "REFERENCED_COLUMN_NAME": "id_viaje"
         }
       ],
-      "ddl": "CREATE TABLE `revisiones_direccion` (\n  `id_revision_direccion` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_viaje` int unsigned NOT NULL,\n  `revision` int NOT NULL,\n  `direccion` text COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_usuario_actor` int unsigned DEFAULT NULL,\n  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USUARIO',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `id_establecimiento` int unsigned NOT NULL,\n  PRIMARY KEY (`id_revision_direccion`),\n  UNIQUE KEY `uq_id_viaje_revision` (`id_viaje`,`revision`),\n  KEY `ix_id_viaje` (`id_viaje`),\n  KEY `ix_id_usuario_actor` (`id_usuario_actor`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  CONSTRAINT `revisiones_direccion_ibfk_1` FOREIGN KEY (`id_usuario_actor`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_2` FOREIGN KEY (`id_viaje`) REFERENCES `viajes` (`id_viaje`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_3` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`)\n) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `revisiones_direccion` (\n  `id_revision_direccion` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_viaje` int unsigned NOT NULL,\n  `revision` int NOT NULL,\n  `direccion` text COLLATE utf8mb4_unicode_ci NOT NULL,\n  `id_usuario_actor` int unsigned DEFAULT NULL,\n  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USUARIO',\n  `fecha_creacion` datetime(3) DEFAULT NULL,\n  `id_establecimiento` int unsigned NOT NULL,\n  PRIMARY KEY (`id_revision_direccion`),\n  UNIQUE KEY `uq_id_viaje_revision` (`id_viaje`,`revision`),\n  KEY `ix_id_viaje` (`id_viaje`),\n  KEY `ix_id_usuario_actor` (`id_usuario_actor`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  CONSTRAINT `revisiones_direccion_ibfk_1` FOREIGN KEY (`id_usuario_actor`) REFERENCES `usuarios` (`id_usuario`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_2` FOREIGN KEY (`id_viaje`) REFERENCES `viajes` (`id_viaje`) ON DELETE RESTRICT ON UPDATE RESTRICT,\n  CONSTRAINT `revisiones_direccion_ibfk_3` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`)\n) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "roles": {
       "columns": [
@@ -1110,9 +1110,38 @@
           "COLUMN_KEY": "",
           "EXTRA": "",
           "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "actividad",
+          "COLUMN_TYPE": "varchar(250)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "id_usuario_registro",
+          "COLUMN_TYPE": "int unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "MUL",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
+        },
+        {
+          "COLUMN_NAME": "fecha_registro",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_KEY": "",
+          "EXTRA": "",
+          "GENERATION_EXPRESSION": ""
         }
       ],
       "foreignKeys": [
+        {
+          "COLUMN_NAME": "id_usuario_registro",
+          "REFERENCED_TABLE_NAME": "usuarios",
+          "REFERENCED_COLUMN_NAME": "id_usuario"
+        },
         {
           "COLUMN_NAME": "id_establecimiento",
           "REFERENCED_TABLE_NAME": "viajes",
@@ -1124,7 +1153,7 @@
           "REFERENCED_COLUMN_NAME": "id_viaje"
         }
       ],
-      "ddl": "CREATE TABLE `viajes_destinos` (\n  `id_viaje_destino` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_viaje` int unsigned NOT NULL,\n  `orden` smallint unsigned NOT NULL,\n  `direccion` varchar(350) COLLATE utf8mb4_unicode_ci NOT NULL,\n  PRIMARY KEY (`id_viaje_destino`),\n  UNIQUE KEY `uq_id_viaje_orden` (`id_viaje`,`orden`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  CONSTRAINT `fk_destino_viaje` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`) ON DELETE CASCADE,\n  CONSTRAINT `viajes_destinos_chk_1` CHECK ((`orden` >= 1))\n) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+      "ddl": "CREATE TABLE `viajes_destinos` (\n  `id_viaje_destino` int unsigned NOT NULL AUTO_INCREMENT,\n  `id_establecimiento` int unsigned NOT NULL,\n  `id_viaje` int unsigned NOT NULL,\n  `orden` smallint unsigned NOT NULL,\n  `direccion` varchar(350) COLLATE utf8mb4_unicode_ci NOT NULL,\n  `actividad` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,\n  `id_usuario_registro` int unsigned DEFAULT NULL,\n  `fecha_registro` datetime(3) DEFAULT NULL,\n  PRIMARY KEY (`id_viaje_destino`),\n  UNIQUE KEY `uq_id_viaje_orden` (`id_viaje`,`orden`),\n  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),\n  KEY `fk_destino_usuario_registro` (`id_usuario_registro`),\n  CONSTRAINT `fk_destino_usuario_registro` FOREIGN KEY (`id_usuario_registro`) REFERENCES `usuarios` (`id_usuario`),\n  CONSTRAINT `fk_destino_viaje` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`) ON DELETE CASCADE,\n  CONSTRAINT `viajes_destinos_chk_1` CHECK ((`orden` >= 1))\n) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     },
     "viajes_tramos": {
       "columns": [
