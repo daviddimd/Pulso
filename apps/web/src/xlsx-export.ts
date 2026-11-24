@@ -9,6 +9,7 @@ export interface ExportServiceItem {
   costCenterCode?: string | null;
   costCenterName?: string | null;
   serviceAddress: string;
+  addedStops?: string;
   actionPerformed: string;
   startedAt?: string | null;
   endedAt?: string | null;
@@ -54,6 +55,7 @@ export function downloadDailyExcel(data: DailyExportPayload, filename?: string):
     "Centro Costo Código": s.costCenterCode || "S/C",
     "Centro Costo Nombre": s.costCenterName || "Indefinido",
     Destino: s.serviceAddress,
+    "Paradas agregadas": s.addedStops || "",
     "Cometido / Actividad": s.actionPerformed,
     Inicio: s.startedAt
       ? new Date(s.startedAt).toLocaleString("es-CL", { timeZone: data.timezone })

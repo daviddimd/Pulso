@@ -385,6 +385,38 @@ try {
       `Paradas inválidas rechazadas (${destinations.length})`,
     );
   }
+  const errand = { address: "Bodega central, Talca", activity: "Retirar insumos" };
+  check(
+    (await cmd(id, "stop", trip.version, errand, driver2)).status === 403,
+    "El chofer no agrega paradas",
+  );
+  r = await cmd(id, "stop", trip.version, errand, admin);
+  trip = r.data.entry;
+  const added = trip.stops[trip.stops.length - 1];
+  check(
+    r.status === 200 &&
+      trip.status === "IN_PROGRESS" &&
+      trip.stops.length === 4 &&
+      added.address === errand.address &&
+      added.activity === errand.activity &&
+      added.addedBy.fullName === "a admin" &&
+      trip.addressRevisions[0].address === trip.serviceAddress,
+    "Administración agrega una parada con tarea durante el viaje",
+  );
+  r = await cmd(
+    id,
+    "address",
+    trip.version,
+    {
+      destinations: trip.stops.map((stop) => ({ address: stop.address, activity: stop.activity })),
+    },
+    admin,
+  );
+  trip = r.data.entry;
+  check(
+    trip.stops[3].activity === errand.activity && trip.stops[3].addedBy?.fullName === "a admin",
+    "Corregir la ruta conserva la tarea y el registro de la parada",
+  );
   r = await request("/api/services", {
     cookie: admin,
     body: {

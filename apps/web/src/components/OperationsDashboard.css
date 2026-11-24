@@ -2457,3 +2457,11 @@ details[open] > .ops-disclosure-heading > .ui-icon {
   color: var(--color-text-secondary);
   overflow-wrap: anywhere;
 }
+
+.ops-route small,
+.ops-destinations label small {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}

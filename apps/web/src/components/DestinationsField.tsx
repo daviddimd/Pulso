@@ -4,20 +4,24 @@ const MAX_STOPS = 10;
 
 export function DestinationsField({
   label = "Destinos",
-  initial = [""],
+  initial = [],
   wide = false,
 }: {
   label?: string;
-  initial?: string[];
+  initial?: { address: string; activity?: string | null }[];
   wide?: boolean;
 }) {
   const [stops, setStops] = useState(() =>
-    (initial.length ? initial : [""]).map((address, i) => ({ id: i, address })),
+    (initial.length ? initial : [{ address: "" }]).map((stop, i) => ({
+      id: i,
+      address: stop.address,
+      activity: stop.activity ?? "",
+    })),
   );
   const [nextId, setNextId] = useState(stops.length);
 
   function add() {
-    setStops([...stops, { id: nextId, address: "" }]);
+    setStops([...stops, { id: nextId, address: "", activity: "" }]);
     setNextId(nextId + 1);
   }
 
@@ -47,6 +51,8 @@ export function DestinationsField({
                 autoComplete="off"
                 placeholder="Calle, número y comuna"
               />
+              <input type="hidden" name="activity" value={stop.activity} />
+              {stop.activity && <small>Tarea: {stop.activity}</small>}
             </label>
             {stops.length > 1 && (
               <button

@@ -39,6 +39,7 @@ final class Codes
         'FINALIZE' => 'FINALIZAR',
         'ASSIGNMENT' => 'ASIGNAR',
         'ADDRESS' => 'CORREGIR_DIRECCION',
+        'STOP' => 'AGREGAR_PARADA',
         'COST_CENTER' => 'ASIGNAR_CENTRO_COSTO',
         'CANCEL' => 'CANCELAR',
         'CLOSE-CANCELLATION' => 'CERRAR_CANCELACION',

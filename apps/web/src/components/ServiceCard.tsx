@@ -98,7 +98,16 @@ export function ServiceCard({
       body.vehicleId = text(f, "vehicle") || null;
       if (text(f, "km")) body.odometerKm = Number(text(f, "km"));
     }
-    if (edit.command === "address") body.destinations = f.getAll("address").map(String);
+    if (edit.command === "address") {
+      const activities = f.getAll("activity").map(String);
+      body.destinations = f
+        .getAll("address")
+        .map((address, i) => ({ address: String(address), activity: activities[i] || null }));
+    }
+    if (edit.command === "stop") {
+      body.address = text(f, "address");
+      body.activity = text(f, "stopActivity");
+    }
     if (edit.command === "cost-center")
       body.costCenterId =
         text(f, "costCenter") === UNDEFINED_COST_CENTER ? null : text(f, "costCenter");
@@ -128,7 +137,7 @@ export function ServiceCard({
       <h2>{s.actionPerformed}</h2>
       {admin && s.addressRevisions.length > 1 && (
         <p className="ops-change" role="status">
-          Dirección corregida por {s.addressRevisions[0]?.actor?.fullName ?? "administración"} ·{" "}
+          Ruta actualizada por {s.addressRevisions[0]?.actor?.fullName ?? "administración"} ·{" "}
           {time(s.addressRevisions[0]?.createdAt ?? null)}
         </p>
       )}
@@ -188,8 +197,17 @@ export function ServiceCard({
         <span>{s.destinations.length > 1 ? "Ruta" : "Destino"}</span>
         {s.destinations.length > 1 ? (
           <ol className="ops-route">
-            {s.destinations.map((address, i) => (
-              <li key={i}>{address}</li>
+            {s.stops.map((stop) => (
+              <li key={stop.order}>
+                {stop.address}
+                {stop.activity && (
+                  <small>
+                    {stop.activity}
+                    {stop.addedBy &&
+                      ` · agregada por ${stop.addedBy.fullName}, ${time(stop.addedAt)}`}
+                  </small>
+                )}
+              </li>
             ))}
           </ol>
         ) : (
@@ -233,6 +251,9 @@ export function ServiceCard({
               <button onClick={() => open("cost-center")}>Asignar centro de costos</button>
               {admin && <button onClick={() => open("address")}>Corregir dirección</button>}
               {admin && ["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(s.status) && (
+                <button onClick={() => open("stop")}>Agregar parada</button>
+              )}
+              {admin && ["PENDING", "ASSIGNED", "IN_PROGRESS"].includes(s.status) && (
                 <button onClick={() => open("assignment")}>
                   {s.status === "IN_PROGRESS" ? "Registrar relevo" : "Asignar / reasignar"}
                 </button>
@@ -274,7 +295,36 @@ export function ServiceCard({
             </p>
           )}
           {edit.command === "address" && (
-            <DestinationsField label="Destinos corregidos" initial={edit.snapshot.destinations} />
+            <DestinationsField label="Destinos corregidos" initial={edit.snapshot.stops} />
+          )}
+          {edit.command === "stop" && (
+            <>
+              <p>
+                La parada se agrega al final de la ruta y el chofer recibe el aviso en su pantalla.
+              </p>
+              <label>
+                Dirección de la parada
+                <input
+                  name="address"
+                  minLength={3}
+                  maxLength={350}
+                  required
+                  autoComplete="off"
+                  placeholder="Calle, número y comuna"
+                />
+              </label>
+              <label>
+                Tarea en la parada
+                <input
+                  name="stopActivity"
+                  minLength={2}
+                  maxLength={250}
+                  required
+                  autoComplete="off"
+                  placeholder="Ej. Retirar insumos en bodega"
+                />
+              </label>
+            </>
           )}
           {edit.command === "assignment" && (
             <label>
@@ -345,6 +395,7 @@ export function ServiceCard({
                       ? "Confirmar relevo"
                       : "Guardar asignación",
                   address: "Guardar dirección",
+                  stop: "Agregar parada",
                   cancel: "Confirmar cancelación",
                 } as Record<string, string>
               )[edit.command] ?? "Confirmar"}

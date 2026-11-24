@@ -98,6 +98,13 @@ export type Service = {
   status: string;
   serviceAddress: string;
   destinations: string[];
+  stops: {
+    order: number;
+    address: string;
+    activity: string | null;
+    addedBy: { fullName: string } | null;
+    addedAt: string | null;
+  }[];
   originalAddress: string;
   actionPerformed: string;
   driverId: string | null;

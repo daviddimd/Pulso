@@ -175,6 +175,13 @@ final class ReportRepository
                     'costCenterCode' => $s['costCenter']['code'] ?? null,
                     'costCenterName' => $s['costCenter']['name'] ?? null,
                     'serviceAddress' => $s['serviceAddress'],
+                    'addedStops' => implode(
+                        ' | ',
+                        array_map(
+                            fn($stop) => $stop['address'] . ' — ' . $stop['activity'],
+                            array_filter($s['stops'], fn($stop) => $stop['activity'] !== null),
+                        ),
+                    ),
                     'actionPerformed' => $s['actionPerformed'],
                     'startedAt' => $s['startedAt'],
                     'endedAt' => $s['endedAt'],

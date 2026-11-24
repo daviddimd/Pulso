@@ -59,7 +59,7 @@ export function AddressChangeAlerts({ userId, services }: { userId: string; serv
                 <path d="M12 3 2 21h20L12 3Z" />
                 <path d="M12 9v5m0 3h.01" />
               </svg>
-              Administración cambió el destino
+              Administración actualizó la ruta
             </strong>
             <p>{service.actionPerformed}</p>
             <p className="ops-address-alert-destination">{service.serviceAddress}</p>

@@ -199,17 +199,14 @@ final class ServiceRepository
                 'vehicle' => $vehicleDto($this->vehicle($leg['id_vehiculo'], true)),
             ];
         }
-        $destinations = array_column(
-            $this->db
-                ->table('viajes_destinos')
-                ->select('direccion')
-                ->where('id_establecimiento', $this->actor['establishmentId'])
-                ->where('id_viaje', $s['id_viaje'])
-                ->orderBy('orden')
-                ->get()
-                ->getResultArray(),
-            'direccion',
-        );
+        $stops = $this->db
+            ->table('viajes_destinos')
+            ->where('id_establecimiento', $this->actor['establishmentId'])
+            ->where('id_viaje', $s['id_viaje'])
+            ->orderBy('orden')
+            ->get()
+            ->getResultArray();
+        $destinations = array_column($stops, 'direccion');
         $revs = $this->db
             ->table('revisiones_direccion')
             ->where('id_establecimiento', $this->actor['establishmentId'])
@@ -223,6 +220,16 @@ final class ServiceRepository
             'status' => Codes::api(Codes::STATUS, $s['estado']),
             'serviceAddress' => ServiceEngine::route($destinations),
             'destinations' => $destinations,
+            'stops' => array_map(
+                fn($stop) => [
+                    'order' => (int) $stop['orden'],
+                    'address' => $stop['direccion'],
+                    'activity' => $stop['actividad'],
+                    'addedBy' => $driverDto($this->user($stop['id_usuario_registro'])),
+                    'addedAt' => UnitOfWork::iso($stop['fecha_registro']),
+                ],
+                $stops,
+            ),
             'originalAddress' => $revs
                 ? $revs[count($revs) - 1]['direccion']
                 : ServiceEngine::route($destinations),

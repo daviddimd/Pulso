@@ -166,9 +166,9 @@ process('Preparar','Registro, asignación e inicio',[
 process('Ejecutar','Recorrido, eventual relevo y finalización',[
  ('s','startEvent','IN_PROGRESS',35,135,30,30),
  ('recorrer','userTask','Chofer: realizar\nel servicio',110,113,160,75),
- ('relevoQ','exclusiveGateway','¿Se necesita\nreasignación?',330,125,50,50),
- ('reasignar','userTask','Administración: elegir recursos\ny registrar km del relevo',290,305,195,75),
- ('reabrir','serviceTask','Sistema: cerrar tramo\ny abrir el siguiente',555,305,180,75),
+ ('relevoQ','exclusiveGateway','¿Relevo o\nparada adicional?',330,125,50,50),
+ ('reasignar','userTask','Administración: registrar relevo\no parada con su tarea',290,305,195,75),
+ ('reabrir','serviceTask','Sistema: cambiar tramo o\nagregar parada y avisar',555,305,180,75),
  ('finalizar','userTask','Chofer: finalizar\ncon odómetro de llegada',460,113,185,75),
  ('validar','serviceTask','Sistema: validar\nlecturas de kilometraje',700,113,175,75),
  ('validoQ','exclusiveGateway','¿Lectura\nválida?',945,125,50,50),
@@ -284,7 +284,7 @@ entity(d,'viajes_tramos',780,172,315,['fecha_inicio / fecha_fin','odometro_inici
 entity(d,'vehiculos',837,25,240,['codigo_movil'])
 entity(d,'revisiones_direccion',350,430,273,['revision / direccion','fecha_creacion'])
 entity(d,'folios_viajes_anteriores',801,460,310,['alias de folio previo'])
-entity(d,'viajes_destinos',350,620,273,['orden (único por viaje)','direccion'])
+entity(d,'viajes_destinos',350,620,273,['orden (único por viaje)','direccion / actividad','id_usuario_registro / fecha_registro'])
 d.svg(SRC/'MER-Pulso.svg')
 u=Diagram(1100,600)
 relation(u,[(230,99),(365,99)],263,90,'1 : 0..*')
@@ -351,7 +351,7 @@ rules=[
  'El modelo contiene 15 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.',
  'usuarios hereda id_establecimiento desde funcionarios. El traslado del funcionario cambia la institución efectiva de su cuenta y de sus sesiones vigentes. Las participaciones históricas permanecen vinculadas a la institución del viaje.',
  'viajes almacena el propósito, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.',
- 'viajes_destinos guarda las direcciones del viaje en orden de recorrido (orden 1, 2, 3…), con hasta 10 paradas, orden único por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. La ruta completa se muestra unida en el orden de sus paradas, y cada corrección guarda la ruta anterior en revisiones_direccion.',
+ 'viajes_destinos guarda las direcciones del viaje en orden de recorrido (orden 1, 2, 3…), con hasta 10 paradas, orden único por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. Durante el viaje, administración puede agregar una parada al final de la ruta con su propia actividad; id_usuario_registro y fecha_registro indican quién la agregó y cuándo, y el chofer recibe el aviso. La ruta completa se muestra unida en el orden de sus paradas, y cada corrección guarda la ruta anterior en revisiones_direccion.',
  'El relevo cierra el tramo vigente, actualiza el odómetro del vehículo saliente y abre otro tramo en el mismo viaje. La operación es transaccional y exige la versión vigente. El folio, la fecha inicial y el centro de costos del viaje se conservan.',
  'viajes_tramos contiene id_viaje, id_chofer, id_vehiculo, fecha_inicio, fecha_fin, odometro_inicio y odometro_fin. Sus columnas generadas id_chofer_activo, id_vehiculo_activo y id_viaje_activo son generadas y almacenadas, tienen índice único y se activan cuando fecha_fin está vacía.',
  'Fuente única de verdad (informe del 09-11, sección 3): viajes_tramos es la única fuente de los recursos efectivamente usados (chofer, vehículo, fecha_inicio y fecha_fin) y de los kilómetros recorridos. viajes.id_chofer y id_vehiculo registran la asignación planificada, necesaria antes de que exista un tramo; durante el viaje la aplicación los iguala al tramo vigente en la misma transacción del relevo, y los informes de participación se calculan desde los tramos. viajes.odometro_salida y odometro_llegada son la lectura global de salida y llegada que pidió la segunda revisión; no se restan para obtener distancia. vehiculos.odometro_actual es estado derivado: la aplicación lo actualiza al cerrar cada tramo, en la misma transacción, y rechaza lecturas menores a la vigente.',
@@ -397,6 +397,7 @@ CASES=[
  ('CU-14','Gestionar cuentas',['Administración'],'Sesión de administración.','Consultar las cuentas de la institución y crear cuentas de chofer o de administración con nombre, usuario, código de róster opcional y contraseña inicial de al menos 12 caracteres.','Usuario duplicado, róster repetido en la institución o rol distinto de Chofer o Administración: rechazo. La cuenta queda en la institución del administrador. La auditoría no guarda la contraseña ni su hash.'),
  ('CU-15','Configurar instalación nueva',['Operador TI'],'Base migrada sin instituciones y acceso al servidor para leer el código de un solo uso.','Abrir /configurar, ingresar el código obtenido con pulso:codigo-configuracion y crear la institución y su cuenta de administración.','Código inválido: rechazo sin efectos. Con una institución existente /configurar queda cerrado. El código se elimina al usarse.'),
  ('CU-16','Restablecer contraseña',['Operador TI'],'Acceso autorizado a consola del servidor.','Ejecutar pulso:clave con el usuario; la contraseña nueva se entrega por variable de entorno. Desbloquea la cuenta y cierra sus sesiones.','Contraseña de menos de 12 caracteres o usuario inexistente: rechazo. Las contraseñas no se recuperan; solo se reemplazan. Queda registrado en la auditoría.'),
+ ('CU-17','Agregar parada durante el viaje',['Administración'],'Viaje pendiente, asignado o en curso de la institución y versión vigente.','Ingresar la dirección y la tarea de la parada; se agrega al final de la ruta con quién la registró y cuándo, se guarda la nueva ruta como revisión y el chofer recibe el aviso.','Viaje finalizado o cancelado, más de 10 paradas o datos incompletos: rechazo. El chofer no agrega paradas; las solicita a administración.'),
 ]
 def actor(d,x,y,name):
     d.ellipse(x-9,y,18,18);d.line([(x,y+18),(x,y+48)]);d.line([(x-20,y+29),(x+20,y+29)]);d.line([(x,y+48),(x-17,y+68)]);d.line([(x,y+48),(x+17,y+68)]);d.text(x,y+86,name,11,True)
@@ -451,7 +452,7 @@ REQS=[
  ('INS-01','Must','Instalación nueva configurable sin credenciales precargadas.','Verificado local','/configurar solo existe mientras no hay instituciones; exige un código de un solo uso guardado en writable/, crea institución y administrador y se cierra al usarse. Probado desde un clon con base vacía.','SetupRepository; SetupPage; pulso:prueba-configuracion'),
  ('DOC-01','Must','Diagrama de procesos BPMN.','Entregado','Tres procesos BPMN descriptivos con XML editable y DI, SVG y PDF.','01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn'),
  ('DOC-02','Must','Modelo entidad-relación.','Entregado','Quince entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
- ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y dieciséis casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
+ ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y diecisiete casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
  ('DOC-04','Must','Copia de requerimientos levantados; MoSCoW deseable.','Entregado para revisión','Matriz derivada del correo TI y acuerdos del usuario; debe ser validada por la contraparte funcional.','04-Pulso-Requerimientos-MoSCoW.pdf'),
  ('RF-01','Must','Crear servicio con destinos, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o sin al menos un destino no se guarda. Indefinido deja id_centro_costo vacío y se asigna después.','ServiceEngine::create; CostCenterField'),
  ('RF-02','Must','Solo un servicio simultáneo por chofer y vehículo.','Verificado local','Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.','viajes_tramos; ServiceEngine; prueba concurrente'),
@@ -464,7 +465,7 @@ REQS=[
  ('RF-09','Must','Totales por centro con viajes y km.','Verificado local','Completados y cancelados separados; km solo completados con lecturas completas. Mostrar centros con actividad e incluir restantes opcionalmente.','ReportRepository::summary; CostCenterReport'),
  ('RF-10','Must','Historial de servicios por chofer y vehículo.','Implementado','Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.','OperationsDashboard; ServiceRepository'),
  ('RF-11','Must','Administración crea cuentas de chofer y de administración.','Verificado local','Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.','AccountRepository; AccountsPanel; pruebas API'),
- ('RF-12','Must','Viaje con una o más direcciones en orden de recorrido.','Verificado local','Hasta 10 paradas por viaje en viajes_destinos, ordenadas y únicas por viaje. Administración puede agregar, quitar o corregir paradas; cada cambio queda como revisión de la ruta y el chofer recibe el aviso. El enlace a Maps abre la ruta completa.','motor de viajes; campo de destinos; pruebas API'),
+ ('RF-12','Must','Viaje con una o más direcciones en orden de recorrido.','Verificado local','Hasta 10 paradas por viaje en viajes_destinos, ordenadas y únicas por viaje. Con el viaje pendiente, asignado o en curso, administración puede agregar una parada con su propia tarea, registrando quién y cuándo. También puede agregar, quitar o corregir paradas; cada cambio queda como revisión de la ruta y el chofer recibe el aviso. El enlace a Maps abre la ruta completa.','motor de viajes; campo de destinos; pruebas API'),
  ('MER-01','Must','PK enteras autoincrementables y nomenclatura institucional en español.','Verificado local','PK id_[tabla] enteras y autoincrementables. Todas las tablas, columnas, índices y restricciones están en español; una prueba de dominio falla si reaparece un nombre en inglés.','ConsolidateTrips; SpanishColumns; pulso:prueba-dominio; diccionario físico'),
  ('MER-02','Must','Una entidad de viaje con lecturas de salida y llegada.','Verificado local','Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.','viajes; ServiceEngine; pruebas de relevo'),
  ('MER-03','Must','Catálogos de roles, funcionarios y flota.','Implementado','roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.','schema-viajes.sql; pulso:roles; alta de vehículo'),

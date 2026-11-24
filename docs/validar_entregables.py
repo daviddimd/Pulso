@@ -52,7 +52,7 @@ for pdf in sorted(pdfs.glob('0?-Pulso-*.pdf')):
     assert not any('\ufffd' in t or '\u25a0' in t for t in texts)
     documents.append({'archivo':pdf.name,'paginas':len(reader.pages),'sha256':hashlib.sha256(pdf.read_bytes()).hexdigest()})
 assert len(documents)==5
-usecases=(src/'UML-casos-de-uso.puml').read_text(encoding='utf-8');assert usecases.count('  usecase ')==16
+usecases=(src/'UML-casos-de-uso.puml').read_text(encoding='utf-8');assert usecases.count('  usecase ')==17
 report={'fecha':'2026-11-22','bpmnXsdOMG':'válido','idsUnicos':True,'alcanzabilidadBpmn':'todos los nodos conectan inicio y fin','procesos':counts,'entidades':len(primary_keys),'pkNumericasAutoincrementales':True,'casosUml':13,'pdfs':documents,'limites':'Esta validación documental no acredita una instalación hospitalaria, carga regional ni autenticación real contra Clave Única.'}
 (src/'validacion-entregables.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 with zipfile.ZipFile(root/'output/Pulso-Entregables-TI-2026-11-22.zip','w',zipfile.ZIP_DEFLATED) as archive:
@@ -61,4 +61,4 @@ with zipfile.ZipFile(root/'output/Pulso-Entregables-TI-2026-11-22.zip','w',zipfi
     for p in sorted(pdfs.glob('0?-Pulso-*.pdf')):archive.write(p,'pdf/'+p.name)
     names=archive.namelist()
     assert not any('.env' in n or 'node_modules' in n or 'vendor/' in n or '.runtime/' in n for n in names)
-print('BPMN XSD OMG y conectividad: correctos. MER: 15 entidades y alias históricos con claves verificadas. UML: 16 casos. PDF: 5, texto válido.')
+print('BPMN XSD OMG y conectividad: correctos. MER: 15 entidades y alias históricos con claves verificadas. UML: 17 casos. PDF: 5, texto válido.')
