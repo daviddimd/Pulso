@@ -166,7 +166,6 @@ final class TestDomain extends BaseCommand
                 'id_chofer' => 102,
                 'id_vehiculo' => 111,
                 'fecha_inicio' => '2026-11-22 10:00:00',
-                'destino' => 'Talca',
                 'actividad' => 'Prueba de integridad',
             ];
             $db->table('viajes')->insert($trip);
@@ -202,7 +201,6 @@ final class TestDomain extends BaseCommand
                 'fecha_fin' => '2026-11-01 09:00:00',
                 'odometro_salida' => 500,
                 'odometro_llegada' => 530,
-                'destino' => 'Curicó',
                 'actividad' => 'Viaje histórico',
                 'fecha_creacion' => '2026-11-01 08:00:00',
                 'fecha_actualizacion' => '2026-11-01 09:00:00',

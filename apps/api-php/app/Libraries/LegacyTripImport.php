@@ -250,7 +250,6 @@ final class LegacyTripImport
             'created_by_user_id' => $this->id('users', $row['created_by_user_id'] ?? null),
             'driver_id' => $this->id('users', $row['driver_id'] ?? null),
             'vehicle_id' => $this->id('vehicles', $row['vehicle_id'] ?? null),
-            'destino' => $row['service_address'],
             'actividad' => $row['action_performed'],
             'origin' => 'LEGACY',
             'status' => $row['status'],
@@ -265,6 +264,12 @@ final class LegacyTripImport
             'updated_at' => $row['updated_at'] ?? null,
         ]);
         $this->ids['bitacora_entries'][$row['id']] = $id;
+        $this->insert('viajes_destinos', [
+            'establishment_id' => $tenant,
+            'id_viaje' => $id,
+            'orden' => 1,
+            'direccion' => $row['service_address'],
+        ]);
         foreach ($legs as $leg) {
             $this->insert('viajes_tramos', [
                 'establishment_id' => $tenant,

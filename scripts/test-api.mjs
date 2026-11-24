@@ -366,6 +366,37 @@ try {
     (await cmd(id, "address", 0, { serviceAddress: "Vieja versión" }, admin)).status === 409,
     "Rechazo de versión antigua",
   );
+  const stops = ["1 Sur 1010, Talca", "Hospital de Curicó", "2 Poniente 300, Talca"];
+  r = await cmd(id, "address", trip.version, { destinations: stops }, admin);
+  trip = r.data.entry;
+  check(
+    r.status === 200 &&
+      JSON.stringify(trip.destinations) === JSON.stringify(stops) &&
+      trip.serviceAddress === stops.join(" → ") &&
+      trip.addressRevisions[0].address === stops.join(" → "),
+    "Viaje con varias direcciones en orden",
+  );
+  for (const destinations of [[], Array(11).fill("Calle 1"), ["ok calle", "x"]]) {
+    check(
+      (await cmd(id, "address", trip.version, { destinations }, admin)).data.error ===
+        (destinations.length && destinations.length <= 10
+          ? "INVALID_SERVICE_DATA"
+          : "INVALID_DESTINATIONS"),
+      `Paradas inválidas rechazadas (${destinations.length})`,
+    );
+  }
+  r = await request("/api/services", {
+    cookie: admin,
+    body: {
+      destinations: ["Hospital Regional, Talca", "CESFAM Las Américas, Talca"],
+      actionPerformed: "Ruta con dos paradas",
+      costCenterId: "121",
+    },
+  });
+  check(
+    r.status === 201 && r.data.entry.destinations.length === 2 && r.data.entry.status === "PENDING",
+    "Crear viaje con varias paradas",
+  );
   const outcomes = await Promise.all([
     cmd(id, "complete", trip.version, { odometerKm: 50008 }, driver2, 8081),
     cmd(id, "complete", trip.version, { odometerKm: 50009 }, driver2, 8082),

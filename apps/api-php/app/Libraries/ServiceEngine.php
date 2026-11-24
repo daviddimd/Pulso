@@ -58,7 +58,7 @@ final class ServiceEngine
     public function create(array $body, array $actor): string
     {
         return UnitOfWork::run($actor, function () use ($body, $actor) {
-            $address = UnitOfWork::text($body['serviceAddress'] ?? null, 350, 2);
+            $destinations = self::destinations($body);
             $activity = UnitOfWork::text($body['actionPerformed'] ?? null, 250, 2);
             $driver =
                 $actor['role'] === 'DRIVER'
@@ -85,14 +85,14 @@ final class ServiceEngine
                 'origen' => Codes::stored(Codes::ORIGIN, $actor['role']),
                 'version' => 0,
                 'estado' => $driver ? 'ASIGNADO' : 'PENDIENTE',
-                'destino' => $address,
                 'actividad' => $activity,
                 'fecha_creacion' => $now,
                 'fecha_actualizacion' => $now,
             ];
             $id = $this->insertTrip($row);
             $row['id_viaje'] = $id;
-            $this->revision($id, $address, $actor, 1);
+            $this->saveDestinations($id, $destinations, $actor);
+            $this->revision($id, self::route($destinations), $actor, 1);
             AuditService::log(
                 $actor['establishmentId'],
                 $actor['id'],
@@ -100,7 +100,7 @@ final class ServiceEngine
                 $id,
                 'CREAR',
                 null,
-                $row,
+                $row + ['destinos' => $destinations],
             );
             if ($body['startNow'] ?? false) {
                 $this->apply('start', $row, ['version' => 0], $actor);
@@ -145,6 +145,7 @@ final class ServiceEngine
         }
         $now = UnitOfWork::now();
         $changes = [];
+        $audit = [];
         switch ($command) {
             case 'start':
                 if (!$own) {
@@ -240,7 +241,9 @@ final class ServiceEngine
                 if (!$admin) {
                     throw new DomainException('FORBIDDEN', 403);
                 }
-                $changes['destino'] = UnitOfWork::text($b['serviceAddress'] ?? null, 350, 2);
+                $destinations = self::destinations($b);
+                $this->saveDestinations((string) $s['id_viaje'], $destinations, $a);
+                $audit = ['destinos' => $destinations];
                 $latest = $this->db
                     ->table('revisiones_direccion')
                     ->selectMax('revision')
@@ -250,7 +253,7 @@ final class ServiceEngine
                     ->getRowArray();
                 $this->revision(
                     (string) $s['id_viaje'],
-                    $changes['destino'],
+                    self::route($destinations),
                     $a,
                     (int) $latest['revision'] + 1,
                 );
@@ -293,11 +296,18 @@ final class ServiceEngine
             $a,
             Codes::stored(Codes::ACTION, strtoupper(str_replace('-', '_', $command))),
             $now,
+            $audit,
         );
     }
 
-    private function save(array $s, array $changes, array $a, string $action, string $now): void
-    {
+    private function save(
+        array $s,
+        array $changes,
+        array $a,
+        string $action,
+        string $now,
+        array $audit = [],
+    ): void {
         $changes += ['version' => (int) $s['version'] + 1, 'fecha_actualizacion' => $now];
         $ok = $this->db
             ->table('viajes')
@@ -314,7 +324,7 @@ final class ServiceEngine
             (string) $s['id_viaje'],
             $action,
             $s,
-            array_merge($s, $changes),
+            array_merge($s, $changes, $audit),
         );
     }
     private function available(?string $driver, ?string $vehicle, ?string $except = null): void
@@ -340,6 +350,35 @@ final class ServiceEngine
             }
         }
     }
+    public static function destinations(array $body): array
+    {
+        $list =
+            $body['destinations'] ??
+            (isset($body['serviceAddress']) ? [$body['serviceAddress']] : null);
+        if (!is_array($list) || !array_is_list($list) || count($list) < 1 || count($list) > 10) {
+            throw new DomainException('INVALID_DESTINATIONS', 400);
+        }
+        return array_map(fn($address) => UnitOfWork::text($address, 350, 2), $list);
+    }
+
+    public static function route(array $destinations): string
+    {
+        return implode(' → ', $destinations);
+    }
+
+    private function saveDestinations(string $trip, array $destinations, array $actor): void
+    {
+        $this->db->table('viajes_destinos')->where('id_viaje', $trip)->delete();
+        foreach ($destinations as $i => $address) {
+            $this->db->table('viajes_destinos')->insert([
+                'id_establecimiento' => $actor['establishmentId'],
+                'id_viaje' => $trip,
+                'orden' => $i + 1,
+                'direccion' => $address,
+            ]);
+        }
+    }
+
     private function insertTrip(array $row): string
     {
         $this->db->table('viajes')->insert($row);

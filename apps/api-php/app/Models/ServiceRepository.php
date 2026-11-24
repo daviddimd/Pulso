@@ -1,6 +1,6 @@
 <?php
 namespace App\Models;
-use App\Libraries\{Codes, UnitOfWork, VehicleCatalog, UserAccounts};
+use App\Libraries\{Codes, ServiceEngine, UnitOfWork, VehicleCatalog, UserAccounts};
 use Config\Database;
 
 final class ServiceRepository
@@ -199,6 +199,17 @@ final class ServiceRepository
                 'vehicle' => $vehicleDto($this->vehicle($leg['id_vehiculo'], true)),
             ];
         }
+        $destinations = array_column(
+            $this->db
+                ->table('viajes_destinos')
+                ->select('direccion')
+                ->where('id_establecimiento', $this->actor['establishmentId'])
+                ->where('id_viaje', $s['id_viaje'])
+                ->orderBy('orden')
+                ->get()
+                ->getResultArray(),
+            'direccion',
+        );
         $revs = $this->db
             ->table('revisiones_direccion')
             ->where('id_establecimiento', $this->actor['establishmentId'])
@@ -210,8 +221,11 @@ final class ServiceRepository
             'id' => (string) $s['id_viaje'],
             'version' => (int) $s['version'],
             'status' => Codes::api(Codes::STATUS, $s['estado']),
-            'serviceAddress' => $s['destino'],
-            'originalAddress' => $revs ? $revs[count($revs) - 1]['direccion'] : $s['destino'],
+            'serviceAddress' => ServiceEngine::route($destinations),
+            'destinations' => $destinations,
+            'originalAddress' => $revs
+                ? $revs[count($revs) - 1]['direccion']
+                : ServiceEngine::route($destinations),
             'actionPerformed' => $s['actividad'],
             'driverId' => self::optionalId($s['id_chofer']),
             'vehicleId' => self::optionalId($s['id_vehiculo']),

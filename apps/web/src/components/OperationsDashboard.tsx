@@ -3,7 +3,7 @@ import { Icon, type IconName } from "./Icon";
 import { ThemeToggle } from "./ThemeToggle";
 import { ProfileMenu } from "./ProfileMenu";
 import { CostCenterField, UNDEFINED_COST_CENTER } from "./CostCenterField";
-import { AddressField } from "./AddressField";
+import { DestinationsField } from "./DestinationsField";
 import { AddressChangeAlerts } from "./AddressChangeAlerts";
 import { CostCenterReport } from "./CostCenterReport";
 import { PulsoMark } from "./PulsoMark";
@@ -194,7 +194,7 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
         {
           costCenterId:
             text(f, "costCenter") === UNDEFINED_COST_CENTER ? null : text(f, "costCenter"),
-          serviceAddress: text(f, "address"),
+          destinations: f.getAll("address").map(String),
           actionPerformed: text(f, "activity"),
           vehicleId: text(f, "vehicle") || null,
           ...(admin ? { driverId: text(f, "driver") || null } : {}),
@@ -557,7 +557,7 @@ export function OperationsDashboard({ user, onLogout, logoutLoading }: Props) {
                       onChange={() => setCreateError("")}
                       className="ops-form"
                     >
-                      <AddressField key={`address-${createRevision}`} wide />
+                      <DestinationsField key={`address-${createRevision}`} wide />
                       {admin && (
                         <label>
                           Chofer

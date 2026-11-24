@@ -151,7 +151,7 @@ def process(pid,title,nodes,flows):PROCESSES.append((pid,title,nodes,flows))
 # nodo: id, tipo, etiqueta, x, y, ancho, alto
 process('Preparar','Registro, asignación e inicio',[
  ('s','startEvent','Necesidad de traslado',35,125,30,30),
- ('crear','userTask','Usuario: registrar\ndestino, actividad y CC',110,103,175,75),
+ ('crear','userTask','Usuario: registrar\ndestinos, actividad y CC',110,103,175,75),
  ('guardar','serviceTask','Sistema: guardar\nPENDING / ASSIGNED',330,103,165,75),
  ('cancelarQ','exclusiveGateway','¿Cancelar antes\nde iniciar?',550,115,50,50),
  ('cancelar','userTask','Administración: cancelar\ncon motivo',520,300,150,70),
@@ -264,7 +264,7 @@ def relation(d, points, x, y, label):
     d.line(points)
     d.text(x,y,label,9,True,'start')
 
-d=Diagram(1150,650)
+d=Diagram(1150,780)
 relation(d,[(245,116),(350,116)],265,107,'1 : 0..*')
 relation(d,[(245,333),(300,333),(300,200),(350,200)],304,191,'0..1 : 0..*')
 relation(d,[(615,172),(780,172)],654,163,'1 : 0..*')
@@ -275,14 +275,16 @@ relation(d,[(245,512),(350,512)],266,503,'0..1 : 0..*')
 relation(d,[(615,260),(710,260),(710,490),(801,490)],717,477,'1 : 0..*')
 relation(d,[(245,490),(280,490),(280,245),(350,245)],285,236,'0..1 : 0..* (x2)')
 relation(d,[(245,544),(740,544),(740,344),(780,344)],746,335,'1 : 0..*')
+relation(d,[(615,268),(645,268),(645,680),(623,680)],651,650,'1 : 1..*')
 entity(d,'establecimientos',25,70,220,['codigo','zona_horaria'])
 entity(d,'centros_costos',25,282,220,['codigo','nombre'])
 entity(d,'usuarios',25,456,220,['nombre_usuario'])
-entity(d,'viajes',350,70,265,['destino / actividad','estado / version','fecha_inicio / fecha_fin','odometro_salida','odometro_llegada'])
+entity(d,'viajes',350,70,265,['actividad','estado / version','fecha_inicio / fecha_fin','odometro_salida','odometro_llegada'])
 entity(d,'viajes_tramos',780,172,315,['fecha_inicio / fecha_fin','odometro_inicio / odometro_fin','id_chofer_activo (única)','id_vehiculo_activo (única)','id_viaje_activo (única)'])
 entity(d,'vehiculos',837,25,240,['codigo_movil'])
 entity(d,'revisiones_direccion',350,430,273,['revision / direccion','fecha_creacion'])
 entity(d,'folios_viajes_anteriores',801,460,310,['alias de folio previo'])
+entity(d,'viajes_destinos',350,620,273,['orden (único por viaje)','direccion'])
 d.svg(SRC/'MER-Pulso.svg')
 u=Diagram(1100,600)
 relation(u,[(230,99),(365,99)],263,90,'1 : 0..*')
@@ -346,9 +348,10 @@ for name,meta in SCHEMA['tables'].items():
     sql[name]=re.sub(r' AUTO_INCREMENT=\d+', '', meta['ddl'])+';'
 dictionary += [PageBreak(),p('Restricciones y alcance','Heading1')]
 rules=[
- 'El modelo contiene 14 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.',
+ 'El modelo contiene 15 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.',
  'usuarios hereda id_establecimiento desde funcionarios. El traslado del funcionario cambia la institución efectiva de su cuenta y de sus sesiones vigentes. Las participaciones históricas permanecen vinculadas a la institución del viaje.',
- 'viajes almacena el propósito, destino, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.',
+ 'viajes almacena el propósito, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.',
+ 'viajes_destinos guarda las direcciones del viaje en orden de recorrido (orden 1, 2, 3…), con hasta 10 paradas, orden único por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. La ruta completa se muestra unida en el orden de sus paradas, y cada corrección guarda la ruta anterior en revisiones_direccion.',
  'El relevo cierra el tramo vigente, actualiza el odómetro del vehículo saliente y abre otro tramo en el mismo viaje. La operación es transaccional y exige la versión vigente. El folio, la fecha inicial y el centro de costos del viaje se conservan.',
  'viajes_tramos contiene id_viaje, id_chofer, id_vehiculo, fecha_inicio, fecha_fin, odometro_inicio y odometro_fin. Sus columnas generadas id_chofer_activo, id_vehiculo_activo y id_viaje_activo son generadas y almacenadas, tienen índice único y se activan cuando fecha_fin está vacía.',
  'Fuente única de verdad (informe del 09-11, sección 3): viajes_tramos es la única fuente de los recursos efectivamente usados (chofer, vehículo, fecha_inicio y fecha_fin) y de los kilómetros recorridos. viajes.id_chofer y id_vehiculo registran la asignación planificada, necesaria antes de que exista un tramo; durante el viaje la aplicación los iguala al tramo vigente en la misma transacción del relevo, y los informes de participación se calculan desde los tramos. viajes.odometro_salida y odometro_llegada son la lectura global de salida y llegada que pidió la segunda revisión; no se restan para obtener distancia. vehiculos.odometro_actual es estado derivado: la aplicación lo actualiza al cerrar cada tramo, en la misma transacción, y rechaza lecturas menores a la vigente.',
@@ -371,20 +374,20 @@ writer=PdfWriter()
 for f in ['02-Pulso-Modelo-Entidad-Relacion.pdf','_diccionario.pdf']:writer.append(str(OUT/f))
 writer.write(str(OUT/'_mer.pdf'));writer.close();(OUT/'_mer.pdf').replace(OUT/'02-Pulso-Modelo-Entidad-Relacion.pdf');(OUT/'_diccionario.pdf').unlink()
 schema_order=['establecimientos','roles','funcionarios','tipos_vehiculo','marcas_vehiculo','modelos_vehiculo',
- 'usuarios','vehiculos','centros_costos','viajes','viajes_tramos','revisiones_direccion','sesiones','registros_auditoria','folios_viajes_anteriores']
+ 'usuarios','vehiculos','centros_costos','viajes','viajes_tramos','viajes_destinos','revisiones_direccion','sesiones','registros_auditoria','folios_viajes_anteriores']
 (SRC/'modelo-estructura.sql').write_text('-- Pulso: solo estructura de referencia. Instalar con migraciones CodeIgniter.\n\n'+'\n\n'.join(sql[name] for name in schema_order)+'\n',encoding='utf-8')
 (SRC/'modelo-metadatos.json').write_text(json.dumps(SCHEMA,ensure_ascii=False,indent=2),encoding='utf-8')
-markdown('MER-modelo-entidad-relacion.md','MER y diccionario', [('Fuente','Metadatos de 14 entidades de negocio y una tabla de alias de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.'),('Integridad','\n\n'.join(rules))])
+markdown('MER-modelo-entidad-relacion.md','MER y diccionario', [('Fuente','Metadatos de 15 entidades de negocio y una tabla de alias de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.'),('Integridad','\n\n'.join(rules))])
 
 # UML de casos de uso: actores, asociaciones y frontera del sistema.
 CASES=[
  ('CU-01','Iniciar y cerrar sesión',['Chofer','Administración'],'Cuenta y establecimiento activos.','Validar credenciales; crear sesión con token aleatorio y hash en base; revocar al salir.','Credenciales inválidas: rechazo; cinco fallos bloquean 15 minutos. Clave Única solo si está configurada.'),
- ('CU-02','Registrar servicio',['Chofer','Administración'],'Sesión válida.','Ingresar destino, actividad y centro o Indefinido; opcionalmente chofer y vehículo. Guardar o iniciar.','Sin chofer: PENDING. Con chofer: ASSIGNED. El chofer queda asignado a sí mismo. startNow fallido revierte el registro completo.'),
+ ('CU-02','Registrar servicio',['Chofer','Administración'],'Sesión válida.','Ingresar una o más direcciones en orden de recorrido (hasta 10), actividad y centro o Indefinido; opcionalmente chofer y vehículo. Guardar o iniciar.','Sin chofer: PENDING. Con chofer: ASSIGNED. El chofer queda asignado a sí mismo. startNow fallido revierte el registro completo.'),
  ('CU-03','Consultar servicios e historial',['Chofer','Administración'],'Sesión válida.','Filtrar por estado; consultar datos y lecturas del viaje. Administración consulta también por chofer o vehículo.','Chofer consulta sus servicios asignados y aquellos donde participó, dentro de su institución vigente. Solo opera el chofer actualmente asignado. Administración solo consulta su institución.'),
  ('CU-04','Iniciar viaje',['Chofer'],'ASSIGNED y chofer actual; vehículo activo y odómetro conocido.','Tomar automáticamente odómetro actual, registrar salida y pasar a IN_PROGRESS.','Recurso ocupado: rechazo. El administrador no puede iniciar en nombre del chofer. Un cambio de vehículo ya asignado requiere administración.'),
  ('CU-05','Finalizar viaje',['Chofer'],'IN_PROGRESS; chofer actualmente asignado.','Ingresar odómetro de llegada; validar; registrar llegada, actualizar vehículo y marcar COMPLETED.','Lectura inferior o versión antigua: rechazo sin cierre. Administración no ejecuta complete por el chofer.'),
  ('CU-06','Asignar o reasignar recursos',['Administración'],'PENDING, ASSIGNED o IN_PROGRESS.','Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el tramo actual e iniciar otro dentro del mismo viaje en la misma transacción.','Sin cambios: rechazo. Recurso ocupado o lectura inválida: se revierte toda la operación. No modifica la identidad del vehículo.'),
- ('CU-07','Corregir dirección',['Administración'],'Servicio existente de la institución y versión vigente.','Guardar corrección y revisión de dirección; el chofer ve aviso y puede marcar Entendido.','El reconocimiento del aviso se conserva localmente en el navegador; no es un acuse centralizado de lectura.'),
+ ('CU-07','Corregir direcciones',['Administración'],'Servicio existente de la institución y versión vigente.','Agregar, quitar o corregir paradas y guardar la nueva ruta como revisión; el chofer ve aviso y puede marcar Entendido.','El reconocimiento del aviso se conserva localmente en el navegador; no es un acuse centralizado de lectura.'),
  ('CU-08','Asignar centro de costos',['Administración'],'Servicio existente, centro activo de la institución.','Cambiar centro o dejar Indefinido; registrar cambio auditado.','No se aceptan centros ajenos ni inactivos. El centro puede asignarse después del inicio o del cierre.'),
  ('CU-09','Cancelar antes del inicio',['Administración'],'PENDING o ASSIGNED, fecha_inicio nulo.','Registrar motivo y pasar a CANCELLED con fecha.','IN_PROGRESS y COMPLETED: rechazo. No hay cierre de cancelación, km cancelados ni creación automática de retorno.'),
  ('CU-10','Registrar vehículo',['Administración'],'Datos de identificación revisados.','Registrar rol, patente, tipo, modelo, año y kilometraje inicial.','Identificadores duplicados o valores inválidos: rechazo. Tras crear, los datos identificativos quedan fijos.'),
@@ -447,10 +450,10 @@ REQS=[
  ('TEC-08','Must','Facilitar integración de autenticación con Clave Única.','Implementado; piloto pendiente','Inicio OAuth, state de un solo uso, callback, consulta de identidad y vínculo a RUN registrado. Falta validación con proveedor real.','ClaveUnicaClient; AuthController; AuthRepository; TestAuth'),
  ('INS-01','Must','Instalación nueva configurable sin credenciales precargadas.','Verificado local','/configurar solo existe mientras no hay instituciones; exige un código de un solo uso guardado en writable/, crea institución y administrador y se cierra al usarse. Probado desde un clon con base vacía.','SetupRepository; SetupPage; pulso:prueba-configuracion'),
  ('DOC-01','Must','Diagrama de procesos BPMN.','Entregado','Tres procesos BPMN descriptivos con XML editable y DI, SVG y PDF.','01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn'),
- ('DOC-02','Must','Modelo entidad-relación.','Entregado','Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
+ ('DOC-02','Must','Modelo entidad-relación.','Entregado','Quince entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.','02-Pulso-Modelo-Entidad-Relacion.pdf'),
  ('DOC-03','Must','Casos de uso UML.','Entregado','Actores, frontera del sistema y dieciséis casos con flujos y excepciones.','03-Pulso-Casos-de-Uso-UML.pdf'),
  ('DOC-04','Must','Copia de requerimientos levantados; MoSCoW deseable.','Entregado para revisión','Matriz derivada del correo TI y acuerdos del usuario; debe ser validada por la contraparte funcional.','04-Pulso-Requerimientos-MoSCoW.pdf'),
- ('RF-01','Must','Crear servicio con destino, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o destino no se guarda. Indefinido deja id_centro_costo vacío y se asigna después.','ServiceEngine::create; CostCenterField'),
+ ('RF-01','Must','Crear servicio con destinos, actividad y centro de costos o Indefinido.','Verificado local','Sin actividad o sin al menos un destino no se guarda. Indefinido deja id_centro_costo vacío y se asigna después.','ServiceEngine::create; CostCenterField'),
  ('RF-02','Must','Solo un servicio simultáneo por chofer y vehículo.','Verificado local','Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.','viajes_tramos; ServiceEngine; prueba concurrente'),
  ('RF-03','Must','Iniciar y finalizar desde el chofer asignado.','Verificado local','Inicio toma lectura del vehículo; cierre exige odómetro válido y registra fechas. Administración no suplanta al chofer.','ServiceEngine start / complete'),
  ('RF-04','Must','Cancelación solo administrativa y previa al inicio.','Verificado local','PENDING / ASSIGNED sin fecha_inicio. IN_PROGRESS no se cancela.','ServiceEngine cancel; prueba de rechazo sin efectos'),
@@ -461,6 +464,7 @@ REQS=[
  ('RF-09','Must','Totales por centro con viajes y km.','Verificado local','Completados y cancelados separados; km solo completados con lecturas completas. Mostrar centros con actividad e incluir restantes opcionalmente.','ReportRepository::summary; CostCenterReport'),
  ('RF-10','Must','Historial de servicios por chofer y vehículo.','Implementado','Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.','OperationsDashboard; ServiceRepository'),
  ('RF-11','Must','Administración crea cuentas de chofer y de administración.','Verificado local','Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.','AccountRepository; AccountsPanel; pruebas API'),
+ ('RF-12','Must','Viaje con una o más direcciones en orden de recorrido.','Verificado local','Hasta 10 paradas por viaje en viajes_destinos, ordenadas y únicas por viaje. Administración puede agregar, quitar o corregir paradas; cada cambio queda como revisión de la ruta y el chofer recibe el aviso. El enlace a Maps abre la ruta completa.','motor de viajes; campo de destinos; pruebas API'),
  ('MER-01','Must','PK enteras autoincrementables y nomenclatura institucional en español.','Verificado local','PK id_[tabla] enteras y autoincrementables. Todas las tablas, columnas, índices y restricciones están en español; una prueba de dominio falla si reaparece un nombre en inglés.','ConsolidateTrips; SpanishColumns; pulso:prueba-dominio; diccionario físico'),
  ('MER-02','Must','Una entidad de viaje con lecturas de salida y llegada.','Verificado local','Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.','viajes; ServiceEngine; pruebas de relevo'),
  ('MER-03','Must','Catálogos de roles, funcionarios y flota.','Implementado','roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.','schema-viajes.sql; pulso:roles; alta de vehículo'),

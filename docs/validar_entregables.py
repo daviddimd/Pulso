@@ -36,7 +36,7 @@ metadata=json.loads((src/'modelo-metadatos.json').read_text(encoding='utf-8'))
 primary_keys={'establecimientos':'id_establecimiento','usuarios':'id_usuario','vehiculos':'id_vehiculo',
     'centros_costos':'id_centro_costo','viajes':'id_viaje','revisiones_direccion':'id_revision_direccion',
     'sesiones':'id_sesion','registros_auditoria':'id_registro_auditoria','roles':'id_rol','funcionarios':'id_funcionario',
-    'tipos_vehiculo':'id_tipo_vehiculo','marcas_vehiculo':'id_marca_vehiculo','modelos_vehiculo':'id_modelo_vehiculo','viajes_tramos':'id_viaje_tramo','folios_viajes_anteriores':'id_folio_anterior'}
+    'tipos_vehiculo':'id_tipo_vehiculo','marcas_vehiculo':'id_marca_vehiculo','modelos_vehiculo':'id_modelo_vehiculo','viajes_tramos':'id_viaje_tramo','viajes_destinos':'id_viaje_destino','folios_viajes_anteriores':'id_folio_anterior'}
 assert set(metadata['tables'])==set(primary_keys)
 for name,table in metadata['tables'].items():
     keys=[c for c in table['columns'] if c['COLUMN_KEY']=='PRI']
@@ -61,4 +61,4 @@ with zipfile.ZipFile(root/'output/Pulso-Entregables-TI-2026-11-22.zip','w',zipfi
     for p in sorted(pdfs.glob('0?-Pulso-*.pdf')):archive.write(p,'pdf/'+p.name)
     names=archive.namelist()
     assert not any('.env' in n or 'node_modules' in n or 'vendor/' in n or '.runtime/' in n for n in names)
-print('BPMN XSD OMG y conectividad: correctos. MER: 14 entidades y alias históricos con claves verificadas. UML: 16 casos. PDF: 5, texto válido.')
+print('BPMN XSD OMG y conectividad: correctos. MER: 15 entidades y alias históricos con claves verificadas. UML: 16 casos. PDF: 5, texto válido.')

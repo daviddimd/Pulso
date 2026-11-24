@@ -30,6 +30,7 @@ const messages: Record<string, string> = {
   HANDOVER_ODOMETER_REQUIRED: "Registra el kilometraje del vehículo que termina el viaje.",
   INVALID_TRANSITION: "Esta operación ya no corresponde al estado del servicio.",
   INVALID_SERVICE_DATA: "Revisa los datos obligatorios y sus formatos.",
+  INVALID_DESTINATIONS: "Ingresa entre 1 y 10 direcciones para el viaje.",
   INVALID_ACCOUNT_DATA: "Revisa el nombre, el rol y el código de róster.",
   INVALID_USERNAME:
     "El usuario debe tener entre 3 y 50 caracteres: letras, números, punto, guion o guion bajo.",
@@ -96,6 +97,7 @@ export type Service = {
   version: number;
   status: string;
   serviceAddress: string;
+  destinations: string[];
   originalAddress: string;
   actionPerformed: string;
   driverId: string | null;

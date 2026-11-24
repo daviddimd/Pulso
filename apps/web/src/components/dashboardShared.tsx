@@ -62,3 +62,17 @@ export type Mutation = (
   method?: string,
   onError?: (message: string) => void,
 ) => Promise<boolean>;
+
+export function routeLink(destinations: string[]): string {
+  if (destinations.length <= 1) {
+    return (
+      "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(destinations[0] ?? "")
+    );
+  }
+  const query = new URLSearchParams({
+    api: "1",
+    destination: destinations[destinations.length - 1],
+    waypoints: destinations.slice(0, -1).join("|"),
+  });
+  return "https://www.google.com/maps/dir/?" + query;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Icon } from "./Icon";
 import { CostCenterField, UNDEFINED_COST_CENTER } from "./CostCenterField";
-import { AddressField } from "./AddressField";
+import { DestinationsField } from "./DestinationsField";
 import {
   api,
   labels,
@@ -19,6 +19,7 @@ import {
   vehicleLabel,
   vehicleOptions,
   driverOptions,
+  routeLink,
 } from "./dashboardShared";
 
 export function ServiceDisclosure({
@@ -97,7 +98,7 @@ export function ServiceCard({
       body.vehicleId = text(f, "vehicle") || null;
       if (text(f, "km")) body.odometerKm = Number(text(f, "km"));
     }
-    if (edit.command === "address") body.serviceAddress = text(f, "address");
+    if (edit.command === "address") body.destinations = f.getAll("address").map(String);
     if (edit.command === "cost-center")
       body.costCenterId =
         text(f, "costCenter") === UNDEFINED_COST_CENTER ? null : text(f, "costCenter");
@@ -184,19 +185,24 @@ export function ServiceCard({
         {s.costCenter ? s.costCenter.code + " · " + s.costCenter.name : "Indefinido"}
       </p>
       <div className="ops-service-destination">
-        <span>Destino</span>
-        <p>{s.serviceAddress}</p>
+        <span>{s.destinations.length > 1 ? "Ruta" : "Destino"}</span>
+        {s.destinations.length > 1 ? (
+          <ol className="ops-route">
+            {s.destinations.map((address, i) => (
+              <li key={i}>{address}</li>
+            ))}
+          </ol>
+        ) : (
+          <p>{s.serviceAddress}</p>
+        )}
         <a
           className="ops-destination-link"
-          href={
-            "https://www.google.com/maps/search/?api=1&query=" +
-            encodeURIComponent(s.serviceAddress)
-          }
+          href={routeLink(s.destinations)}
           target="_blank"
           rel="noreferrer"
         >
           <Icon name="pin" />
-          Ver en Maps
+          {s.destinations.length > 1 ? "Ver ruta en Maps" : "Ver en Maps"}
           <Icon name="arrow" />
         </a>
       </div>
@@ -268,7 +274,7 @@ export function ServiceCard({
             </p>
           )}
           {edit.command === "address" && (
-            <AddressField label="Dirección corregida" initial={edit.snapshot.serviceAddress} />
+            <DestinationsField label="Destinos corregidos" initial={edit.snapshot.destinations} />
           )}
           {edit.command === "assignment" && (
             <label>
