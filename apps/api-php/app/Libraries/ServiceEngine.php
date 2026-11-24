@@ -17,7 +17,7 @@ final class ServiceEngine
         }
         $key = match ($table) { 'usuarios' => 'id_usuario', 'vehiculos' => 'id_vehiculo', 'centros_costos' => 'id_centro_costo' };
         $query = $this->db->table($table)->select("$table.*");
-        if ($table === 'usuarios') $query->join('funcionarios f', 'f.id_funcionario=usuarios.id_funcionario')->join('roles r', 'r.id_rol=usuarios.id_rol')->where('r.codigo', 'DRIVER');
+        if ($table === 'usuarios') $query->join('funcionarios f', 'f.id_funcionario=usuarios.id_funcionario')->join('roles r', 'r.id_rol=usuarios.id_rol')->where('r.codigo', 'CHOFER');
         $row = $query->where("$table.$key", $id)->where('id_establecimiento', $actor['establishmentId'])->where('activo', 1)->get()->getRowArray();
         if (!$row) {
             throw new DomainException(match($table) { 'usuarios' => 'DRIVER_UNAVAILABLE', 'vehiculos' => 'VEHICULO_NO_DISPONIBLE', default => 'COST_CENTER_UNAVAILABLE' }, 400);
@@ -40,13 +40,13 @@ final class ServiceEngine
             if (isset($body['startNow']) && !is_bool($body['startNow'])) throw new DomainException('INVALID_SERVICE_DATA', 400);
             $now = UnitOfWork::now();
             $row = ['id_establecimiento' => $actor['establishmentId'], 'id_chofer' => $driver, 'id_vehiculo' => $vehicle,
-                'id_centro_costo' => $cc, 'id_usuario_creador' => $actor['id'], 'origen' => $actor['role'], 'version' => 0,
-                'estado' => $driver ? 'ASSIGNED' : 'PENDING', 'destino' => $address, 'actividad' => $activity,
+                'id_centro_costo' => $cc, 'id_usuario_creador' => $actor['id'], 'origen' => Codes::stored(Codes::ORIGIN, $actor['role']), 'version' => 0,
+                'estado' => $driver ? 'ASIGNADO' : 'PENDIENTE', 'destino' => $address, 'actividad' => $activity,
                 'fecha_creacion' => $now, 'fecha_actualizacion' => $now];
             $id = $this->insertTrip($row);
             $row['id_viaje'] = $id;
             $this->revision($id, $address, $actor, 1);
-            AuditService::log($actor['establishmentId'], $actor['id'], 'BITACORA', $id, 'CREATE', null, $row);
+            AuditService::log($actor['establishmentId'], $actor['id'], 'VIAJE', $id, 'CREAR', null, $row);
             if ($body['startNow'] ?? false) $this->apply('start', $row, ['version' => 0], $actor);
             return $id;
         });
@@ -74,35 +74,35 @@ final class ServiceEngine
         switch ($command) {
             case 'start':
                 if (!$own) throw new DomainException('FORBIDDEN', 403);
-                if ($s['estado'] !== 'ASSIGNED') throw new DomainException('INVALID_TRANSITION', 400);
+                if ($s['estado'] !== 'ASIGNADO') throw new DomainException('INVALID_TRANSITION', 400);
                 $vehicleId = isset($s['id_vehiculo']) ? (string)$s['id_vehiculo'] : UnitOfWork::id($b['vehicleId'] ?? null);
                 if ($s['id_vehiculo'] && isset($b['vehicleId']) && $b['vehicleId'] !== (string)$s['id_vehiculo']) throw new DomainException('ADMIN_REASSIGNMENT_REQUIRED', 403);
-                $changes = ['id_vehiculo' => $vehicleId, 'estado' => 'IN_PROGRESS', 'fecha_inicio' => $now,
+                $changes = ['id_vehiculo' => $vehicleId, 'estado' => 'EN_CURSO', 'fecha_inicio' => $now,
                     'odometro_salida' => $this->openLeg((string)$s['id_viaje'], $s['id_chofer'], $vehicleId, $a, $now)];
                 break;
             case 'complete':
                 if (!$own) throw new DomainException('FORBIDDEN', 403);
-                if ($s['estado'] !== 'IN_PROGRESS') throw new DomainException('INVALID_TRANSITION', 400);
+                if ($s['estado'] !== 'EN_CURSO') throw new DomainException('INVALID_TRANSITION', 400);
                 $km = UnitOfWork::km($b['odometerKm'] ?? null);
                 $this->recordArrival($s, $km, $now);
-                $changes = ['estado' => 'COMPLETED', 'fecha_fin' => $now, 'odometro_llegada' => $km];
+                $changes = ['estado' => 'FINALIZADO', 'fecha_fin' => $now, 'odometro_llegada' => $km];
                 break;
             case 'assignment':
                 if (!$admin) throw new DomainException('FORBIDDEN', 403);
-                if (!in_array($s['estado'], ['PENDING','ASSIGNED','IN_PROGRESS'], true)) throw new DomainException('INVALID_TRANSITION', 400);
+                if (!in_array($s['estado'], ['PENDIENTE','ASIGNADO','EN_CURSO'], true)) throw new DomainException('INVALID_TRANSITION', 400);
                 $driver = array_key_exists('driverId', $b) ? UnitOfWork::id($b['driverId']) : (isset($s['id_chofer']) ? (string)$s['id_chofer'] : null);
                 $vehicle = array_key_exists('vehicleId', $b) ? UnitOfWork::id($b['vehicleId']) : (isset($s['id_vehiculo']) ? (string)$s['id_vehiculo'] : null);
                 if (($driver ?? '') === (string)$s['id_chofer'] && ($vehicle ?? '') === (string)$s['id_vehiculo']) throw new DomainException('ASSIGNMENT_UNCHANGED', 400);
-                $this->resource('usuarios', $driver, $a, $s['estado'] === 'IN_PROGRESS');
-                $this->resource('vehiculos', $vehicle, $a, $s['estado'] === 'IN_PROGRESS');
+                $this->resource('usuarios', $driver, $a, $s['estado'] === 'EN_CURSO');
+                $this->resource('vehiculos', $vehicle, $a, $s['estado'] === 'EN_CURSO');
                 $this->available($driver, $vehicle, (string)$s['id_viaje']);
-                if ($s['estado'] === 'IN_PROGRESS') {
+                if ($s['estado'] === 'EN_CURSO') {
                     if (!isset($b['odometerKm'])) throw new DomainException('HANDOVER_ODOMETER_REQUIRED', 400);
                     $km = UnitOfWork::km($b['odometerKm']);
                     $this->recordArrival($s, $km, $now);
                     $this->openLeg((string)$s['id_viaje'], $driver, $vehicle, $a, $now);
                 }
-                $changes = ['id_chofer' => $driver, 'id_vehiculo' => $vehicle, 'estado' => $s['estado'] === 'IN_PROGRESS' ? 'IN_PROGRESS' : ($driver ? 'ASSIGNED' : 'PENDING')];
+                $changes = ['id_chofer' => $driver, 'id_vehiculo' => $vehicle, 'estado' => $s['estado'] === 'EN_CURSO' ? 'EN_CURSO' : ($driver ? 'ASIGNADO' : 'PENDIENTE')];
                 break;
             case 'address':
                 if (!$admin) throw new DomainException('FORBIDDEN', 403);
@@ -118,12 +118,12 @@ final class ServiceEngine
                 break;
             case 'cancel':
                 if (!$admin) throw new DomainException('FORBIDDEN', 403);
-                if (!in_array($s['estado'], ['PENDING','ASSIGNED'], true) || !empty($s['fecha_inicio'])) throw new DomainException('CANCEL_ONLY_BEFORE_START', 400);
-                $changes = ['estado' => 'CANCELLED', 'fecha_cancelacion' => $now, 'motivo_cancelacion' => UnitOfWork::text($b['reason'] ?? $b['voidReason'] ?? null, 500)];
+                if (!in_array($s['estado'], ['PENDIENTE','ASIGNADO'], true) || !empty($s['fecha_inicio'])) throw new DomainException('CANCEL_ONLY_BEFORE_START', 400);
+                $changes = ['estado' => 'CANCELADO', 'fecha_cancelacion' => $now, 'motivo_cancelacion' => UnitOfWork::text($b['reason'] ?? $b['voidReason'] ?? null, 500)];
                 break;
             default: throw new DomainException('NOT_FOUND', 404);
         }
-        $this->save($s, $changes, $a, strtoupper(str_replace('-', '_', $command)), $now);
+        $this->save($s, $changes, $a, Codes::stored(Codes::ACTION, strtoupper(str_replace('-', '_', $command))), $now);
         return null;
     }
 
@@ -132,7 +132,7 @@ final class ServiceEngine
         $changes += ['version' => (int)$s['version'] + 1, 'fecha_actualizacion' => $now];
         $ok = $this->db->table('viajes')->where('id_viaje', $s['id_viaje'])->where('version', $s['version'])->update($changes);
         if (!$ok || $this->db->affectedRows() !== 1) throw new DomainException('STALE_SERVICE', 409);
-        AuditService::log($a['establishmentId'], $a['id'], 'BITACORA', (string)$s['id_viaje'], $action, $s, array_merge($s, $changes));
+        AuditService::log($a['establishmentId'], $a['id'], 'VIAJE', (string)$s['id_viaje'], $action, $s, array_merge($s, $changes));
     }
     private function available(?string $driver, ?string $vehicle, ?string $except = null): void
     {
@@ -177,6 +177,6 @@ final class ServiceEngine
     private function revision(string $service, string $address, array $actor, int $number): void
     {
         $this->db->table('revisiones_direccion')->insert(['id_establecimiento' => $actor['establishmentId'], 'id_viaje' => $service,
-            'revision' => $number, 'direccion' => $address, 'id_usuario_actor' => $actor['id'], 'origen' => $actor['role'], 'fecha_creacion' => UnitOfWork::now()]);
+            'revision' => $number, 'direccion' => $address, 'id_usuario_actor' => $actor['id'], 'origen' => Codes::stored(Codes::ORIGIN, $actor['role']), 'fecha_creacion' => UnitOfWork::now()]);
     }
 }

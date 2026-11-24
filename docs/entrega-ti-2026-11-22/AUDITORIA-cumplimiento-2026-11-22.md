@@ -11,42 +11,42 @@ Cumplimiento local del stack y aislamiento. Aceptación integral pendiente: vers
 TEC-01: CodeIgniter 4.x y PHP 8.4.x, separación MVC.
 Estado: Verificado local
 CI 4.7.5 / PHP 8.4.27; controladores, repositorios, dominio y vista React.
-Evidencia: composer.lock; app/Controllers; app/Models; apps/web/src
+Evidencia: registro de versiones de Composer; controladores y modelos del servidor; código de la interfaz
 
-TEC-02: Frontend HTML5, Bootstrap 5.x y React; Ajax mediante JavaScript.
+TEC-02: Interfaz: HTML5, Bootstrap 5.x y React; Ajax mediante JavaScript.
 Estado: Verificado local
 React 19.2.8; Bootstrap utilities 5.3.8; fetch REST. No requiere jQuery al usar React.
-Evidencia: apps/web/package.json; src/main.tsx; src/operations.ts
+Evidencia: manifiesto de dependencias de la interfaz; punto de entrada de la interfaz; cliente de la API en la interfaz
 
 TEC-03: Base de datos: MySQL 16.x, según correo de TI.
 Estado: Pendiente TI
 Motor local MySQL 8.4.11. Confirmar producto y versión exactos; no asumir PostgreSQL ni MariaDB.
-Evidencia: metadata de la base; migración CreatePulsoTables
+Evidencia: metadatos de la base; migración inicial
 
 TEC-04: PDF con FPDF 1.9.x.
 Estado: Verificado local
 FPDF 1.9.0; respuestas PDF verificadas en pruebas de API.
-Evidencia: PdfExporter.php; ExportsController.php; CostCentersController.php
+Evidencia: generador PDF; controlador de exportaciones; controlador de centros de costos
 
 TEC-05: Excel con SheetJS / xlsx.
 Estado: Verificado local
-SheetJS 0.20.3 compilado dentro del frontend; sin carga de scripts remotos al exportar.
-Evidencia: src/xlsx-export.ts; lockfile frontend
+SheetJS 0.20.3 compilado dentro de la interfaz; sin carga de scripts remotos al exportar.
+Evidencia: módulo de exportación a Excel; registro de versiones de la interfaz
 
 TEC-06: Bibliotecas y fuentes servidas localmente; sin CDN en ejecución.
 Estado: Verificado estático
 CSS, JS, fuentes y SVG locales. La URL npm de SheetJS se usa al instalar/compilar, no por el navegador en producción.
-Evidencia: main.tsx; index.html compilado; assets locales
+Evidencia: punto de entrada de la interfaz; página compilada; recursos locales
 
 TEC-07: Operación independiente por establecimiento.
 Estado: Verificado local
 Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de la primera institución en /configurar y de las siguientes por consola.
-Evidencia: AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento
+Evidencia: filtro de sesión; repositorios; unidad transaccional; pruebas de aislamiento
 
 TEC-08: Facilitar integración de autenticación con Clave Única.
 Estado: Implementado; piloto pendiente
 Inicio OAuth, state de un solo uso, callback, consulta de identidad y vínculo a RUN registrado. Falta validación con proveedor real.
-Evidencia: ClaveUnicaClient; AuthController; AuthRepository; TestAuth
+Evidencia: cliente ClaveÚnica; controlador de acceso; repositorio de acceso; pruebas de acceso
 
 DOC-01: Diagrama de procesos BPMN.
 Estado: Entregado
@@ -74,7 +74,7 @@ Suite local PHP/MySQL y sesión, build y lint correctos. No hay pruebas de carga
 
 ## Arquitectura
 
-Controllers REST + Models/repositorios + Libraries de dominio; vista React compilada servida por FrontendController. Sin Node en ejecución productiva.
+Controllers REST + Models/repositorios + Libraries de dominio; vista React compilada servida por controlador de la interfaz. Sin Node en ejecución productiva.
 
 ## Salidas externas
 
@@ -82,4 +82,4 @@ No hay scripts CSS o fuentes de CDN en ejecución. Maps es enlace voluntario; Cl
 
 ## Límites
 
-Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origen=LEGACY preserva registros históricos sin permitir nuevas cancelaciones en ruta.
+Aislamiento lógico por aplicación, FK por id y usuario de una sola institución. Auditoría no criptográficamente inmutable. origen HISTORICO preserva registros históricos sin permitir nuevas cancelaciones en ruta.

@@ -28,12 +28,23 @@ final class ColumnNames
             'arrival_odometer_km' => 'odometro_llegada', 'void_reason' => 'motivo_cancelacion'],
     ];
 
-    /** Renames the keys of a row bound for $table; unknown keys are kept. */
+    /** Stored codes are Spanish too: [table][column] => Codes map. */
+    private const VALUES = [
+        'viajes' => ['estado' => Codes::STATUS, 'origen' => Codes::ORIGIN],
+        'revisiones_direccion' => ['origen' => Codes::ORIGIN],
+        'roles' => ['codigo' => Codes::ROLE],
+        'registros_auditoria' => ['tipo_entidad' => Codes::ENTITY, 'accion' => Codes::ACTION],
+    ];
+
+    /** Renames the keys of a row bound for $table and translates its stored codes; unknown keys are kept. */
     public static function translate(string $table, array $row): array
     {
         $map = (self::TABLES[$table] ?? []) + self::COMMON;
         $translated = [];
         foreach ($row as $key => $value) $translated[$map[$key] ?? $key] = $value;
+        foreach (self::VALUES[$table] ?? [] as $column => $codes) {
+            if (is_string($translated[$column] ?? null)) $translated[$column] = Codes::stored($codes, $translated[$column]);
+        }
         return $translated;
     }
 }

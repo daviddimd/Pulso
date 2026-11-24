@@ -22,8 +22,8 @@ final class ReportRepository {
     }
     public function services(bool $cancelled=false): array {
         $repo=new ServiceRepository($this->actor);
-        $q=$repo->query()->groupStart()->groupStart()->where('b.estado','COMPLETED')->where('b.fecha_fin >=',$this->start)->where('b.fecha_fin <',$this->end)->groupEnd();
-        if($cancelled) $q->orGroupStart()->where('b.estado','CANCELLED')->where('b.fecha_cancelacion >=',$this->start)->where('b.fecha_cancelacion <',$this->end)->groupEnd();
+        $q=$repo->query()->groupStart()->groupStart()->where('b.estado','FINALIZADO')->where('b.fecha_fin >=',$this->start)->where('b.fecha_fin <',$this->end)->groupEnd();
+        if($cancelled) $q->orGroupStart()->where('b.estado','CANCELADO')->where('b.fecha_cancelacion >=',$this->start)->where('b.fecha_cancelacion <',$this->end)->groupEnd();
         return array_map($repo->serialize(...),$q->groupEnd()->orderBy('b.fecha_fin')->get()->getResultArray());
     }
     public function summary(): array {

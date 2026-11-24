@@ -10,7 +10,7 @@
       <bpmn:incoming>Preparar_f0</bpmn:incoming>
       <bpmn:outgoing>Preparar_f1</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:serviceTask id="Preparar_guardar" name="Sistema: guardar PENDING / ASSIGNED">
+    <bpmn:serviceTask id="Preparar_guardar" name="Sistema: guardar PENDIENTE / ASIGNADO">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Preparar_f1</bpmn:incoming>
       <bpmn:outgoing>Preparar_f2</bpmn:outgoing>
@@ -22,12 +22,12 @@
       <bpmn:outgoing>Preparar_f3</bpmn:outgoing>
       <bpmn:outgoing>Preparar_f5</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Preparar_cancelar" name="Admin: cancelar con motivo">
+    <bpmn:userTask id="Preparar_cancelar" name="Administración: cancelar con motivo">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Preparar_f3</bpmn:incoming>
       <bpmn:outgoing>Preparar_f4</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:endEvent id="Preparar_cancelado" name="CANCELLED">
+    <bpmn:endEvent id="Preparar_cancelado" name="CANCELADO">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Preparar_f4</bpmn:incoming>
     </bpmn:endEvent>
@@ -37,7 +37,7 @@
       <bpmn:outgoing>Preparar_f6</bpmn:outgoing>
       <bpmn:outgoing>Preparar_f8</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Preparar_asignar" name="Admin: asignar chofer / vehículo">
+    <bpmn:userTask id="Preparar_asignar" name="Administración: asignar chofer / vehículo">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Preparar_f6</bpmn:incoming>
       <bpmn:outgoing>Preparar_f7</bpmn:outgoing>
@@ -59,7 +59,7 @@
       <bpmn:outgoing>Preparar_f11</bpmn:outgoing>
       <bpmn:outgoing>Preparar_f12</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="Preparar_curso" name="IN_PROGRESS Viaje activo">
+    <bpmn:endEvent id="Preparar_curso" name="EN_CURSO Viaje activo">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Preparar_f11</bpmn:incoming>
     </bpmn:endEvent>
@@ -78,7 +78,7 @@
     <bpmn:sequenceFlow id="Preparar_f12" sourceRef="Preparar_validoQ" targetRef="Preparar_iniciar" name="No: corregir / esperar" />
   </bpmn:process>
   <bpmn:process id="Ejecutar" name="Recorrido, eventual relevo y finalización" isExecutable="false">
-    <bpmn:startEvent id="Ejecutar_s" name="IN_PROGRESS">
+    <bpmn:startEvent id="Ejecutar_s" name="EN_CURSO">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:outgoing>Ejecutar_f0</bpmn:outgoing>
     </bpmn:startEvent>
@@ -94,7 +94,7 @@
       <bpmn:outgoing>Ejecutar_f2</bpmn:outgoing>
       <bpmn:outgoing>Ejecutar_f5</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Ejecutar_reasignar" name="Admin: elegir recursos y registrar km del relevo">
+    <bpmn:userTask id="Ejecutar_reasignar" name="Administración: elegir recursos y registrar km del relevo">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Ejecutar_f2</bpmn:incoming>
       <bpmn:outgoing>Ejecutar_f3</bpmn:outgoing>
@@ -126,7 +126,7 @@
       <bpmn:incoming>Ejecutar_f9</bpmn:incoming>
       <bpmn:outgoing>Ejecutar_f10</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="Ejecutar_fin" name="COMPLETED">
+    <bpmn:endEvent id="Ejecutar_fin" name="FINALIZADO">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Ejecutar_f10</bpmn:incoming>
     </bpmn:endEvent>
@@ -147,7 +147,7 @@
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:outgoing>Reportar_f0</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="Reportar_periodo" name="Admin: elegir período y tipo de reporte">
+    <bpmn:userTask id="Reportar_periodo" name="Administración: elegir período y tipo de reporte">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Reportar_f0</bpmn:incoming>
       <bpmn:outgoing>Reportar_f1</bpmn:outgoing>

@@ -38,7 +38,7 @@ final class SetupRepository
             if (!preg_match('/^[A-Za-z0-9._-]{3,50}$/', $username)) throw new DomainException('INVALID_USERNAME', 400);
             $result = (new EstablishmentRepository())->provision(trim($body['establishmentCode']), trim($body['establishmentName']),
                 $body['timezone'], $username, $body['password']);
-            AuditService::log($result['establishmentId'], $result['adminId'], 'ESTABLISHMENT', $result['establishmentId'], 'INITIAL_SETUP',
+            AuditService::log($result['establishmentId'], $result['adminId'], 'ESTABLECIMIENTO', $result['establishmentId'], 'CONFIGURACION_INICIAL',
                 null, ['code' => trim($body['establishmentCode']), 'adminUsername' => $username], $ip);
             SetupCode::clear();
             return $result + ['username' => $username];

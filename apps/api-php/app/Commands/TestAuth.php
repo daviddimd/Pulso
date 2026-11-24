@@ -7,7 +7,7 @@ use Config\Database;
 
 final class TestAuth extends BaseCommand
 {
-    protected $group='Tests'; protected $name='pulso:test-auth'; protected $description='Comprueba autenticación y alta de instituciones en pulso_test.';
+    protected $group='Tests'; protected $name='pulso:prueba-acceso'; protected $description='Comprueba autenticación y alta de instituciones en pulso_test.';
     public function run(array $params) {
         $db=Database::connect();
         if (ENVIRONMENT==='production' || env('PULSO_INTEGRATION')!=='1' || $db->database!=='pulso_test') throw new \RuntimeException('Base de pruebas no autorizada');

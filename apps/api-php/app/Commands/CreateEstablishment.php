@@ -6,9 +6,9 @@ use App\Models\EstablishmentRepository;
 final class CreateEstablishment extends BaseCommand
 {
     protected $group='Pulso';
-    protected $name='pulso:establishment';
+    protected $name='pulso:establecimiento';
     protected $description='Crea una institución independiente y su administrador inicial.';
-    protected $usage='pulso:establishment <codigo> <nombre> <zona-horaria-IANA> <usuario-admin>';
+    protected $usage='pulso:establecimiento <codigo> <nombre> <zona-horaria-IANA> <usuario-admin>';
     public function run(array $params) {
         if (count($params)!==4) { CLI::error($this->usage); return EXIT_ERROR; }
         // A dedicated environment variable avoids placing the password in command history.

@@ -9,7 +9,7 @@ use Config\Database;
 final class TestSetup extends BaseCommand
 {
     protected $group = 'Tests';
-    protected $name = 'pulso:test-setup';
+    protected $name = 'pulso:prueba-configuracion';
     protected $description = 'Verifica la configuración inicial sobre una pulso_test vacía.';
 
     public function run(array $params)
@@ -45,7 +45,7 @@ final class TestSetup extends BaseCommand
         $check(!is_file(SetupCode::path()), 'El código debe eliminarse al usarse.');
         $session = (new AuthRepository())->login('admin.nuevo', 'una-clave-larga-segura', '127.0.0.1');
         $check(($session['user']['role'] ?? null) === 'ADMIN', 'El administrador creado debe poder ingresar.');
-        $audit = $db->table('registros_auditoria')->where('accion', 'INITIAL_SETUP')->get()->getRowArray();
+        $audit = $db->table('registros_auditoria')->where('accion', 'CONFIGURACION_INICIAL')->get()->getRowArray();
         $check($audit && (string)$audit['id_establecimiento'] === $result['establishmentId'], 'La configuración debe quedar auditada en su institución.');
         $rejects(fn() => $setup->complete($body, '127.0.0.1'), 'SETUP_COMPLETED', 'Una segunda configuración debe rechazarse.');
         $check($setup->status() === ['required' => false] && !is_file(SetupCode::path()), 'Una instalación configurada no debe volver a generar código.');
@@ -58,7 +58,7 @@ final class TestSetup extends BaseCommand
         $check($auth->sessionUser($session['token']) === null, 'El restablecimiento debe cerrar las sesiones abiertas.');
         $check(isset($auth->login('admin.nuevo', 'una-clave-larga-segura', '127.0.0.1')['error']), 'La contraseña anterior debe dejar de servir.');
         $check(($auth->login('admin.nuevo', 'otra-clave-larga-segura', '127.0.0.1')['user']['role'] ?? null) === 'ADMIN', 'La contraseña nueva debe servir y desbloquear la cuenta.');
-        $check($db->table('registros_auditoria')->where('accion', 'PASSWORD_RESET_CONSOLE')->where('id_establecimiento', $result['establishmentId'])->countAllResults() === 1, 'El restablecimiento debe auditarse.');
+        $check($db->table('registros_auditoria')->where('accion', 'RESTABLECER_CONTRASENA')->where('id_establecimiento', $result['establishmentId'])->countAllResults() === 1, 'El restablecimiento debe auditarse.');
         echo "Configuración inicial: código de un solo uso, validaciones, cuenta creada y cierre verificados. Restablecimiento de contraseña verificado.\n";
     }
 }

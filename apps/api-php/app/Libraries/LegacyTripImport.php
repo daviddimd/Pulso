@@ -47,7 +47,7 @@ final class LegacyTripImport
             'DISPATCHER' => ['Despacho', 'Perfil institucional de coordinación y digitación.'],
             'REQUESTER' => ['Solicitante', 'Perfil institucional para solicitudes de viaje.'],
         ] as $code => [$name, $description]) {
-            $existing = $this->db->table($this->prefix . 'roles')->where('codigo', $code)->get()->getRowArray();
+            $existing = $this->db->table($this->prefix . 'roles')->where('codigo', $this->domain ? Codes::stored(Codes::ROLE, $code) : $code)->get()->getRowArray();
             $roles[$code] = $existing['id_rol'] ?? $this->insert('roles', ['codigo'=>$code, 'nombre_rol'=>$name, 'descripcion'=>$description]);
         }
         foreach ($rows('establishments') as $row) {

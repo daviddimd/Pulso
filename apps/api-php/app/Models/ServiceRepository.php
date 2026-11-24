@@ -1,6 +1,6 @@
 <?php
 namespace App\Models;
-use App\Libraries\{UnitOfWork, VehicleCatalog, UserAccounts};
+use App\Libraries\{Codes, UnitOfWork, VehicleCatalog, UserAccounts};
 use Config\Database;
 
 final class ServiceRepository
@@ -33,14 +33,14 @@ final class ServiceRepository
             $q->groupStart()->where('b.'.$column, $id)->orWhereIn('b.id_viaje', $participation)->groupEnd();
         }
         $all = clone $q;
-        if (!empty($filters['status'])) $q->where('b.estado', $filters['status']);
+        if (!empty($filters['status'])) $q->where('b.estado', Codes::stored(Codes::STATUS, (string)$filters['status']));
         $total = (clone $q)->countAllResults();
         $page = max(1, (int)($filters['page'] ?? 1));
         $rows = $q->orderBy('b.fecha_creacion','DESC')->orderBy('b.id_viaje','DESC')->limit(30, ($page-1)*30)->get()->getResultArray();
-        $activeQuery = (clone $all)->where('b.estado','IN_PROGRESS');
+        $activeQuery = (clone $all)->where('b.estado','EN_CURSO');
         if ($this->actor['role'] !== 'ADMIN') $activeQuery->where('b.id_chofer', $this->actor['id']);
         $active = $activeQuery->orderBy('b.fecha_inicio')->get()->getResultArray();
-        $upcoming = $all->whereIn('b.estado',['ASSIGNED','PENDING'])->orderBy('b.fecha_creacion')->get()->getResultArray();
+        $upcoming = $all->whereIn('b.estado',['ASIGNADO','PENDIENTE'])->orderBy('b.fecha_creacion')->get()->getResultArray();
         return ['entries'=>array_map($this->serialize(...),$rows), 'active'=>array_map($this->serialize(...),$active),
             'upcoming'=>array_map($this->serialize(...),$upcoming),'total'=>$total,'page'=>$page];
     }
@@ -69,7 +69,7 @@ final class ServiceRepository
                 'departureOdometerKm'=>$start,'arrivalOdometerKm'=>$end,'driver'=>$driverDto($u),'vehicle'=>$vehicleDto($v)];
         }
         $revs = $this->db->table('revisiones_direccion')->where('id_establecimiento',$this->actor['establishmentId'])->where('id_viaje',(string)$s['id_viaje'])->orderBy('revision','DESC')->get()->getResultArray();
-        return ['id'=>(string)$s['id_viaje'],'version'=>(int)$s['version'],'status'=>$s['estado'],
+        return ['id'=>(string)$s['id_viaje'],'version'=>(int)$s['version'],'status'=>Codes::api(Codes::STATUS, $s['estado']),
             'serviceAddress'=>$s['destino'],'originalAddress'=>$revs ? $revs[count($revs)-1]['direccion'] : $s['destino'],'actionPerformed'=>$s['actividad'],
             'driverId'=>self::optionalId($s['id_chofer']),'vehicleId'=>self::optionalId($s['id_vehiculo']),'driver'=>$driver,'vehicle'=>$mobile,
             'costCenterId'=>self::optionalId($s['id_centro_costo']),'costCenter'=>$cc ? ['id'=>(string)$cc['id_centro_costo'],'code'=>$cc['codigo'],'name'=>$cc['nombre'],'active'=>(bool)$cc['activo']] : null,
@@ -77,7 +77,7 @@ final class ServiceRepository
             'createdAt'=>UnitOfWork::iso($s['fecha_creacion']),'updatedAt'=>UnitOfWork::iso($s['fecha_actualizacion']),'voidReason'=>$s['motivo_cancelacion'],
             'odometerKm'=>$arr,'departureOdometerKm'=>$dep,'distanceKm'=>$distance,'legs'=>$reading,
             'previousTripId'=>null,
-            'addressRevisions'=>array_map(fn($r)=>['id'=>(string)$r['id_revision_direccion'],'revision'=>(int)$r['revision'],'address'=>$r['direccion'],'source'=>$r['origen'],
+            'addressRevisions'=>array_map(fn($r)=>['id'=>(string)$r['id_revision_direccion'],'revision'=>(int)$r['revision'],'address'=>$r['direccion'],'source'=>Codes::api(Codes::ORIGIN, $r['origen']),
                 'createdAt'=>UnitOfWork::iso($r['fecha_creacion']),'actor'=>$driverDto($user($r['id_usuario_actor']))],$revs)];
     }
     private static function optionalId(mixed $id): ?string {
@@ -93,7 +93,7 @@ final class ServiceRepository
 
     public function audit(string $id): array {
         if (!$this->find($id)) throw new \DomainException('NOT_FOUND',404);
-        $rows=Database::connect()->table('registros_auditoria a')->select('a.*,u.nombre_completo')->join('usuarios u','u.id_usuario=a.id_usuario_actor','left')->where('a.id_establecimiento',$this->actor['establishmentId'])->whereIn('a.id_entidad', $this->auditIds($id))->where('a.tipo_entidad','BITACORA')->orderBy('a.id_registro_auditoria','DESC')->limit(200)->get()->getResultArray();
+        $rows=Database::connect()->table('registros_auditoria a')->select('a.*,u.nombre_completo')->join('usuarios u','u.id_usuario=a.id_usuario_actor','left')->where('a.id_establecimiento',$this->actor['establishmentId'])->whereIn('a.id_entidad', $this->auditIds($id))->where('a.tipo_entidad','VIAJE')->orderBy('a.id_registro_auditoria','DESC')->limit(200)->get()->getResultArray();
         return array_map(fn($r)=>['id'=>(string)$r['id_registro_auditoria'],'action'=>$r['accion'],'actor'=>$r['nombre_completo'] ? ['fullName'=>$r['nombre_completo']] : null,
             'createdAt'=>UnitOfWork::iso($r['fecha_creacion']),'beforeData'=>$r['datos_anteriores'] ? json_decode($r['datos_anteriores'],true) : null,'afterData'=>$r['datos_nuevos'] ? json_decode($r['datos_nuevos'],true) : null],$rows);
     }

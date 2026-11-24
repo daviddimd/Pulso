@@ -8,7 +8,7 @@ use Config\Database;
 final class ImportLegacy extends BaseCommand
 {
     protected $group = 'Pulso';
-    protected $name = 'pulso:import';
+    protected $name = 'pulso:importar';
     protected $description = 'Importa un respaldo JSON anterior en una base Pulso vacía.';
 
     public function run(array $params)

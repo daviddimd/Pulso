@@ -20,7 +20,7 @@ Precondición: Sesión válida.
 
 Flujo: Ingresar destino, actividad y centro o Indefinido; opcionalmente chofer y vehículo. Guardar o iniciar.
 
-Excepciones: Sin chofer: PENDING. Con chofer: ASSIGNED. El chofer queda asignado a sí mismo. startNow fallido revierte el registro completo.
+Excepciones: Sin chofer: PENDIENTE. Con chofer: ASIGNADO. El chofer queda asignado a sí mismo. opción Iniciar ahora fallido revierte el registro completo.
 
 ## CU-03 Consultar servicios e historial
 
@@ -36,9 +36,9 @@ Excepciones: Chofer consulta sus servicios asignados y aquellos donde participó
 
 Actores: Chofer
 
-Precondición: ASSIGNED y chofer actual; vehículo activo y odómetro conocido.
+Precondición: ASIGNADO y chofer actual; vehículo activo y odómetro conocido.
 
-Flujo: Tomar automáticamente odómetro actual, registrar salida y pasar a IN_PROGRESS.
+Flujo: Tomar automáticamente odómetro actual, registrar salida y pasar a EN_CURSO.
 
 Excepciones: Recurso ocupado: rechazo. El administrador no puede iniciar en nombre del chofer. Un cambio de vehículo ya asignado requiere administración.
 
@@ -46,9 +46,9 @@ Excepciones: Recurso ocupado: rechazo. El administrador no puede iniciar en nomb
 
 Actores: Chofer
 
-Precondición: IN_PROGRESS; chofer actualmente asignado.
+Precondición: EN_CURSO; chofer actualmente asignado.
 
-Flujo: Ingresar odómetro de llegada; validar; registrar llegada, actualizar vehículo y marcar COMPLETED.
+Flujo: Ingresar odómetro de llegada; validar; registrar llegada, actualizar vehículo y marcar FINALIZADO.
 
 Excepciones: Lectura inferior o versión antigua: rechazo sin cierre. Administración no ejecuta complete por el chofer.
 
@@ -56,11 +56,11 @@ Excepciones: Lectura inferior o versión antigua: rechazo sin cierre. Administra
 
 Actores: Administración
 
-Precondición: PENDING, ASSIGNED o IN_PROGRESS.
+Precondición: PENDIENTE, ASIGNADO o EN_CURSO.
 
 Flujo: Elegir recursos activos de la institución. En ruta registrar km del vehículo saliente, cerrar el tramo actual e iniciar otro dentro del mismo viaje en la misma transacción.
 
-Excepciones: Sin cambios: rechazo. Recurso ocupado o lectura inválida: rollback. No modifica la identidad del vehículo.
+Excepciones: Sin cambios: rechazo. Recurso ocupado o lectura inválida: se revierte toda la operación. No modifica la identidad del vehículo.
 
 ## CU-07 Corregir dirección
 
@@ -86,11 +86,11 @@ Excepciones: No se aceptan centros ajenos ni inactivos. El centro puede asignars
 
 Actores: Administración
 
-Precondición: PENDING o ASSIGNED, fecha_inicio nulo.
+Precondición: PENDIENTE o ASIGNADO, fecha_inicio nulo.
 
-Flujo: Registrar motivo y pasar a CANCELLED con fecha.
+Flujo: Registrar motivo y pasar a CANCELADO con fecha.
 
-Excepciones: IN_PROGRESS y COMPLETED: rechazo. No hay cierre de cancelación, km cancelados ni creación automática de retorno.
+Excepciones: EN_CURSO y FINALIZADO: rechazo. No hay cierre de cancelación, km cancelados ni creación automática de retorno.
 
 ## CU-10 Registrar vehículo
 
@@ -106,7 +106,7 @@ Excepciones: Identificadores duplicados o valores inválidos: rechazo. Tras crea
 
 Actores: Administración
 
-Precondición: Vehículo de su institución sin viaje activo y updatedAt vigente.
+Precondición: Vehículo de su institución sin viaje activo y fecha de actualización vigente vigente.
 
 Flujo: Ingresar nueva lectura entera y motivo; guardar con auditoría.
 
@@ -128,7 +128,7 @@ Actores: Operador TI
 
 Precondición: Acceso autorizado a consola del servidor.
 
-Flujo: Ejecutar pulso:establishment con código, nombre, zona IANA y usuario; clave inicial por variable de entorno.
+Flujo: Ejecutar pulso:establecimiento con código, nombre, zona IANA y usuario; clave inicial por variable de entorno.
 
 Excepciones: Código/usuario duplicado o zona inválida: rechazo. Crea institución y administrador; no copia catálogos de otras instituciones.
 

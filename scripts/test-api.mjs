@@ -6,10 +6,10 @@ import { ensureLocalDatabase } from './local-db.mjs';
 await ensureLocalDatabase();
 const env = {...process.env, CI_ENVIRONMENT:'development', PULSO_INTEGRATION:'1', 'database.default.database':'pulso_test', 'app.baseURL':'http://localhost:8081/', CORS_ORIGIN:'http://localhost:5177',
   CLAVE_UNICA_CLIENT_ID:'test-client', CLAVE_UNICA_CLIENT_SECRET:'test-secret', CLAVE_UNICA_REDIRECT_URI:'https://pulso.example/api/auth/clave-unica/callback'};
-for (const args of [['migrate'],['pulso:test-setup'],['pulso:test-fixtures'],['pulso:test-auth'],['pulso:test-domain']]) {
+for (const args of [['migrate'],['pulso:prueba-configuracion'],['pulso:prueba-datos'],['pulso:prueba-acceso'],['pulso:prueba-dominio']]) {
   const p=spawnSync(php,['spark',...args],{cwd:apiDir,env,encoding:'utf8'});
   if(p.status || /Exception|Error\]/.test(p.stdout+p.stderr)) throw Error(p.stdout+p.stderr);
-  if(['pulso:test-setup','pulso:test-auth','pulso:test-domain'].includes(args[0])) process.stdout.write(p.stdout);
+  if(['pulso:prueba-configuracion','pulso:prueba-acceso','pulso:prueba-dominio'].includes(args[0])) process.stdout.write(p.stdout);
 }
 const servers=[8081,8082].map(port=>spawn(php,['-S',`localhost:${port}`,'-t','public','public/router.php'],{cwd:apiDir,env,stdio:['ignore','ignore','pipe']}));
 let stderr=''; servers.forEach(p=>p.stderr.on('data',d=>stderr+=d));

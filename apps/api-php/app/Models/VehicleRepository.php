@@ -23,8 +23,8 @@ final class VehicleRepository {
         $db=Database::connect();
         if (!UnitOfWork::validId($id) || !$db->table('vehiculos')->where('id_vehiculo',$id)->where('id_establecimiento',$actor['establishmentId'])->get()->getRowArray()) throw new DomainException('NOT_FOUND',404);
         // Include older UPDATE records, excluding edits that only changed identification.
-        $q=$db->table('registros_auditoria a')->where('a.id_establecimiento',$actor['establishmentId'])->where('a.tipo_entidad','VEHICLE')->where('a.id_entidad',$id)
-            ->groupStart()->where('a.accion','ODOMETER_ADJUSTMENT')->orGroupStart()->where('a.accion','UPDATE')
+        $q=$db->table('registros_auditoria a')->where('a.id_establecimiento',$actor['establishmentId'])->where('a.tipo_entidad','VEHICULO')->where('a.id_entidad',$id)
+            ->groupStart()->where('a.accion','AJUSTE_ODOMETRO')->orGroupStart()->where('a.accion','ACTUALIZAR')
             ->where("JSON_CONTAINS_PATH(a.datos_nuevos, 'one', '$.odometro_actual', '$.current_odometer_km') = 1",null,false)
             ->groupStart()->where("NOT (COALESCE(JSON_EXTRACT(a.datos_anteriores, '$.odometro_actual'), JSON_EXTRACT(a.datos_anteriores, '$.current_odometer_km')) <=> COALESCE(JSON_EXTRACT(a.datos_nuevos, '$.odometro_actual'), JSON_EXTRACT(a.datos_nuevos, '$.current_odometer_km')))",null,false)
             ->orWhere("NULLIF(JSON_UNQUOTE(JSON_EXTRACT(a.datos_nuevos, '$.reason')), 'null') IS NOT NULL",null,false)->groupEnd()->groupEnd()->groupEnd();
@@ -56,7 +56,7 @@ final class VehicleRepository {
                 $db->table('vehiculos')->insert($r + VehicleCatalog::ids($db, $type, $model, $make, '', $a['establishmentId']));
                 $id = (string)$db->insertID();
                 $r = VehicleCatalog::query($db)->where('v.id_vehiculo', $id)->get()->getRowArray();
-                AuditService::log($a['establishmentId'],$a['id'],'VEHICLE',$r['id_vehiculo'],'CREATE',null,$r);
+                AuditService::log($a['establishmentId'],$a['id'],'VEHICULO',$r['id_vehiculo'],'CREAR',null,$r);
                 return $r;
             });
             return $this->dto($row);
@@ -81,7 +81,7 @@ final class VehicleRepository {
                 $updates['fecha_actualizacion']=\DateTimeImmutable::createFromFormat('U.u',sprintf('%.6F',$stamp))->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s.v');
                 $db->table('vehiculos')->where('id_vehiculo',$id)->update($updates);
                 $fresh=array_merge($v,$updates);
-                AuditService::log($a['establishmentId'],$a['id'],'VEHICLE',$id,'ODOMETER_ADJUSTMENT',$v,$fresh+['reason'=>$reason]);
+                AuditService::log($a['establishmentId'],$a['id'],'VEHICULO',$id,'AJUSTE_ODOMETRO',$v,$fresh+['reason'=>$reason]);
                 return $fresh;
             });
             return $this->dto($row);

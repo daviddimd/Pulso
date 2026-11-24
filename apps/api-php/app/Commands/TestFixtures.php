@@ -4,7 +4,7 @@ use CodeIgniter\CLI\BaseCommand;
 use App\Libraries\{SecurityLib,UnitOfWork,UserAccounts,VehicleCatalog};
 use Config\Database;
 final class TestFixtures extends BaseCommand {
-    protected $group='Tests'; protected $name='pulso:test-fixtures'; protected $description='Prepara exclusivamente pulso_test para pruebas de integración.';
+    protected $group='Tests'; protected $name='pulso:prueba-datos'; protected $description='Prepara exclusivamente pulso_test para pruebas de integración.';
     public function run(array $params) {
         $db=Database::connect();
         if(ENVIRONMENT==='production' || env('PULSO_INTEGRATION')!=='1' || $db->database!=='pulso_test') throw new \RuntimeException('Base de pruebas no autorizada');
@@ -31,8 +31,8 @@ final class TestFixtures extends BaseCommand {
             // Historical format: one odometer correction and one unrelated identity edit.
             $before=['current_odometer_km'=>49900,'role_code'=>'7-2'];
             $after=['current_odometer_km'=>50000,'role_code'=>'7-2','reason'=>'Lectura histórica contrastada'];
-            $db->table('registros_auditoria')->insert(['id_establecimiento'=>$tenantId,'id_usuario_actor'=>$base+1,'tipo_entidad'=>'VEHICLE','id_entidad'=>(string)($base+12),'accion'=>'UPDATE','datos_anteriores'=>json_encode($before),'datos_nuevos'=>json_encode($after),'fecha_creacion'=>$now]);
-            $db->table('registros_auditoria')->insert(['id_establecimiento'=>$tenantId,'id_usuario_actor'=>$base+1,'tipo_entidad'=>'VEHICLE','id_entidad'=>(string)($base+12),'accion'=>'UPDATE','datos_anteriores'=>json_encode($after),'datos_nuevos'=>json_encode(['odometro_actual'=>50000,'role_code'=>'7-OLD','reason'=>null]),'fecha_creacion'=>$now]);
+            $db->table('registros_auditoria')->insert(['id_establecimiento'=>$tenantId,'id_usuario_actor'=>$base+1,'tipo_entidad'=>'VEHICULO','id_entidad'=>(string)($base+12),'accion'=>'ACTUALIZAR','datos_anteriores'=>json_encode($before),'datos_nuevos'=>json_encode($after),'fecha_creacion'=>$now]);
+            $db->table('registros_auditoria')->insert(['id_establecimiento'=>$tenantId,'id_usuario_actor'=>$base+1,'tipo_entidad'=>'VEHICULO','id_entidad'=>(string)($base+12),'accion'=>'ACTUALIZAR','datos_anteriores'=>json_encode($after),'datos_nuevos'=>json_encode(['odometro_actual'=>50000,'role_code'=>'7-OLD','reason'=>null]),'fecha_creacion'=>$now]);
         }
         echo "Fixtures de dos establecimientos listas.\n";
     }

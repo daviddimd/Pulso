@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use App\Libraries\{AuditService, SecurityLib, UnitOfWork, UserAccounts};
+use App\Libraries\{AuditService, Codes, SecurityLib, UnitOfWork, UserAccounts};
 use Config\Database;
 use DomainException;
 
@@ -15,7 +15,7 @@ final class AccountRepository
     public function listing(): array
     {
         $rows = UserAccounts::query(Database::connect())->where('f.id_establecimiento', $this->actor['establishmentId'])
-            ->whereIn('r.codigo', self::ROLES)->where('u.nombre_usuario NOT LIKE', 'archived-%')
+            ->whereIn('r.codigo', array_map(fn($r) => Codes::stored(Codes::ROLE, $r), self::ROLES))->where('u.nombre_usuario NOT LIKE', 'archived-%')
             ->orderBy('u.activo', 'DESC')->orderBy('r.codigo')->orderBy('u.nombre_completo')->get()->getResultArray();
         return array_map($this->dto(...), $rows);
     }
@@ -42,7 +42,7 @@ final class AccountRepository
                 'codigo_roster' => $roster, 'hash_contrasena' => SecurityLib::hashPassword($password), 'activo' => 1, 'intentos_fallidos' => 0,
                 'proveedor_autenticacion' => 'local', 'fecha_creacion' => $now, 'fecha_actualizacion' => $now], $role);
             // The audit keeps identity data only; the password hash is never logged.
-            AuditService::log($this->actor['establishmentId'], $this->actor['id'], 'USER', $id, 'CREATE', null,
+            AuditService::log($this->actor['establishmentId'], $this->actor['id'], 'USUARIO', $id, 'CREAR', null,
                 ['username' => $username, 'fullName' => $fullName, 'role' => $role, 'rosterCode' => $roster]);
             return $this->dto(UserAccounts::query($db)->where('u.id_usuario', $id)->get()->getRowArray());
         });
@@ -56,7 +56,7 @@ final class AccountRepository
 
     private function dto(array $u): array
     {
-        return ['id' => (string)$u['id_usuario'], 'fullName' => $u['nombre_completo'], 'username' => $u['nombre_usuario'], 'role' => $u['role'],
+        return ['id' => (string)$u['id_usuario'], 'fullName' => $u['nombre_completo'], 'username' => $u['nombre_usuario'], 'role' => Codes::api(Codes::ROLE, $u['role']),
             'rosterCode' => $u['codigo_roster'], 'active' => (bool)$u['activo']];
     }
 }

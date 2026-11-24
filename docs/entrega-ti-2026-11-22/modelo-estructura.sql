@@ -137,10 +137,10 @@ CREATE TABLE `viajes` (
   `id_chofer` int unsigned DEFAULT NULL,
   `id_vehiculo` int unsigned DEFAULT NULL,
   `id_usuario_creador` int unsigned DEFAULT NULL,
-  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
+  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USUARIO',
   `version` int unsigned NOT NULL DEFAULT '0',
   `fecha_cancelacion` datetime(3) DEFAULT NULL,
-  `estado` enum('PENDING','ASSIGNED','IN_PROGRESS','COMPLETED','CANCELLED') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+  `estado` enum('PENDIENTE','ASIGNADO','EN_CURSO','FINALIZADO','CANCELADO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE',
   `fecha_inicio` datetime(3) DEFAULT NULL,
   `fecha_fin` datetime(3) DEFAULT NULL,
   `destino` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE `viajes` (
   CONSTRAINT `viajes_ibfk_4` FOREIGN KEY (`id_establecimiento`) REFERENCES `establecimientos` (`id_establecimiento`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `viajes_ibfk_5` FOREIGN KEY (`id_vehiculo`) REFERENCES `vehiculos` (`id_vehiculo`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `viajes_chk_1` CHECK (((`fecha_fin` is null) or (`fecha_inicio` is null) or (`fecha_fin` >= `fecha_inicio`))),
-  CONSTRAINT `viajes_chk_2` CHECK (((`origen` = _utf8mb4'LEGACY') or ((`estado` = _utf8mb4'PENDING') and (`id_chofer` is null) and (`fecha_inicio` is null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'ASSIGNED') and (`id_chofer` is not null) and (`fecha_inicio` is null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'IN_PROGRESS') and (`id_chofer` is not null) and (`id_vehiculo` is not null) and (`fecha_inicio` is not null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'COMPLETED') and (`id_chofer` is not null) and (`id_vehiculo` is not null) and (`fecha_inicio` is not null) and (`fecha_fin` is not null)) or ((`estado` = _utf8mb4'CANCELLED') and (`fecha_inicio` is null) and (`fecha_cancelacion` is not null) and (`odometro_salida` is null) and (`odometro_llegada` is null))))
+  CONSTRAINT `viajes_chk_2` CHECK (((`origen` = _utf8mb4'HISTORICO') or ((`estado` = _utf8mb4'PENDIENTE') and (`id_chofer` is null) and (`fecha_inicio` is null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'ASIGNADO') and (`id_chofer` is not null) and (`fecha_inicio` is null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'EN_CURSO') and (`id_chofer` is not null) and (`id_vehiculo` is not null) and (`fecha_inicio` is not null) and (`fecha_fin` is null)) or ((`estado` = _utf8mb4'FINALIZADO') and (`id_chofer` is not null) and (`id_vehiculo` is not null) and (`fecha_inicio` is not null) and (`fecha_fin` is not null)) or ((`estado` = _utf8mb4'CANCELADO') and (`fecha_inicio` is null) and (`fecha_cancelacion` is not null) and (`odometro_salida` is null) and (`odometro_llegada` is null))))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `viajes_tramos` (
@@ -206,7 +206,7 @@ CREATE TABLE `revisiones_direccion` (
   `revision` int NOT NULL,
   `direccion` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `id_usuario_actor` int unsigned DEFAULT NULL,
-  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
+  `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USUARIO',
   `fecha_creacion` datetime(3) DEFAULT NULL,
   `id_establecimiento` int unsigned NOT NULL,
   PRIMARY KEY (`id_revision_direccion`),

@@ -8,15 +8,15 @@ Estado: Verificado local
 
 Criterio: CI 4.7.5 / PHP 8.4.27; controladores, repositorios, dominio y vista React.
 
-Evidencia: composer.lock; app/Controllers; app/Models; apps/web/src
+Evidencia: registro de versiones de Composer; controladores y modelos del servidor; código de la interfaz
 
-## TEC-02 / Must / Frontend HTML5, Bootstrap 5.x y React; Ajax mediante JavaScript.
+## TEC-02 / Must / Interfaz: HTML5, Bootstrap 5.x y React; Ajax mediante JavaScript.
 
 Estado: Verificado local
 
 Criterio: React 19.2.8; Bootstrap utilities 5.3.8; fetch REST. No requiere jQuery al usar React.
 
-Evidencia: apps/web/package.json; src/main.tsx; src/operations.ts
+Evidencia: manifiesto de dependencias de la interfaz; punto de entrada de la interfaz; cliente de la API en la interfaz
 
 ## TEC-03 / Must / Base de datos: MySQL 16.x, según correo de TI.
 
@@ -24,7 +24,7 @@ Estado: Pendiente TI
 
 Criterio: Motor local MySQL 8.4.11. Confirmar producto y versión exactos; no asumir PostgreSQL ni MariaDB.
 
-Evidencia: metadata de la base; migración CreatePulsoTables
+Evidencia: metadatos de la base; migración inicial
 
 ## TEC-04 / Must / PDF con FPDF 1.9.x.
 
@@ -32,15 +32,15 @@ Estado: Verificado local
 
 Criterio: FPDF 1.9.0; respuestas PDF verificadas en pruebas de API.
 
-Evidencia: PdfExporter.php; ExportsController.php; CostCentersController.php
+Evidencia: generador PDF; controlador de exportaciones; controlador de centros de costos
 
 ## TEC-05 / Must / Excel con SheetJS / xlsx.
 
 Estado: Verificado local
 
-Criterio: SheetJS 0.20.3 compilado dentro del frontend; sin carga de scripts remotos al exportar.
+Criterio: SheetJS 0.20.3 compilado dentro de la interfaz; sin carga de scripts remotos al exportar.
 
-Evidencia: src/xlsx-export.ts; lockfile frontend
+Evidencia: módulo de exportación a Excel; registro de versiones de la interfaz
 
 ## TEC-06 / Must / Bibliotecas y fuentes servidas localmente; sin CDN en ejecución.
 
@@ -48,7 +48,7 @@ Estado: Verificado estático
 
 Criterio: CSS, JS, fuentes y SVG locales. La URL npm de SheetJS se usa al instalar/compilar, no por el navegador en producción.
 
-Evidencia: main.tsx; index.html compilado; assets locales
+Evidencia: punto de entrada de la interfaz; página compilada; recursos locales
 
 ## TEC-07 / Must / Operación independiente por establecimiento.
 
@@ -56,7 +56,7 @@ Estado: Verificado local
 
 Criterio: Consultas y mutaciones por institución; catálogos propios, zona horaria y provisión de la primera institución en /configurar y de las siguientes por consola.
 
-Evidencia: AuthFilter; repositorios; UnitOfWork; pruebas de aislamiento
+Evidencia: filtro de sesión; repositorios; unidad transaccional; pruebas de aislamiento
 
 ## TEC-08 / Must / Facilitar integración de autenticación con Clave Única.
 
@@ -64,7 +64,7 @@ Estado: Implementado; piloto pendiente
 
 Criterio: Inicio OAuth, state de un solo uso, callback, consulta de identidad y vínculo a RUN registrado. Falta validación con proveedor real.
 
-Evidencia: ClaveUnicaClient; AuthController; AuthRepository; TestAuth
+Evidencia: cliente ClaveÚnica; controlador de acceso; repositorio de acceso; pruebas de acceso
 
 ## INS-01 / Must / Instalación nueva configurable sin credenciales precargadas.
 
@@ -72,7 +72,7 @@ Estado: Verificado local
 
 Criterio: /configurar solo existe mientras no hay instituciones; exige un código de un solo uso guardado en writable/, crea institución y administrador y se cierra al usarse. Probado desde un clon con base vacía.
 
-Evidencia: SetupRepository; SetupPage; pulso:test-setup
+Evidencia: configuración inicial del servidor; página de configuración; pruebas de configuración
 
 ## DOC-01 / Must / Diagrama de procesos BPMN.
 
@@ -110,9 +110,9 @@ Evidencia: 04-Pulso-Requerimientos-MoSCoW.pdf
 
 Estado: Verificado local
 
-Criterio: Sin actividad o destino no se guarda. Indefinido es id_centro_costo NULL y se asigna después.
+Criterio: Sin actividad o destino no se guarda. Indefinido deja id_centro_costo vacío y se asigna después.
 
-Evidencia: ServiceEngine::create; CostCenterField
+Evidencia: registro de viajes; campo de centro de costos
 
 ## RF-02 / Must / Solo un servicio simultáneo por chofer y vehículo.
 
@@ -120,7 +120,7 @@ Estado: Verificado local
 
 Criterio: Tramos activos únicos y validaciones transaccionales. Servicios futuros no ocupan recursos todavía.
 
-Evidencia: viajes_tramos; ServiceEngine; prueba concurrente
+Evidencia: viajes_tramos; motor de viajes; prueba concurrente
 
 ## RF-03 / Must / Iniciar y finalizar desde el chofer asignado.
 
@@ -128,15 +128,15 @@ Estado: Verificado local
 
 Criterio: Inicio toma lectura del vehículo; cierre exige odómetro válido y registra fechas. Administración no suplanta al chofer.
 
-Evidencia: ServiceEngine start / complete
+Evidencia: motor de viajes start / complete
 
 ## RF-04 / Must / Cancelación solo administrativa y previa al inicio.
 
 Estado: Verificado local
 
-Criterio: PENDING / ASSIGNED sin fecha_inicio. IN_PROGRESS no se cancela.
+Criterio: PENDIENTE / ASIGNADO sin fecha_inicio. EN_CURSO no se cancela.
 
-Evidencia: ServiceEngine cancel; prueba de rechazo sin efectos
+Evidencia: motor de viajes cancel; prueba de rechazo sin efectos
 
 ## RF-05 / Must / Permitir reasignación de chofer o vehículo.
 
@@ -144,7 +144,7 @@ Estado: Verificado local
 
 Criterio: En ruta exige lectura del móvil saliente, cierra su tramo y abre otro en el mismo viaje con la lectura del entrante.
 
-Evidencia: ServiceEngine assignment
+Evidencia: motor de viajes assignment
 
 ## RF-06 / Must / Corregir dirección con historial y aviso al chofer.
 
@@ -152,15 +152,15 @@ Estado: Implementado
 
 Criterio: Aviso visible al actualizar datos; Entendido lo oculta en ese navegador. No es confirmación central en servidor.
 
-Evidencia: revisiones_direccion; AddressChangeAlerts
+Evidencia: revisiones_direccion; avisos de cambio de dirección
 
 ## RF-07 / Must / Vehículo con identidad fija; solo ajustar kilometraje.
 
 Estado: Verificado local
 
-Criterio: Alta permitida; PATCH rechaza rol, patente, tipo, modelo, año y active. Motivo y versión obligatorios para km.
+Criterio: Alta permitida; la edición rechaza cambios de código de móvil, patente, tipo, modelo, año y estado activo. Motivo y versión obligatorios para km.
 
-Evidencia: VehicleRepository; VehicleCard; pruebas API
+Evidencia: repositorio de vehículos; ficha del vehículo; pruebas API
 
 ## RF-08 / Must / Exportar bitácora solo con completados del período.
 
@@ -168,7 +168,7 @@ Estado: Verificado local
 
 Criterio: Se usa fecha_fin y zona del establecimiento; excluye pendientes, activos y cancelados.
 
-Evidencia: ReportRepository::daily; pruebas exportación
+Evidencia: reporte diario; pruebas exportación
 
 ## RF-09 / Must / Totales por centro con viajes y km.
 
@@ -176,7 +176,7 @@ Estado: Verificado local
 
 Criterio: Completados y cancelados separados; km solo completados con lecturas completas. Mostrar centros con actividad e incluir restantes opcionalmente.
 
-Evidencia: ReportRepository::summary; CostCenterReport
+Evidencia: resumen por centro de costos; informe de centros de costos
 
 ## RF-10 / Must / Historial de servicios por chofer y vehículo.
 
@@ -184,7 +184,7 @@ Estado: Implementado
 
 Criterio: Acceso administrativo desde sus nombres; incluye la participación de cada chofer y vehículo en los tramos del viaje.
 
-Evidencia: OperationsDashboard; ServiceRepository
+Evidencia: panel de operaciones; repositorio de viajes
 
 ## RF-11 / Must / Administración crea cuentas de chofer y de administración.
 
@@ -192,7 +192,7 @@ Estado: Verificado local
 
 Criterio: Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.
 
-Evidencia: AccountRepository; AccountsPanel; pruebas API
+Evidencia: repositorio de cuentas; sección Cuentas; pruebas API
 
 ## MER-01 / Must / PK enteras autoincrementables y nomenclatura institucional en español.
 
@@ -200,7 +200,7 @@ Estado: Verificado local
 
 Criterio: PK id_[tabla] enteras y autoincrementables. Todas las tablas, columnas, índices y restricciones están en español; una prueba de dominio falla si reaparece un nombre en inglés.
 
-Evidencia: ConsolidateTrips; SpanishColumns; pulso:test-domain; diccionario físico
+Evidencia: migración de consolidación de viajes; migración de nomenclatura en español; pruebas de dominio; diccionario físico
 
 ## MER-02 / Must / Una entidad de viaje con lecturas de salida y llegada.
 
@@ -208,7 +208,7 @@ Estado: Verificado local
 
 Criterio: Un viaje con varios tramos. Cada tramo tiene un chofer y un vehículo. El relevo conserva el folio y la distancia suma tramos.
 
-Evidencia: viajes; ServiceEngine; pruebas de relevo
+Evidencia: viajes; motor de viajes; pruebas de relevo
 
 ## MER-03 / Must / Catálogos de roles, funcionarios y flota.
 
@@ -216,7 +216,7 @@ Estado: Implementado
 
 Criterio: roles, funcionarios, tipos_vehiculo, marcas_vehiculo y modelos_vehiculo. Código institucional en vehiculos.codigo_movil.
 
-Evidencia: schema-viajes.sql; pulso:roles; alta de vehículo
+Evidencia: esquema base de viajes; pulso:roles; alta de vehículo
 
 ## MER-05 / Must / Institución heredada, catálogos locales y aislamiento de revisiones.
 
@@ -224,7 +224,7 @@ Estado: Verificado local
 
 Criterio: usuarios obtiene la institución desde funcionarios. Tramos y revisiones llevan id_establecimiento. Los catálogos tienen unicidad y FK institucionales.
 
-Evidencia: DomainTrips; TestDomain; AuthRepository
+Evidencia: migración de tramos; pruebas de dominio; repositorio de acceso
 
 ## MER-04 / Must / MER alineado con nombres, claves y cardinalidades físicas.
 
@@ -246,17 +246,17 @@ Evidencia: Informe de revisión MER del 09-11-2026
 
 Estado: Verificado local
 
-Criterio: Roles ADMIN / DRIVER, Argon2id, cookie HttpOnly, token hash, bloqueo 5 fallos / 15 min. HTTPS y despliegue se verifican con TI.
+Criterio: Roles ADMINISTRACION / CHOFER, Argon2id, cookie de solo servidor, token guardado como hash, bloqueo 5 fallos / 15 min. HTTPS y despliegue se verifican con TI.
 
-Evidencia: AuthRepository; AuthFilter; AuthController
+Evidencia: repositorio de acceso; filtro de sesión; controlador de acceso
 
 ## RNF-02 / Must / Evitar sobrescrituras y conservar trazabilidad.
 
 Estado: Verificado local
 
-Criterio: Versiones, expectedUpdatedAt, transacciones y registros_auditoria. No se promete inmutabilidad frente al DBA.
+Criterio: Versiones, fecha de actualización esperada, transacciones y registros_auditoria. No se promete inmutabilidad frente al DBA.
 
-Evidencia: UnitOfWork; ServiceEngine; AuditService
+Evidencia: unidad transaccional; motor de viajes; servicio de auditoría
 
 ## RNF-03 / Should / Restablecer contraseñas olvidadas sin exponerlas.
 
@@ -264,7 +264,7 @@ Estado: Verificado local
 
 Criterio: pulso:clave por consola con la contraseña en variable de entorno; desbloquea, cierra sesiones y audita. Las contraseñas con Argon2id no se recuperan.
 
-Evidencia: ResetPassword; UserAccounts::resetPassword; pulso:test-setup
+Evidencia: comando de restablecimiento; restablecimiento de contraseña; pruebas de configuración
 
 ## UX-01 / Should / Interfaz móvil legible, sobria y con temas claro/oscuro.
 
@@ -272,7 +272,7 @@ Estado: Implementado
 
 Criterio: Controles amplios, SVG locales, navegación adaptable y reduced-motion. Falta aceptación en dispositivos institucionales.
 
-Evidencia: CSS responsive; ThemeToggle; componentes
+Evidencia: CSS responsive; selector de tema; componentes
 
 ## UX-02 / Should / Autocompletar centro por código o nombre.
 
@@ -280,7 +280,7 @@ Estado: Implementado
 
 Criterio: Un campo con sugerencias y primera opción Indefinido.
 
-Evidencia: CostCenterField.tsx
+Evidencia: campo de centro de costos
 
 ## FUT-01 / Could / Canales de avisos centralizados y acuse de lectura.
 

@@ -25,7 +25,7 @@ final class UserAccounts
             $db->table('usuarios')->where('id_usuario', $user['id_usuario'])->update(['hash_contrasena' => SecurityLib::hashPassword($password),
                 'intentos_fallidos' => 0, 'bloqueado_hasta' => null, 'fecha_actualizacion' => $now]);
             $db->table('sesiones')->where('id_usuario', $user['id_usuario'])->where('fecha_revocacion', null)->update(['fecha_revocacion' => $now]);
-            AuditService::log((string)$user['id_establecimiento'], null, 'USER', (string)$user['id_usuario'], 'PASSWORD_RESET_CONSOLE');
+            AuditService::log((string)$user['id_establecimiento'], null, 'USUARIO', (string)$user['id_usuario'], 'RESTABLECER_CONTRASENA');
             $db->transCommit();
         } catch (\Throwable $e) {
             $db->transRollback();
@@ -36,7 +36,7 @@ final class UserAccounts
 
     public static function create(BaseConnection $db, array $account, string $role): string
     {
-        $roleRow = $db->table('roles')->where('codigo', $role)->get()->getRowArray();
+        $roleRow = $db->table('roles')->where('codigo', Codes::stored(Codes::ROLE, $role))->get()->getRowArray();
         if (!$roleRow) throw new \RuntimeException('Rol institucional inexistente.');
         $db->table('funcionarios')->insert(['id_establecimiento'=>$account['id_establecimiento'], 'nombre'=>$account['nombre_completo'],
             'codigo_roster'=>$account['codigo_roster'] ?? null]);
