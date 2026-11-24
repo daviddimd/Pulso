@@ -55,7 +55,7 @@ Evidencia: 01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn
 
 DOC-02: Modelo entidad-relación.
 Estado: Entregado
-Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.
+Quince entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.
 Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
 DOC-03: Casos de uso UML.

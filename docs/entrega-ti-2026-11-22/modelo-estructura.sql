@@ -143,7 +143,6 @@ CREATE TABLE `viajes` (
   `estado` enum('PENDIENTE','ASIGNADO','EN_CURSO','FINALIZADO','CANCELADO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE',
   `fecha_inicio` datetime(3) DEFAULT NULL,
   `fecha_fin` datetime(3) DEFAULT NULL,
-  `destino` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `actividad` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `odometro_salida` int unsigned DEFAULT NULL,
   `odometro_llegada` int unsigned DEFAULT NULL,
@@ -200,11 +199,24 @@ CREATE TABLE `viajes_tramos` (
   CONSTRAINT `viajes_tramos_chk_2` CHECK (((`odometro_fin` is null) or (`odometro_inicio` is null) or (`odometro_fin` >= `odometro_inicio`)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `viajes_destinos` (
+  `id_viaje_destino` int unsigned NOT NULL AUTO_INCREMENT,
+  `id_establecimiento` int unsigned NOT NULL,
+  `id_viaje` int unsigned NOT NULL,
+  `orden` smallint unsigned NOT NULL,
+  `direccion` varchar(350) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id_viaje_destino`),
+  UNIQUE KEY `uq_id_viaje_orden` (`id_viaje`,`orden`),
+  KEY `ix_id_establecimiento_id_viaje` (`id_establecimiento`,`id_viaje`),
+  CONSTRAINT `fk_destino_viaje` FOREIGN KEY (`id_establecimiento`, `id_viaje`) REFERENCES `viajes` (`id_establecimiento`, `id_viaje`) ON DELETE CASCADE,
+  CONSTRAINT `viajes_destinos_chk_1` CHECK ((`orden` >= 1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `revisiones_direccion` (
   `id_revision_direccion` int unsigned NOT NULL AUTO_INCREMENT,
   `id_viaje` int unsigned NOT NULL,
   `revision` int NOT NULL,
-  `direccion` varchar(350) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `direccion` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `id_usuario_actor` int unsigned DEFAULT NULL,
   `origen` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USUARIO',
   `fecha_creacion` datetime(3) DEFAULT NULL,

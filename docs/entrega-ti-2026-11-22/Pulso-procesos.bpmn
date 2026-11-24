@@ -5,7 +5,7 @@
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:outgoing>Preparar_f0</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="Preparar_crear" name="Usuario: registrar destino, actividad y CC">
+    <bpmn:userTask id="Preparar_crear" name="Usuario: registrar destinos, actividad y CC">
       <bpmn:documentation>Actor indicado en el nombre. Modelo descriptivo del código actual, no motor de ejecución.</bpmn:documentation>
       <bpmn:incoming>Preparar_f0</bpmn:incoming>
       <bpmn:outgoing>Preparar_f1</bpmn:outgoing>

@@ -86,7 +86,7 @@ Evidencia: 01-Pulso-Procesos-BPMN.pdf; Pulso-procesos.bpmn
 
 Estado: Entregado
 
-Criterio: Catorce entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.
+Criterio: Quince entidades de negocio, alias históricos, cardinalidades, claves y diccionario obtenido del esquema real.
 
 Evidencia: 02-Pulso-Modelo-Entidad-Relacion.pdf
 
@@ -106,11 +106,11 @@ Criterio: Matriz derivada del correo TI y acuerdos del usuario; debe ser validad
 
 Evidencia: 04-Pulso-Requerimientos-MoSCoW.pdf
 
-## RF-01 / Must / Crear servicio con destino, actividad y centro de costos o Indefinido.
+## RF-01 / Must / Crear servicio con destinos, actividad y centro de costos o Indefinido.
 
 Estado: Verificado local
 
-Criterio: Sin actividad o destino no se guarda. Indefinido deja id_centro_costo vacío y se asigna después.
+Criterio: Sin actividad o sin al menos un destino no se guarda. Indefinido deja id_centro_costo vacío y se asigna después.
 
 Evidencia: registro de viajes; campo de centro de costos
 
@@ -193,6 +193,14 @@ Estado: Verificado local
 Criterio: Sección Cuentas en la propia institución; usuario único; róster único por institución; contraseña inicial de al menos 12 caracteres; auditoría sin datos de contraseña.
 
 Evidencia: repositorio de cuentas; sección Cuentas; pruebas API
+
+## RF-12 / Must / Viaje con una o más direcciones en orden de recorrido.
+
+Estado: Verificado local
+
+Criterio: Hasta 10 paradas por viaje en viajes_destinos, ordenadas y únicas por viaje. Administración puede agregar, quitar o corregir paradas; cada cambio queda como revisión de la ruta y el chofer recibe el aviso. El enlace a Maps abre la ruta completa.
+
+Evidencia: motor de viajes; campo de destinos; pruebas API
 
 ## MER-01 / Must / PK enteras autoincrementables y nomenclatura institucional en español.
 

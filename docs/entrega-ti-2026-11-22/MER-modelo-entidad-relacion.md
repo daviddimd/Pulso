@@ -4,15 +4,17 @@ Fecha: 2026-11-22. Versión 3.0.
 
 ## Fuente
 
-Metadatos de 14 entidades de negocio y una tabla de alias de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.
+Metadatos de 15 entidades de negocio y una tabla de alias de la base local. Ver MER-Pulso.svg, MER-Usuarios.svg, MER-Flota.svg, modelo-metadatos.json y modelo-estructura.sql.
 
 ## Integridad
 
-El modelo contiene 14 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.
+El modelo contiene 15 entidades de negocio y una tabla de alias de folios anteriores. Las PK son enteras y autoincrementables. migrations pertenece a la infraestructura de CodeIgniter.
 
 usuarios hereda id_establecimiento desde funcionarios. El traslado del funcionario cambia la institución efectiva de su cuenta y de sus sesiones vigentes. Las participaciones históricas permanecen vinculadas a la institución del viaje.
 
-viajes almacena el propósito, destino, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.
+viajes almacena el propósito, estado, fechas, centro de costos y asignación vigente. Antes de partir, id_chofer y id_vehiculo expresan la reserva. Durante el viaje expresan los recursos actualmente asignados. La participación efectiva y sus lecturas se consultan en viajes_tramos.
+
+viajes_destinos guarda las direcciones del viaje en orden de recorrido (orden 1, 2, 3…), con hasta 10 paradas, orden único por viaje y FK compuesta con id_establecimiento. Un viaje tiene al menos una parada. La ruta completa se muestra unida en el orden de sus paradas, y cada corrección guarda la ruta anterior en revisiones_direccion.
 
 El relevo cierra el tramo vigente, actualiza el odómetro del vehículo saliente y abre otro tramo en el mismo viaje. La operación es transaccional y exige la versión vigente. El folio, la fecha inicial y el centro de costos del viaje se conservan.
 

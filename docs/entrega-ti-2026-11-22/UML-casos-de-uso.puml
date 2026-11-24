@@ -11,7 +11,7 @@ rectangle Pulso {
   usecase "CU-04\nIniciar viaje" as CU04
   usecase "CU-05\nFinalizar viaje" as CU05
   usecase "CU-06\nAsignar o reasignar recursos" as CU06
-  usecase "CU-07\nCorregir dirección" as CU07
+  usecase "CU-07\nCorregir direcciones" as CU07
   usecase "CU-08\nAsignar centro de costos" as CU08
   usecase "CU-09\nCancelar antes del inicio" as CU09
   usecase "CU-10\nRegistrar vehículo" as CU10

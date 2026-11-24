@@ -18,7 +18,7 @@ Actores: Chofer, Administración
 
 Precondición: Sesión válida.
 
-Flujo: Ingresar destino, actividad y centro o Indefinido; opcionalmente chofer y vehículo. Guardar o iniciar.
+Flujo: Ingresar una o más direcciones en orden de recorrido (hasta 10), actividad y centro o Indefinido; opcionalmente chofer y vehículo. Guardar o iniciar.
 
 Excepciones: Sin chofer: PENDIENTE. Con chofer: ASIGNADO. El chofer queda asignado a sí mismo. opción Iniciar ahora fallido revierte el registro completo.
 
@@ -62,13 +62,13 @@ Flujo: Elegir recursos activos de la institución. En ruta registrar km del veh�
 
 Excepciones: Sin cambios: rechazo. Recurso ocupado o lectura inválida: se revierte toda la operación. No modifica la identidad del vehículo.
 
-## CU-07 Corregir dirección
+## CU-07 Corregir direcciones
 
 Actores: Administración
 
 Precondición: Servicio existente de la institución y versión vigente.
 
-Flujo: Guardar corrección y revisión de dirección; el chofer ve aviso y puede marcar Entendido.
+Flujo: Agregar, quitar o corregir paradas y guardar la nueva ruta como revisión; el chofer ve aviso y puede marcar Entendido.
 
 Excepciones: El reconocimiento del aviso se conserva localmente en el navegador; no es un acuse centralizado de lectura.
 
