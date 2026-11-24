@@ -27,7 +27,7 @@
     {
       "archivo": "00-Pulso-Corroboracion-Tecnica.pdf",
       "paginas": 4,
-      "sha256": "5e088772d8a143c281da9d9a9c3effeddc09a8f7f6651d95bf607b2b2eeb7a28"
+      "sha256": "a5730ce9d82775cb0ef6cfa9c24c57d5ce4c4ce3206d774fd65c0d76756102b8"
     },
     {
       "archivo": "01-Pulso-Procesos-BPMN.pdf",
@@ -37,7 +37,7 @@
     {
       "archivo": "02-Pulso-Modelo-Entidad-Relacion.pdf",
       "paginas": 13,
-      "sha256": "a2d4ca14929d04db8d458fbe2e2e57c3fbf367aa875efb87aba111354aafbe6c"
+      "sha256": "8a9544739a9a70e00348999e45040c484cdd230519fc4d1c270f5f54b3e06ede"
     },
     {
       "archivo": "03-Pulso-Casos-de-Uso-UML.pdf",

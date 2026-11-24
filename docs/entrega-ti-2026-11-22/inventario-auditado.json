@@ -1,6 +1,6 @@
 {
   "fecha": "2026-11-22",
-  "baseCommit": "62769f64e29c48fb8deab65c1a99cd0a00c88342",
+  "baseCommit": "bf2b91834fa299526d54cb492c111643853874a6",
   "incluyeCambiosLocales": false,
   "sha256": {
     "apps/api-php/app/Database/schema-viajes.sql": "f1b5d6a13c464377e4d343bebfbd090c513678d01bc55809584cc79e7d868b1b",
